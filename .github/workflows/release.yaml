@@ -1,0 +1,28 @@
+name: Build
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Get version
+        id: version
+        uses: home-assistant/actions/helpers/version@master
+
+      - name: Patch manifest and zip
+        run: |
+          sed -i 's/v0.0.0/${{ steps.version.outputs.version }}/' custom_components/azure_openai_conversation/manifest.json
+          cd custom_components/azure_openai_conversation/
+          zip ../../azure_openai_conversation.zip -r ./
+
+      - uses: JasonEtco/upload-to-release@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          args: ./azure_openai_conversation.zip application/zip
