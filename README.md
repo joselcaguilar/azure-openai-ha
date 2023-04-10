@@ -1,9 +1,16 @@
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
 ![GitHub all releases](https://img.shields.io/github/downloads/joselcaguilar/azure-openai-ha/total)
-![GitHub release (latest by SemVer)](https://img.shields.io/github/downloads/joselcaguilar/azure-openai-ha/latest/total)
 [![BuyMeACoffee](https://img.shields.io/badge/-Buy_me_a%C2%A0coffee-gray?logo=buy-me-a-coffee)](https://www.buymeacoffee.com/joselcaguilar)
 
+<p align="center">
+<img src="./.attachments/icon.png#gh-light-mode-only">
+<img src="./.attachments/dark_icon.png#gh-dark-mode-only">
+</p>
+
+<h3 align="center">
+
 [Azure OpenAI Conversation Custom Integration](https://github.com/joselcaguilar/azure-openai-ha) for Home Assistant
+</h3>
 
 # What This Is:
 
