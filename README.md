@@ -2,7 +2,17 @@
 ![GitHub all releases](https://img.shields.io/github/downloads/joselcaguilar/azure-openai-ha/total)
 [![BuyMeACoffee](https://img.shields.io/badge/-Buy_me_a%C2%A0coffee-gray?logo=buy-me-a-coffee)](https://www.buymeacoffee.com/joselcaguilar)
 
+<p align="center">
+
+![Azure-OpenAI-Icon-Light](./.attachments/icon.png#gh-light-mode-only)![Azure-OpenAI-Icon-Dark](./.attachments/dark_icon.png#gh-light-mode-only)
+
+</p>
+
+<h3 align="center">
+
 [Azure OpenAI Conversation Custom Integration](https://github.com/joselcaguilar/azure-openai-ha) for Home Assistant
+
+</h3>
 
 # What This Is:
 
