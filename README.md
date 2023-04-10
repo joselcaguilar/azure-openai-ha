@@ -1,6 +1,7 @@
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
 ![GitHub all releases](https://img.shields.io/github/downloads/joselcaguilar/azure-openai-ha/total)
 ![GitHub release (latest by SemVer)](https://img.shields.io/github/downloads/joselcaguilar/azure-openai-ha/latest/total)
+[![BuyMeACoffee](https://img.shields.io/badge/-Buy_me_a%C2%A0coffee-gray?logo=buy-me-a-coffee)](https://www.buymeacoffee.com/joselcaguilar)
 
 [Azure OpenAI Conversation Custom Integration](https://github.com/joselcaguilar/azure-openai-ha) for Home Assistant
 
@@ -90,3 +91,7 @@ The [README](./README.md) file will be used for Documentation, if it's expanded 
 # License
 
 [MIT](LICENSE) - By providing a contribution, you agree the contribution is licensed under MIT.
+
+# Buy me a coffee
+
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/joselcaguilar)
