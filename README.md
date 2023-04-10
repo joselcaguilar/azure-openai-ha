@@ -4,7 +4,8 @@
 
 <p align="center">
 
-![Azure-OpenAI-Icon-Light](./.attachments/icon.png#gh-light-mode-only)![Azure-OpenAI-Icon-Dark](./.attachments/dark_icon.png#gh-light-mode-only)
+![Azure-OpenAI-Icon-Light](./.attachments/icon.png#gh-light-mode-only)
+![Azure-OpenAI-Icon-Dark](./.attachments/dark_icon.png#gh-light-mode-only)
 
 </p>
 
