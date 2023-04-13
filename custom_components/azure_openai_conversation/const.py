@@ -1,4 +1,4 @@
-"""Constants for the Azure OpenAI Conversation Integration"""
+"""Constants for the Azure OpenAI Conversation Integration."""
 
 DOMAIN = "azure_openai_conversation"
 CONF_PROMPT = "prompt"
