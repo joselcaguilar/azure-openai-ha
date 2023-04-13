@@ -1,28 +1,35 @@
-name: Build
+name: "Release"
 
 on:
   release:
-    types: [published]
+    types:
+      - "published"
+
+permissions: {}
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-
+  release:
+    name: "Release"
+    runs-on: "ubuntu-latest"
+    permissions:
+      contents: write
     steps:
-      - uses: actions/checkout@v3
+      - name: "Checkout the repository"
+        uses: "actions/checkout@v3.5.0"
 
-      - name: Get version
-        id: version
-        uses: home-assistant/actions/helpers/version@master
-
-      - name: Patch manifest and zip
+      - name: "Adjust version number"
+        shell: "bash"
         run: |
-          sed -i 's/v0.0.0/${{ steps.version.outputs.version }}/' custom_components/azure_openai_conversation/manifest.json
-          cd custom_components/azure_openai_conversation/
-          zip ../../azure_openai_conversation.zip -r ./
+          yq -i -o json '.version="${{ github.event.release.tag_name }}"' \
+            "${{ github.workspace }}/custom_components/azure_openai_conversation/manifest.json"
 
-      - uses: JasonEtco/upload-to-release@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: "ZIP the integration directory"
+        shell: "bash"
+        run: |
+          cd "${{ github.workspace }}/custom_components/azure_openai_conversation"
+          zip azure_openai_conversation.zip -r ./
+
+      - name: "Upload the ZIP file to the release"
+        uses: softprops/action-gh-release@v0.1.15
         with:
-          args: ./azure_openai_conversation.zip application/zip
+          files: ${{ github.workspace }}/custom_components/azure_openai_conversation/azure_openai_conversation.zip
