@@ -4,8 +4,8 @@
 [![BuyMeACoffee](https://img.shields.io/badge/-Buy_me_a%C2%A0coffee-gray?logo=buy-me-a-coffee)](https://www.buymeacoffee.com/joselcaguilar)
 
 <p align="center">
-<img src="./.attachments/icon.png#gh-light-mode-only">
-<img src="./.attachments/dark_icon.png#gh-dark-mode-only">
+<img src="https://raw.githubusercontent.com/joselcaguilar/azure-openai-ha/main/.attachments/icon.png#gh-light-mode-only">
+<img src="https://raw.githubusercontent.com/joselcaguilar/azure-openai-ha/main/.attachments/dark_icon.png#gh-dark-mode-only">
 </p>
 
 <h3 align="center">
