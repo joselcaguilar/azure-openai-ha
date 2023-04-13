@@ -1,0 +1,31 @@
+name: Dependabot fetch metadata
+on: pull_request
+
+permissions:
+  contents: write
+
+jobs:
+  dependabot:
+    runs-on: ubuntu-latest
+    if: ${{ github.actor == 'dependabot[bot]' }}
+    steps:
+      - name: "Checkout the referenced branch"
+        uses: actions/checkout@v3.5.0
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.ref }}
+      - name: Dependabot metadata
+        id: dependabot-metadata
+        uses: dependabot/fetch-metadata@v1
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+      - name: Update PR
+        run: |
+          list=$(echo ${{ steps.dependabot-metadata.outputs.dependency-names }})
+          if [[ $list == *"openai"* ]]; then
+              sed -i 's/${{ steps.dependabot-metadata.outputs.previous-version }}/${{ steps.dependabot-metadata.outputs.new-version }}/g' ${{ github.workspace }}/custom_components/azure_openai_conversation/manifest.json
+          fi
+
+          git add ${{ github.workspace }}/custom_components/azure_openai_conversation/manifest.json
+          git commit -m "Updated openai dependency in manifest.json to ${{ steps.dependabot-metadata.outputs.new-version }}"
+          git push
