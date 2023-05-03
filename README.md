@@ -1,7 +1,7 @@
-[![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
-![Validate workflow](https://github.com/joselcaguilar/azure-openai-ha/actions/workflows/validate.yaml/badge.svg)
-![Lint workflow](https://github.com/joselcaguilar/azure-openai-ha/actions/workflows/lint.yaml/badge.svg)
-![GitHub all releases](https://img.shields.io/github/downloads/joselcaguilar/azure-openai-ha/total)
+[![hacs_badge](https://img.shields.io/badge/My_HACS-Azure_OpenAI_Conversation-41BDF5?logo=homeassistant&logoColor=white)](https://my.home-assistant.io/redirect/hacs_repository/?owner=joselcaguilar&repository=azure-openai-ha&category=integration)
+[![Validate workflow](https://img.shields.io/github/actions/workflow/status/joselcaguilar/azure-openai-ha/validate.yaml?label=Validate&logo=GitHub)](https://github.com/joselcaguilar/azure-openai-ha/actions/workflows/validate.yaml)
+[![Lint workflow](https://img.shields.io/github/actions/workflow/status/joselcaguilar/azure-openai-ha/lint.yaml?label=Lint&logo=GitHub)](https://github.com/joselcaguilar/azure-openai-ha/actions/workflows/lint.yaml)
+![GitHub all releases](https://img.shields.io/github/downloads/joselcaguilar/azure-openai-ha/total?color=d9810f&label=Downloads&logo=GitHub)
 [![GitHub Sponsor](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86)](https://github.com/sponsors/joselcaguilar)
 [![BuyMeACoffee](https://img.shields.io/badge/-Buy_me_a%C2%A0coffee-gray?logo=buy-me-a-coffee)](https://www.buymeacoffee.com/joselcaguilar)
 
@@ -43,12 +43,11 @@ This conversation agent is unable to control your house. It can only query infor
 conversation:
 ```
 2. Go to HACS -> Integrations
-3. Add [this](https://github.com/joselcaguilar/azure-openai-ha) repo into your HACS custom repositories
-4. Search for `Azure OpenAI Conversation` and download it
-5. Restart your Home Assistant instance
-6. Go to Settings -> Devices & Services -> Add Integration
-7. Search for `Azure OpenAI Conversation`
-8. Type your `API Key`, `API Base` and `API Version` used following the example below and hit submit:
+3. Download and install the [Azure OpenAI Conversation](https://my.home-assistant.io/redirect/hacs_repository/?owner=joselcaguilar&repository=azure-openai-ha&category=integration) integration
+4. Restart your Home Assistant instance
+5. Go to Settings -> Devices & Services -> Add Integration
+6. Search for `Azure OpenAI Conversation`
+7. Type your `API Key`, `API Base` and `API Version` used following the example below and hit submit:
 > - API Key: 1234567890abcdef1234567890abcdef <br>
 > - API Base: https://iotlabopenai.openai.azure.com/ <br>
 > - API Version: 2023-03-15-preview <br>
