@@ -1,0 +1,21 @@
+{
+  "config": {
+    "abort": {
+      "single_instance_allowed": "Já se encontra configurada. Só é permitida uma instância."
+    },
+    "error": {
+      "cannot_connect": "Falha na ligação",
+      "invalid_auth": "Autenticação invalida",
+      "unknown": "Erro desconhecido"
+    },
+    "step": {
+      "user": {
+        "data": {
+          "api_key": "Chave da API",
+          "api_base": "Base da API no  Azure",
+          "api_version": "Versão da API"
+        }
+      }
+    }
+  }
+}
