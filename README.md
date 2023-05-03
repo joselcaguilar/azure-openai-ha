@@ -63,7 +63,7 @@ Click on "Options".
 
 Options available:
 - **Prompt Template:**
-The starting text for the AI language model to generate new text from. This text can include information about your Home Assistant instance, devices, and areas and is written using Home Assistant Templating.
+The starting text for the AI language model to generate new text from. This text can include information about your Home Assistant instance, devices, and areas and is written using [Home Assistant Templating](https://www.home-assistant.io/docs/configuration/templating).
 
 - **Completion Model:** The name of the GPT language model deployed for text generation (i.e.- `my-gpt35-model`). You can find more details on the available models in the [Azure OpenAI Documentation](https://learn.microsoft.com/en-us/azure/cognitive-services/openai/concepts/models#finding-what-models-are-available).
 
@@ -89,6 +89,10 @@ More languages can be added [here](./custom_components/azure_openai_conversation
 Languages available:
 - English
 - Spanish
+- Dutch (credits to: @jobvk)
+- French (credits to: @jobvk)
+- German (credits to: @jobvk)
+- Portuguese (credits to: @ViPeR5000)
 
 ## Documentation
 
