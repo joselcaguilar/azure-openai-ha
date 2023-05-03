@@ -15,11 +15,11 @@
 [Azure OpenAI Conversation Custom Integration](https://github.com/joselcaguilar/azure-openai-ha) for Home Assistant
 </h3>
 
-# What This Is:
+# What This Is
 
 This custom integration adds a conversation agent powered by [Azure OpenAI](https://azure.microsoft.com/products/cognitive-services/openai-service) in Home Assistant, it's based on the original [OpenAI Conversation integration](https://www.home-assistant.io/integrations/openai_conversation/) for Home Assistant.
 
-# What It Does:
+# What It Does
 
 This conversation agent is unable to control your house. It can only query information that has been provided by Home Assistant. To be able to answer questions about your house, Home Assistant will need to provide OpenAI with the details of your house, which include areas, devices and their states.
 
@@ -36,18 +36,17 @@ This conversation agent is unable to control your house. It can only query infor
 - gpt-4
 - gpt-4-32k
 
-# Installation and Configuration via HACS
+# Installation and Configuration
 
 1. Ensure that the conversation integration is enabled, it allows you to converse with Home Assistant, add the line below to your `configuration.yaml`:
 ```yaml
 conversation:
 ```
-2. Go to HACS -> Integrations
-3. Download and install the [Azure OpenAI Conversation](https://my.home-assistant.io/redirect/hacs_repository/?owner=joselcaguilar&repository=azure-openai-ha&category=integration) integration
-4. Restart your Home Assistant instance
-5. Go to Settings -> Devices & Services -> Add Integration
-6. Search for `Azure OpenAI Conversation`
-7. Type your `API Key`, `API Base` and `API Version` used following the example below and hit submit:
+2. Download and install the integration from HACS: [Azure OpenAI Conversation](https://my.home-assistant.io/redirect/hacs_repository/?owner=joselcaguilar&repository=azure-openai-ha&category=integration)
+3. Restart your Home Assistant instance
+4. Go to Settings -> Devices & Services -> Add Integration
+5. Search for `Azure OpenAI Conversation`
+6. Type your `API Key`, `API Base` and `API Version` used following the example below and hit submit:
 > - API Key: 1234567890abcdef1234567890abcdef <br>
 > - API Base: https://iotlabopenai.openai.azure.com/ <br>
 > - API Version: 2023-03-15-preview <br>
