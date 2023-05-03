@@ -12,7 +12,7 @@
       "user": {
         "data": {
           "api_key": "Chave da API",
-          "api_base": "Base da API no  Azure",
+          "api_base": "Base da API no Azure",
           "api_version": "Versão da API"
         }
       }
