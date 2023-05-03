@@ -89,10 +89,10 @@ More languages can be added [here](./custom_components/azure_openai_conversation
 Languages available:
 - English
 - Spanish
-- Dutch (credits to: @jobvk)
-- French (credits to: @jobvk)
-- German (credits to: @jobvk)
-- Portuguese (credits to: @ViPeR5000)
+- Dutch (credits to: [@jobvk](https://github.com/jobvk))
+- French (credits to: [@jobvk](https://github.com/jobvk))
+- German (credits to: [@jobvk](https://github.com/jobvk))
+- Portuguese (credits to: [@ViPeR5000](https://github.com/ViPeR5000))
 
 ## Documentation
 
