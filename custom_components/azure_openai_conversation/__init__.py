@@ -3,13 +3,14 @@ from __future__ import annotations
 
 from functools import partial
 import logging
+from typing import Literal
 
 import openai
 from openai import error
 
 from homeassistant.components import conversation
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_API_KEY
+from homeassistant.const import CONF_API_KEY, MATCH_ALL
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady, TemplateError
 from homeassistant.helpers import intent, template
@@ -77,6 +78,11 @@ class OpenAIAgent(conversation.AbstractConversationAgent):
             "name": "Powered by Azure OpenAI",
             "url": "https://azure.microsoft.com/products/cognitive-services/openai-service",
         }
+
+    @property
+    def supported_languages(self) -> list[str] | Literal["*"]:
+        """Return a list of supported languages."""
+        return MATCH_ALL
 
     async def async_process(
         self, user_input: conversation.ConversationInput

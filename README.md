@@ -25,10 +25,17 @@ This conversation agent is unable to control your house. It can only query infor
 
 # Limitations
 
-- Home Assistant 2023.4.0+ is required
 - Supported [Azure OpenAI API Versions](https://learn.microsoft.com/en-us/azure/cognitive-services/openai/reference#completions):
   - 2023-03-15-preview
   - 2022-12-01
+- **Home Assistant versions** supported: Due to the breaking changes introduced by [Home Assistant Core](https://github.com/home-assistant/core/releases) for custom assistants, the Azure OpenAI Conversation integration is compatible with the following Home Assistant versions:
+<center>
+
+| Azure OpenAI Conversation Version | Home Assistant Version |
+| --------------------------------- | ---------------------- |
+| 0.x.y                             | 2023.4.x               |
+| 1.x.y                             | 2023.5.x               |
+</center>
 
 ## AI Models supported:
 
@@ -44,22 +51,26 @@ conversation:
 ```
 2. Download and install the integration from HACS: [Azure OpenAI Conversation](https://my.home-assistant.io/redirect/hacs_repository/?owner=joselcaguilar&repository=azure-openai-ha&category=integration)
 3. Restart your Home Assistant instance
-4. Go to Settings -> Devices & Services -> Add Integration
-5. Search for `Azure OpenAI Conversation`
-6. Type your `API Key`, `API Base` and `API Version` used following the example below and hit submit:
+4. Go to [Settings -> Devices & Services -> Add Integration -> Azure OpenAI Conversation](https://my.home-assistant.io/redirect/config_flow_start/?domain=azure_openai_conversation)
+5. Type your `API Key`, `API Base` and `API Version` used following the example below and hit submit:
 > - API Key: 1234567890abcdef1234567890abcdef <br>
 > - API Base: https://iotlabopenai.openai.azure.com/ <br>
 > - API Version: 2023-03-15-preview <br>
+
+#### **Home Assistant 2023.5.x users:**
+The custom assistant needs to be added from [Settings -> Voice assistants](https://my.home-assistant.io/redirect/voice_assistants/). Once it's added, you can select the custom assistant as favorite to be used by default:
+
+<center>
+![Voice Assistants](https://raw.githubusercontent.com/joselcaguilar/azure-openai-ha/main/.attachments/customAssistant.png)
+</center>
 
 #  Options
 
 Options for Azure OpenAI Conversation can be set via the user interface, by taking the following steps:
 
 1. Browse to your Home Assistant instance.
-2. In the sidebar click on Settings.
-3. From the configuration menu select: Devices & Services.
-4. If multiple instances of OpenAI Conversation are configured, choose the instance you want to configure.
-Click on "Options".
+2. In the sidebar click on [Settings -> Devices & Services](https://my.home-assistant.io/redirect/integrations/).
+3. If multiple instances of OpenAI Conversation are configured, choose the instance you want to modify and click on "Configure".
 
 Options available:
 - **Prompt Template:**
