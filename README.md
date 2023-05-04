@@ -57,11 +57,11 @@ conversation:
 > - API Base: https://iotlabopenai.openai.azure.com/ <br>
 > - API Version: 2023-03-15-preview <br>
 
-#### **Home Assistant 2023.5.x users:**
+#### **<u>Home Assistant 2023.5.x users</u>**
 The custom assistant needs to be added from [Settings -> Voice assistants](https://my.home-assistant.io/redirect/voice_assistants/). Once it's added, you can select the custom assistant as favorite to be used by default:
 
 <center>
-![Voice Assistants](https://raw.githubusercontent.com/joselcaguilar/azure-openai-ha/main/.attachments/customAssistant.png)
+<img src="https://raw.githubusercontent.com/joselcaguilar/azure-openai-ha/main/.attachments/customAssistant.png" alt="Voice Assistants" width=65%></img>
 </center>
 
 #  Options
@@ -113,9 +113,9 @@ The [README](./README.md) file will be used for Documentation, if it's expanded 
 
 # Funding
 
-|                                                                       GitHub                                                                       |                                                            Buy me a coffee                                                             |
-| :------------------------------------------------------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------------------------------: |
-| <a href="https://github.com/sponsors/joselcaguilar"><img src="https://i.imgur.com/v2T6P4w.png"  alt="GitHub Sponsor" width="100" height="100"></a> | [![Buy Me A Coffee](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/joselcaguilar) |
+|                                                                      GitHub                                                                       |                                                            Buy me a coffee                                                             |
+| :-----------------------------------------------------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------------------------------: |
+| <a href="https://github.com/sponsors/joselcaguilar"><img src="https://i.imgur.com/v2T6P4w.png" alt="GitHub Sponsor" width="100" height="100"></a> | [![Buy Me A Coffee](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/joselcaguilar) |
 
 # License
 
