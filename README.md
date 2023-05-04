@@ -51,15 +51,18 @@ conversation:
 ```
 2. Download and install the integration from HACS: [Azure OpenAI Conversation](https://my.home-assistant.io/redirect/hacs_repository/?owner=joselcaguilar&repository=azure-openai-ha&category=integration)
 3. Restart your Home Assistant instance
-4. Go to [Settings -> Devices & Services -> Add Integration -> `Azure OpenAI Conversation`](https://my.home-assistant.io/redirect/config_flow_start/?domain=azure_openai_conversation)
+4. Go to [Settings -> Devices & Services -> Add Integration -> Azure OpenAI Conversation](https://my.home-assistant.io/redirect/config_flow_start/?domain=azure_openai_conversation)
 5. Type your `API Key`, `API Base` and `API Version` used following the example below and hit submit:
 > - API Key: 1234567890abcdef1234567890abcdef <br>
 > - API Base: https://iotlabopenai.openai.azure.com/ <br>
 > - API Version: 2023-03-15-preview <br>
 
-> Home Assistant 2023.5.x users needs to add the custom assistant from [Settings -> Voice assistants](https://my.home-assistant.io/redirect/voice_assistants/). Once it's added, you can select the custom assistant as favorite to be used by default:
+#### **Home Assistant 2023.5.x users:**
+The custom assistant needs to be added from [Settings -> Voice assistants](https://my.home-assistant.io/redirect/voice_assistants/). Once it's added, you can select the custom assistant as favorite to be used by default:
 
+<center>
 ![Voice Assistants](https://raw.githubusercontent.com/joselcaguilar/azure-openai-ha/main/.attachments/customAssistant.png)
+</center>
 
 #  Options
 
