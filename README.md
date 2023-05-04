@@ -57,7 +57,7 @@ conversation:
 > - API Base: https://iotlabopenai.openai.azure.com/ <br>
 > - API Version: 2023-03-15-preview <br>
 
-#### **Home Assistant 2023.5.x users:**
+#### **<u>Home Assistant 2023.5.x users</u>**
 The custom assistant needs to be added from [Settings -> Voice assistants](https://my.home-assistant.io/redirect/voice_assistants/). Once it's added, you can select the custom assistant as favorite to be used by default:
 
 <center>
