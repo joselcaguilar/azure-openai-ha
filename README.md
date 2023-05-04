@@ -60,9 +60,9 @@ conversation:
 #### **<u>Home Assistant 2023.5.x users</u>**
 The custom assistant needs to be added from [Settings -> Voice assistants](https://my.home-assistant.io/redirect/voice_assistants/). Once it's added, you can select the custom assistant as favorite to be used by default:
 
-<center>
-<img src="https://raw.githubusercontent.com/joselcaguilar/azure-openai-ha/main/.attachments/customAssistant.png" alt="Voice Assistants" width=65%></img>
-</center>
+<p align="center">
+<img src="https://raw.githubusercontent.com/joselcaguilar/azure-openai-ha/main/.attachments/customAssistant.png" alt="Voice Assistants" width=90%></img>
+</p>
 
 #  Options
 
