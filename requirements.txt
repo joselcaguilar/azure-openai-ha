@@ -2,4 +2,4 @@ colorlog==6.7.0
 homeassistant==2023.4.0
 pip>=21.0,<23.2
 ruff==0.0.269
-openai==0.27.6
+openai==0.27.7
