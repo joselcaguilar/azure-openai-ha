@@ -34,7 +34,7 @@ This conversation agent is unable to control your house. It can only query infor
 | Azure OpenAI Conversation Version | Home Assistant Version |
 | --------------------------------- | ---------------------- |
 | 0.x.y                             | 2023.4.x               |
-| 1.x.y                             | 2023.5.x               |
+| 1.x.y                             | 2023.5.x, 2023.6.x     |
 </center>
 
 ## AI Models supported:
