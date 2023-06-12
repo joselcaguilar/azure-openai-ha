@@ -34,7 +34,7 @@ This conversation agent is unable to control your house. It can only query infor
 | Azure OpenAI Conversation Version | Home Assistant Version |
 | --------------------------------- | ---------------------- |
 | 0.x.y                             | 2023.4.x               |
-| 1.x.y                             | 2023.5.x, 2023.6.x     |
+| 1.x.y                             | 2023.5+                |
 </center>
 
 ## AI Models supported:
@@ -57,7 +57,7 @@ conversation:
 > - API Base: https://iotlabopenai.openai.azure.com/ <br>
 > - API Version: 2023-03-15-preview <br>
 
-#### **<u>Home Assistant 2023.5.x users</u>**
+#### **<u>Home Assistant 2023.5+ users</u>**
 The custom assistant needs to be added from [Settings -> Voice assistants](https://my.home-assistant.io/redirect/voice_assistants/). Once it's added, you can select the custom assistant as favorite to be used by default:
 
 <p align="center">
