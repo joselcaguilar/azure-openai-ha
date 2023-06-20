@@ -26,8 +26,11 @@ This conversation agent is unable to control your house. It can only query infor
 # Limitations
 
 - Supported [Azure OpenAI API Versions](https://learn.microsoft.com/en-us/azure/cognitive-services/openai/reference#completions):
+  - 2023-06-01-preview
+  - 2023-05-15
   - 2023-03-15-preview
   - 2022-12-01
+
 - **Home Assistant versions** supported: Due to the breaking changes introduced by [Home Assistant Core](https://github.com/home-assistant/core/releases) for custom assistants, the Azure OpenAI Conversation integration is compatible with the following Home Assistant versions:
 <center>
 
