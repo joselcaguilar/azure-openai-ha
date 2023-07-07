@@ -1,0 +1,21 @@
+{
+  "config": {
+    "abort": {
+      "single_instance_allowed": "已配置過設定，僅能配置一次"
+    },
+    "error": {
+      "cannot_connect": "連結失敗",
+      "invalid_auth": "無效的驗證",
+      "unknown": "非預期的錯誤"
+    },
+    "step": {
+      "user": {
+        "data": {
+          "api_key": "API 金鑰",
+          "api_base": "API 端點",
+          "api_version": "API version"
+        }
+      }
+    }
+  }
+}
