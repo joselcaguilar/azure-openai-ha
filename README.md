@@ -107,6 +107,7 @@ Languages available:
 - French (credits to: [@jobvk](https://github.com/jobvk))
 - German (credits to: [@jobvk](https://github.com/jobvk))
 - Portuguese (credits to: [@ViPeR5000](https://github.com/ViPeR5000))
+- Chinese (credits to: [@weiting-tw](https://github.com/weiting-tw))
 
 ## Documentation
 
