@@ -1,4 +1,5 @@
 """The OpenAI Conversation integration."""
+
 from __future__ import annotations
 
 from functools import partial
@@ -6,8 +7,7 @@ import logging
 from typing import Literal
 
 import openai
-from openai import error
-
+from openai import error, AzureOpenAI
 from homeassistant.components import conversation
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_API_KEY, MATCH_ALL
@@ -37,9 +37,12 @@ _LOGGER = logging.getLogger(__name__)
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up OpenAI Conversation from a config entry."""
     openai.api_key = entry.data[CONF_API_KEY]
-    openai.api_type = "azure"
-    openai.api_base = entry.data[CONF_API_BASE]
-    openai.api_version = entry.data[CONF_API_VERSION]
+    openai.api_base = entry.data[
+        CONF_API_BASE
+    ]  # azure endpoint (https://....azure.com)
+    openai.api_version = entry.data[
+        CONF_API_VERSION
+    ]  # get from target_uri, api-version parameter
 
     try:
         await hass.async_add_executor_job(
@@ -70,6 +73,11 @@ class OpenAIAgent(conversation.AbstractConversationAgent):
         self.hass = hass
         self.entry = entry
         self.history: dict[str, list[dict]] = {}
+        self.client = AzureOpenAI(
+            api_key=openai.api_key,
+            api_version=openai.api_version,
+            azure_endpoint=openai.api_base,
+        )
 
     @property
     def attribution(self):
@@ -118,14 +126,22 @@ class OpenAIAgent(conversation.AbstractConversationAgent):
         _LOGGER.debug("Prompt for %s: %s", model, messages)
 
         try:
-            result = await openai.ChatCompletion.acreate(
+            result = self.client.completions.create(
+                model=model,
+                prompt=messages,
+                max_token=max_tokens,
+                top_p=top_p,
+                temperature=temperature,
+                user=conversation_id,
+            )
+            """result = await openai.ChatCompletion.acreate(
                 engine=model,
                 messages=messages,
                 max_tokens=max_tokens,
                 top_p=top_p,
                 temperature=temperature,
                 user=conversation_id,
-            )
+            )"""
         except error.OpenAIError as err:
             intent_response = intent.IntentResponse(language=user_input.language)
             intent_response.async_set_error(
