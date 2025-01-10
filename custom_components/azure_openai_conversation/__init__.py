@@ -45,7 +45,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
                 translation_placeholders={"config_entry": entry_id},
             )
 
-        client: openai.AsyncClient = entry.runtime_data
+        client: openai.AsyncAzureOpenAI = entry.runtime_data
 
         try:
             response = await client.images.generate(
