@@ -12,8 +12,8 @@
       "user": {
         "data": {
           "api_key": "API Key",
-          "api_base": "API Base in Azure",
-          "api_version": "API version"
+          "api_base": "API Base URL in Azure. Get this from the target URI under EndPoint in Azure AI Foundry or in the Azure portal (https://xyz.openai.azure.com)",
+          "api_version": "API version. Get this from the target URI under EndPoint in Azure AI Foundry or in the Azure portal (2024-08-01-preview)"
         }
       }
     }

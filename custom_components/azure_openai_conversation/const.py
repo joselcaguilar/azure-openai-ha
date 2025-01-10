@@ -1,7 +1,28 @@
 """Constants for the Azure OpenAI Conversation Integration."""
 
+import logging
+
 DOMAIN = "azure_openai_conversation"
+LOGGER = logging.getLogger(__package__)
+
+CONF_RECOMMENDED = "recommended"
 CONF_PROMPT = "prompt"
+CONF_CHAT_MODEL = "chat_model"
+CONF_MAX_TOKENS = "max_tokens"
+CONF_TOP_P = "top_p"
+CONF_TEMPERATURE = "temperature"
+# Custom configuration entries
+CONF_API_BASE = "api_base"
+CONF_API_VERSION = "api_version"
+
+RECOMMENDED_CHAT_MODEL = "gpt-4o-mini"
+RECOMMENDED_MAX_TOKENS = 150
+RECOMMENDED_TOP_P = 1.0
+RECOMMENDED_TEMPERATURE = 1.0
+
+DEFAULT_CHAT_MODEL = "gpt-3.5-turbo"
+DEFAULT_TOP_P = 1
+DEFAULT_TEMPERATURE = 0.5
 DEFAULT_PROMPT = """This smart home is controlled by Home Assistant.
 
 An overview of the areas and the devices in this smart home:
@@ -23,15 +44,3 @@ Answer the user's questions about the world truthfully.
 
 If the user wants to control a device, reject the request and suggest using the Home Assistant app.
 """
-CONF_CHAT_MODEL = "chat_model"
-DEFAULT_CHAT_MODEL = "gpt-3.5-turbo"
-CONF_MAX_TOKENS = "max_tokens"
-DEFAULT_MAX_TOKENS = 150
-CONF_TOP_P = "top_p"
-DEFAULT_TOP_P = 1
-CONF_TEMPERATURE = "temperature"
-DEFAULT_TEMPERATURE = 0.5
-
-# Custom configuration entries
-CONF_API_BASE = "api_base"
-CONF_API_VERSION = "api_version"
