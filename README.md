@@ -38,11 +38,13 @@ This is equivalent to the built-in [OpenAI Conversation integration](https://www
 1. Download and install the integration from HACS by adding this repo as a custom repo and then installing Azure OpenAI Conversation. Notice that the [Azure OpenAI Conversation](https://my.home-assistant.io/redirect/hacs_repository/?owner=joselcaguilar&repository=azure-openai-ha&category=integration) integration available in HACS by default has not been updated for years and no longer works, so be sure to pick the right one.
 2. Restart your Home Assistant instance
 3. Go to [Settings -> Devices & Services -> Add Integration -> Azure OpenAI Conversation](https://my.home-assistant.io/redirect/config_flow_start/?domain=azure_openai_conversation)
-4. Type your `API Key`, `API Base` and `API Version` used following the example below and hit submit:
+4.  To have a conversation, made sure to deploy a chat completion model (like gpt-35-turbo or gpt-4o) in Azure. 
+5. If you want to generate images using the available `generate_image` service, make sure to deploy the `dall-e-3` model as well.
+5. Type your `API Key`, `API Base` and `API Version` used following the example below and hit submit:
 > - API Key: 1234567890abcdef1234567890abcdef <br>
 > - API Base: https://iotlabopenai.openai.azure.com/ <br>
 > - API Version: 2023-03-15-preview <br>
-5. Configure your assistant to use the Azure OpenAI Conversation.
+6. Configure your assistant to use the Azure OpenAI Conversation.
 
 #  Options
 
