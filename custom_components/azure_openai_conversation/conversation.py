@@ -187,7 +187,8 @@ class OpenAIConversationEntity(
                 conversation_id = user_input.conversation_id
 
         if history is None:
-            history = ChatHistory(user_input.extra_system_prompt)
+            # history = ChatHistory(user_input.extra_system_prompt)
+            history = ChatHistory()
 
         if (
             user_input.context
