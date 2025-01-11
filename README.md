@@ -9,8 +9,8 @@
 
 [buymeacoffee]: https://www.buymeacoffee.com/dutchdatadude
 [buymeacoffee-shield]: https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png
-[release-url]: https://github.com/jeroenterheerdt/HASmartIrrigation/releases
-[release-badge]: https://img.shields.io/github/v/release/jeroenterheerdt/HASmartIrrigation?style=flat-square
+[release-url]: https://github.com/jeroenterheerdt/azure-openai-ha/releases
+[release-badge]: https://img.shields.io/github/v/release/jeroenterheerdt/azure-openai-ha?style=flat-square
 
 <p align="center">
 <img src="https://raw.githubusercontent.com/joselcaguilar/azure-openai-ha/main/.attachments/icon.png#gh-light-mode-only">
