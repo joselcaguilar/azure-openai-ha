@@ -229,13 +229,13 @@ class OpenAIConversationEntity(
         if llm_api:
             prompt_parts.append(llm_api.api_prompt)
 
-        extra_system_prompt = (
-            # Take new system prompt if one was given
-            user_input.extra_system_prompt or history.extra_system_prompt
-        )
+        # extra_system_prompt = (
+        #    # Take new system prompt if one was given
+        #    user_input.extra_system_prompt or history.extra_system_prompt
+        # )
 
-        if extra_system_prompt:
-            prompt_parts.append(extra_system_prompt)
+        # if extra_system_prompt:
+        #    prompt_parts.append(extra_system_prompt)
 
         prompt = "\n".join(prompt_parts)
 
