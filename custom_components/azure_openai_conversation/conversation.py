@@ -241,7 +241,7 @@ class OpenAIConversationEntity(
 
         # Create a copy of the variable because we attach it to the trace
         history = ChatHistory(
-            extra_system_prompt,
+            None,  # extra_system_prompt,
             [
                 ChatCompletionSystemMessageParam(role="system", content=prompt),
                 *history.messages[1:],
