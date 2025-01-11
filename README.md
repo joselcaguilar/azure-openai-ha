@@ -35,7 +35,7 @@ This is equivalent to the built-in [OpenAI Conversation integration](https://www
 - **Home Assistant versions** required: 2025.1.0 +
 
 # Installation and Configuration
-1. Download and install the integration from HACS by adding this repo as a custom repo and then installing Azure OpenAI Conversation v2. Notice that the [Azure OpenAI Conversation](https://my.home-assistant.io/redirect/hacs_repository/?owner=joselcaguilar&repository=azure-openai-ha&category=integration) integration available in HACS by default has not been updated for years and no longer works, so be sure to pick the right one.
+1. Download and install the integration by getting the zip from releases and unzipping into your custom_components folder. Notice that the [Azure OpenAI Conversation](https://my.home-assistant.io/redirect/hacs_repository/?owner=joselcaguilar&repository=azure-openai-ha&category=integration) integration available in HACS by default has not been updated for years and no longer works, and while we wait for HACS to replace it this working version you need to do the install manually.
 2. Restart your Home Assistant instance
 3. Go to [Settings -> Devices & Services -> Add Integration -> Azure OpenAI Conversation](https://my.home-assistant.io/redirect/config_flow_start/?domain=azure_openai_conversation)
 4.  To have a conversation, made sure to deploy a chat completion model (like gpt-35-turbo or gpt-4o) in Azure. 
