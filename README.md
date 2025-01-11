@@ -1,9 +1,8 @@
-[![hacs_badge](https://img.shields.io/badge/My_HACS-Azure_OpenAI_Conversation-41BDF5?logo=homeassistant&logoColor=white)](https://my.home-assistant.io/redirect/hacs_repository/?owner=joselcaguilar&repository=azure-openai-ha&category=integration)
-[![Validate workflow](https://img.shields.io/github/actions/workflow/status/joselcaguilar/azure-openai-ha/validate.yaml?label=Validate&logo=GitHub)](https://github.com/joselcaguilar/azure-openai-ha/actions/workflows/validate.yaml)
-[![Lint workflow](https://img.shields.io/github/actions/workflow/status/joselcaguilar/azure-openai-ha/lint.yaml?label=Lint&logo=GitHub)](https://github.com/joselcaguilar/azure-openai-ha/actions/workflows/lint.yaml)
-![GitHub all releases](https://img.shields.io/github/downloads/joselcaguilar/azure-openai-ha/total?color=d9810f&label=Downloads&logo=GitHub)
-[![GitHub Sponsor](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86)](https://github.com/sponsors/joselcaguilar)
-[![BuyMeACoffee](https://img.shields.io/badge/-Buy_me_a%C2%A0coffee-gray?logo=buy-me-a-coffee)](https://www.buymeacoffee.com/joselcaguilar)
+[![release][release-badge]][release-url]
+
+[![Support the author on Patreon][patreon-shield]][patreon]
+
+[![Buy me a coffee][buymeacoffee-shield]][buymeacoffee]
 
 <p align="center">
 <img src="https://raw.githubusercontent.com/joselcaguilar/azure-openai-ha/main/.attachments/icon.png#gh-light-mode-only">
