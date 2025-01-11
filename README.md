@@ -9,8 +9,8 @@
 
 [buymeacoffee]: https://www.buymeacoffee.com/dutchdatadude
 [buymeacoffee-shield]: https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png
-[release-url]: https://github.com/jeroenterheerdt/azure-openai-ha/releases
-[release-badge]: https://img.shields.io/github/v/release/jeroenterheerdt/azure-openai-ha?style=flat-square
+[release-url]: https://github.com/jeroenterheerdt/azure-openai-ha-v2/releases
+[release-badge]: https://img.shields.io/github/v/release/jeroenterheerdt/azure-openai-ha-v2?style=flat-square
 
 <p align="center">
 <img src="https://raw.githubusercontent.com/joselcaguilar/azure-openai-ha/main/.attachments/icon.png#gh-light-mode-only">
@@ -35,7 +35,7 @@ This is equivalent to the built-in [OpenAI Conversation integration](https://www
 - **Home Assistant versions** required: 2025.1.0 +
 
 # Installation and Configuration
-1. Download and install the integration from HACS by adding this repo as a custom repo and then installing Azure OpenAI Conversation. Notice that the [Azure OpenAI Conversation](https://my.home-assistant.io/redirect/hacs_repository/?owner=joselcaguilar&repository=azure-openai-ha&category=integration) integration available in HACS by default has not been updated for years and no longer works, so be sure to pick the right one.
+1. Download and install the integration from HACS by adding this repo as a custom repo and then installing Azure OpenAI Conversation v2. Notice that the [Azure OpenAI Conversation](https://my.home-assistant.io/redirect/hacs_repository/?owner=joselcaguilar&repository=azure-openai-ha&category=integration) integration available in HACS by default has not been updated for years and no longer works, so be sure to pick the right one.
 2. Restart your Home Assistant instance
 3. Go to [Settings -> Devices & Services -> Add Integration -> Azure OpenAI Conversation](https://my.home-assistant.io/redirect/config_flow_start/?domain=azure_openai_conversation)
 4.  To have a conversation, made sure to deploy a chat completion model (like gpt-35-turbo or gpt-4o) in Azure. 
@@ -69,11 +69,11 @@ The maximum number of words or "tokens" that the AI model should generate in its
 
 # Changelog
 
-Please reference the [release history](https://github.com/jeroenterheerdt/azure-openai-ha/releases).
+Please reference the [release history](https://github.com/jeroenterheerdt/azure-openai-ha-v2/releases).
 
 # How to Help
 
-While it'd be nice to have more developers, you can contribute without knowing how to code. You can [file bugs/feature requests](https://github.com/jeroenterheerdt/azure-openai-ha/issues), or you can help with other tasks like [UI Translations](#ui-translations) and updating the [README](./README.md).
+While it'd be nice to have more developers, you can contribute without knowing how to code. You can [file bugs/feature requests](https://github.com/jeroenterheerdt/azure-openai-ha-v2/issues), or you can help with other tasks like [UI Translations](#ui-translations) and updating the [README](./README.md).
 
 ## UI Translations
 
