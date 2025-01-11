@@ -260,21 +260,21 @@ class OpenAIConversationEntity(
         # To prevent infinite loops, we limit the number of iterations
         for _iteration in range(MAX_TOOL_ITERATIONS):
             try:
-                result = await client.completions.create(
+                result = await client.chat.completions.create(
                     model=options.get(CONF_CHAT_MODEL, RECOMMENDED_CHAT_MODEL),
-                    prompt=history.messages,
-                    tools=tools or NOT_GIVEN,
+                    messages=history.messages,
+                    # tools=tools or NOT_GIVEN,
                     max_tokens=options.get(CONF_MAX_TOKENS, RECOMMENDED_MAX_TOKENS),
                     top_p=options.get(CONF_TOP_P, RECOMMENDED_TOP_P),
                     temperature=options.get(CONF_TEMPERATURE, RECOMMENDED_TEMPERATURE),
                     user=conversation_id,
                 )
             except openai.OpenAIError as err:
-                LOGGER.error("Error talking to OpenAI: %s", err)
+                LOGGER.error("Error talking to Azure OpenAI: %s", err)
                 intent_response = intent.IntentResponse(language=user_input.language)
                 intent_response.async_set_error(
                     intent.IntentResponseErrorCode.UNKNOWN,
-                    "Sorry, I had a problem talking to OpenAI",
+                    "Sorry, I had a problem talking to Azure OpenAI. Please check your configuration settings and confirm you have selected the right model in the options of your Azure OpenAI conversation integration.",
                 )
                 return conversation.ConversationResult(
                     response=intent_response, conversation_id=conversation_id

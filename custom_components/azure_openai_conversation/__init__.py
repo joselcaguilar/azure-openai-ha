@@ -88,12 +88,11 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 
 async def async_setup_entry(hass: HomeAssistant, entry: OpenAIConfigEntry) -> bool:
     """Set up Azure OpenAI Conversation from a config entry."""
+
     client = openai.AsyncAzureOpenAI(
+        azure_endpoint=entry.data[CONF_API_BASE],
+        api_version=entry.data[CONF_API_VERSION],
         api_key=entry.data[CONF_API_KEY],
-        base_url=entry.data[CONF_API_BASE],  # azure endpoint (https://....azure.com),
-        api_version=entry.data[
-            CONF_API_VERSION
-        ],  # get from target_uri, api-version parameter
         http_client=get_async_client(hass),
     )
 
@@ -113,26 +112,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: OpenAIConfigEntry) -> bo
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     return True
-    """openai.api_key = entry.data[CONF_API_KEY]
-    openai.api_base = entry.data[
-        CONF_API_BASE
-    ]  # azure endpoint (https://....azure.com)
-    openai.api_version = entry.data[
-        CONF_API_VERSION
-    ]  # get from target_uri, api-version parameter
-
-    try:
-        await hass.async_add_executor_job(
-            partial(openai.Model.list, request_timeout=10)
-        )
-    except error.AuthenticationError as err:
-        _LOGGER.error("Invalid API key: %s", err)
-        return False
-    except error.OpenAIError as err:
-        raise ConfigEntryNotReady(err) from err
-
-    conversation.async_set_agent(hass, entry, OpenAIAgent(hass, entry))
-    return True"""
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:

@@ -10,10 +10,63 @@
     },
     "step": {
       "user": {
+        "description": "Get the API Base URL and version from the target URI under EndPoint in Azure AI Foundry or in the Azure portal.",
         "data": {
           "api_key": "API Key",
-          "api_base": "API Base URL in Azure. Get this from the target URI under EndPoint in Azure AI Foundry or in the Azure portal (https://xyz.openai.azure.com)",
-          "api_version": "API version. Get this from the target URI under EndPoint in Azure AI Foundry or in the Azure portal (2024-08-01-preview)"
+          "api_base": "API Base URL",
+          "api_version": "API version"
+        },
+        "data_description": {
+          "api_key": "",
+          "api_base": "Example base URL: https://xyz.openai.azure.com",
+          "api_version": "Example API version: 2024-08-01-preview"
+        }
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "prompt": "Instructions",
+          "llm_hass_api": "Do you want to use the LLM HASS API?",
+          "recommended": "Recommended model settings",
+          "chat_model": "What model do you want to use? Note that you need to deploy that model before you can use it.",
+          "max_tokens": "Maximum tokens to return in response",
+          "top_p": "Top P",
+          "temperature": "Temperature"
+        },
+        "data_description": {
+          "prompt": "Instruct how the LLM should respond. This can be a template."
+        }
+      }
+    }
+  },
+  "services": {
+    "generate_image": {
+      "name": "Generate image",
+      "description": "Turn a prompt into an image",
+      "fields": {
+        "config_entry": {
+          "name": "Config Entry",
+          "description": "The config entry to use for this action"
+        },
+        "prompt": {
+          "name": "Prompt",
+          "description": "The text to turn into an image",
+          "example": "A photo of a dog"
+        },
+        "size": {
+          "name": "Size",
+          "description": "The size of the image to generate"
+        },
+        "quality": {
+          "name": "Quality",
+          "description": "The quality of the image that will be generated"
+        },
+        "style": {
+          "name": "Style",
+          "description": "The style of the generated image"
         }
       }
     }
