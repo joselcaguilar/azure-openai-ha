@@ -4,10 +4,10 @@
   "codeowners": ["@jeroenterheerdt"],
   "config_flow": true,
   "dependencies": ["conversation"],
-  "documentation": "https://github.com/jeroenterheerdt/azure-openai-ha",
+  "documentation": "https://github.com/jeroenterheerdt/azure-openai-ha-v2",
   "integration_type": "service",
   "iot_class": "cloud_polling",
-  "issue_tracker": "https://github.com/jeroenterheerdt/azure-openai-ha/issues",
+  "issue_tracker": "https://github.com/jeroenterheerdt/azure-openai-ha-v2/issues",
   "requirements": ["openai==1.59.6"],
   "version": "2025.01.0"
 }
