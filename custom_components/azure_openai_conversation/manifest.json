@@ -4,10 +4,10 @@
   "codeowners": ["@joselcaguilar"],
   "config_flow": true,
   "dependencies": ["conversation"],
-  "documentation": "https://github.com/joselcaguilar/azure-openai-ha-v2",
+  "documentation": "https://github.com/joselcaguilar/azure-openai-ha",
   "integration_type": "service",
   "iot_class": "cloud_polling",
-  "issue_tracker": "https://github.com/joselcaguilar/azure-openai-ha-v2/issues",
+  "issue_tracker": "https://github.com/joselcaguilar/azure-openai-ha/issues",
   "requirements": ["openai==1.59.6"],
   "version": "2025.01.0"
 }
