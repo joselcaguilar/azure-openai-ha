@@ -1,16 +1,9 @@
-[![release][release-badge]][release-url]
-
-[![Support the author on Patreon][patreon-shield]][patreon]
-
-[![Buy me a coffee][buymeacoffee-shield]][buymeacoffee]
-
-[patreon-shield]: https://frenck.dev/wp-content/uploads/2019/12/patreon.png
-[patreon]: https://www.patreon.com/dutchdatadude
-
-[buymeacoffee]: https://www.buymeacoffee.com/dutchdatadude
-[buymeacoffee-shield]: https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png
-[release-url]: https://github.com/jeroenterheerdt/azure-openai-ha-v2/releases
-[release-badge]: https://img.shields.io/github/v/release/jeroenterheerdt/azure-openai-ha-v2?style=flat-square
+[![hacs_badge](https://img.shields.io/badge/My_HACS-Azure_OpenAI_Conversation-41BDF5?logo=homeassistant&logoColor=white)](https://my.home-assistant.io/redirect/hacs_repository/?owner=joselcaguilar&repository=azure-openai-ha&category=integration)
+[![Validate workflow](https://img.shields.io/github/actions/workflow/status/joselcaguilar/azure-openai-ha/validate.yaml?label=Validate&logo=GitHub)](https://github.com/joselcaguilar/azure-openai-ha/actions/workflows/validate.yaml)
+[![Lint workflow](https://img.shields.io/github/actions/workflow/status/joselcaguilar/azure-openai-ha/lint.yaml?label=Lint&logo=GitHub)](https://github.com/joselcaguilar/azure-openai-ha/actions/workflows/lint.yaml)
+![GitHub all releases](https://img.shields.io/github/downloads/joselcaguilar/azure-openai-ha/total?color=d9810f&label=Downloads&logo=GitHub)
+[![GitHub Sponsor](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86)](https://github.com/sponsors/joselcaguilar)
+[![BuyMeACoffee](https://img.shields.io/badge/-Buy_me_a%C2%A0coffee-gray?logo=buy-me-a-coffee)](https://www.buymeacoffee.com/joselcaguilar)
 
 <p align="center">
 <img src="https://raw.githubusercontent.com/joselcaguilar/azure-openai-ha/main/.attachments/icon.png#gh-light-mode-only">
@@ -19,7 +12,7 @@
 
 <h3 align="center">
 
-[Azure OpenAI Conversation Custom Integration](https://github.com/jeroenterheerdt/azure-openai-ha) for Home Assistant
+[Azure OpenAI Conversation Custom Integration](https://github.com/joselcaguilar/azure-openai-ha) for Home Assistant
 </h3>
 
 # What This Is
@@ -32,10 +25,10 @@ This is equivalent to the built-in [OpenAI Conversation integration](https://www
 
 # Limitations
 
-- **Home Assistant versions** required: 2025.1.0 +
+- **Home Assistant versions** required: 2023.5+
 
 # Installation and Configuration
-1. Download and install the integration by getting the zip from releases and unzipping into your custom_components folder. Notice that the [Azure OpenAI Conversation](https://my.home-assistant.io/redirect/hacs_repository/?owner=joselcaguilar&repository=azure-openai-ha&category=integration) integration available in HACS by default has not been updated for years and no longer works, and while we wait for HACS to replace it this working version you need to do the install manually.
+1. Download and install the integration from HACS: [Azure OpenAI Conversation](https://my.home-assistant.io/redirect/hacs_repository/?owner=joselcaguilar&repository=azure-openai-ha&category=integration).
 2. Restart your Home Assistant instance
 3. Go to [Settings -> Devices & Services -> Add Integration -> Azure OpenAI Conversation](https://my.home-assistant.io/redirect/config_flow_start/?domain=azure_openai_conversation)
 4.  To have a conversation, made sure to deploy a chat completion model (like gpt-35-turbo or gpt-4o) in Azure. 
@@ -69,11 +62,11 @@ The maximum number of words or "tokens" that the AI model should generate in its
 
 # Changelog
 
-Please reference the [release history](https://github.com/jeroenterheerdt/azure-openai-ha-v2/releases).
+Please reference the [release history](https://github.com/joselcaguilar/azure-openai-ha/releases).
 
 # How to Help
 
-While it'd be nice to have more developers, you can contribute without knowing how to code. You can [file bugs/feature requests](https://github.com/jeroenterheerdt/azure-openai-ha-v2/issues), or you can help with other tasks like [UI Translations](#ui-translations) and updating the [README](./README.md).
+While it'd be nice to have more developers, you can contribute without knowing how to code. You can [file bugs/feature requests](https://github.com/joselcaguilar/azure-openai-ha/issues), or you can help with other tasks like [UI Translations](#ui-translations) and updating the [README](./README.md).
 
 ## UI Translations
 
