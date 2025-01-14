@@ -81,6 +81,12 @@ The [README](./README.md) file will be used for Documentation, if it's expanded 
 
 > **Disclaimer:** Don't worry about making mistakes as we can revert using the history 😊.
 
+# Funding
+
+|                                                                      GitHub                                                                       |                                                            Buy me a coffee                                                             |
+| :-----------------------------------------------------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------------------------------: |
+| <a href="https://github.com/sponsors/joselcaguilar"><img src="https://i.imgur.com/v2T6P4w.png" alt="GitHub Sponsor" width="100" height="100"></a> | [![Buy Me A Coffee](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/joselcaguilar) |
+
 # License
 
 [MIT](LICENSE) - By providing a contribution, you agree the contribution is licensed under MIT.
