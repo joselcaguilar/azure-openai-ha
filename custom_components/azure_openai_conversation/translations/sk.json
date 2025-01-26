@@ -1,0 +1,21 @@
+{
+  "config": {
+    "abort": {
+      "single_instance_allowed": "Už je nakonfigurovaný. Je možná len jedna konfigurácia."
+    },
+    "error": {
+      "cannot_connect": "Nepodarilo sa pripojiť",
+      "invalid_auth": "Neplatné overenie",
+      "unknown": "Neočakávaná chyba"
+    },
+    "step": {
+      "user": {
+        "data": {
+          "api_key": "API kľúč",
+          "api_base": "API základňa v Azure",
+          "api_version": "API verzia"
+        }
+      }
+    }
+  }
+}
