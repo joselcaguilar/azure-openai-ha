@@ -9,7 +9,7 @@ import openai
 from openai._types import NOT_GIVEN
 from openai.types.chat import (
     ChatCompletionAssistantMessageParam,
-    ChatCompletionMessage,
+    ChatCompletionMessage,2023-12-01-preview
     ChatCompletionMessageParam,
     ChatCompletionMessageToolCallParam,
     ChatCompletionSystemMessageParam,
@@ -264,7 +264,7 @@ class OpenAIConversationEntity(
                 result = await client.chat.completions.create(
                     model=options.get(CONF_CHAT_MODEL, RECOMMENDED_CHAT_MODEL),
                     messages=history.messages,
-                    # tools=tools or NOT_GIVEN,
+                    tools=tools or NOT_GIVEN,
                     max_tokens=options.get(CONF_MAX_TOKENS, RECOMMENDED_MAX_TOKENS),
                     top_p=options.get(CONF_TOP_P, RECOMMENDED_TOP_P),
                     temperature=options.get(CONF_TEMPERATURE, RECOMMENDED_TEMPERATURE),
