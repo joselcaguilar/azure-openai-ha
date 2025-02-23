@@ -9,7 +9,7 @@ import openai
 from openai._types import NOT_GIVEN
 from openai.types.chat import (
     ChatCompletionAssistantMessageParam,
-    ChatCompletionMessage,2023-12-01-preview
+    ChatCompletionMessage,
     ChatCompletionMessageParam,
     ChatCompletionMessageToolCallParam,
     ChatCompletionSystemMessageParam,
