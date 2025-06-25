@@ -36,7 +36,7 @@ This is equivalent to the built-in [OpenAI Conversation integration](https://www
 5. Type your `API Key`, `API Base` and `API Version` used following the example below and hit submit:
 > - API Key: 1234567890abcdef1234567890abcdef <br>
 > - API Base: https://iotlabopenai.openai.azure.com/ <br>
-> - API Version: 2023-03-15-preview <br>
+> - API Version: 2023-12-01-preview <br>
 6. Configure your assistant to use the Azure OpenAI Conversation.
 
 #  Options
