@@ -1,0 +1,21 @@
+{
+  "config": {
+    "abort": {
+      "single_instance_allowed": "Już skonfigurowane. Możliwa jest tylko jedna konfiguracja."
+    },
+    "error": {
+      "cannot_connect": "Nie udało się połączyć",
+      "invalid_auth": "Nieprawidłowa autoryzacja",
+      "unknown": "Niespodziewany błąd"
+    },
+    "step": {
+      "user": {
+        "data": {
+          "api_key": "Klucz API",
+          "api_base": "Baza API w Azure",
+          "api_version": "Wersja API"
+        }
+      }
+    }
+  }
+}
