@@ -1,0 +1,16 @@
+{
+	"name": "Azure OpenAI HA - Python 3.13",
+	"build": {
+        "dockerfile": "Dockerfile",
+        "context": ".."
+    },
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-python.python",
+				"charliermarsh.ruff"
+			]
+		}
+	},
+	"postCreateCommand": "pip install -r requirements.txt"
+}
