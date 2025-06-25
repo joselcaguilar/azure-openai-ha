@@ -3,7 +3,7 @@
   "name": "Azure OpenAI Conversation",
   "codeowners": ["@joselcaguilar"],
   "config_flow": true,
-  "dependencies": ["conversation"],
+  "dependencies": ["conversation", "assist_pipeline"],
   "documentation": "https://github.com/joselcaguilar/azure-openai-ha",
   "integration_type": "service",
   "iot_class": "cloud_polling",

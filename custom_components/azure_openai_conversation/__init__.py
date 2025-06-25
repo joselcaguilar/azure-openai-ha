@@ -27,7 +27,7 @@ from .const import CONF_API_BASE, CONF_API_VERSION, DOMAIN, LOGGER
 SERVICE_GENERATE_IMAGE = "generate_image"
 PLATFORMS = (Platform.CONVERSATION,)
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
-type OpenAIConfigEntry = ConfigEntry[openai.AsyncClient]
+OpenAIConfigEntry = ConfigEntry[openai.AsyncClient]
 
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
