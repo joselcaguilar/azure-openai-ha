@@ -25,18 +25,18 @@ This is equivalent to the built-in [OpenAI Conversation integration](https://www
 
 # Limitations
 
-- **Home Assistant versions** required: 2023.5+
+- **Home Assistant versions** required: 2025.6+
 
 # Installation and Configuration
 1. Download and install the integration from HACS: [Azure OpenAI Conversation](https://my.home-assistant.io/redirect/hacs_repository/?owner=joselcaguilar&repository=azure-openai-ha&category=integration).
 2. Restart your Home Assistant instance
 3. Go to [Settings -> Devices & Services -> Add Integration -> Azure OpenAI Conversation](https://my.home-assistant.io/redirect/config_flow_start/?domain=azure_openai_conversation)
-4.  To have a conversation, made sure to deploy a chat completion model (like gpt-35-turbo or gpt-4o) in Azure. 
+4.  To have a conversation, made sure to deploy a chat completion model (like gpt-4o-mini or gpt-4.1-mini) in Azure. 
 5. If you want to generate images using the available `generate_image` service, make sure to deploy the `dall-e-3` model as well.
-5. Type your `API Key`, `API Base` and `API Version` used following the example below and hit submit:
+5. Type your `API Key`, `API Base` and `API Version` (API version must be no less than 2025-03-01-preview) used following the example below and hit submit:
 > - API Key: 1234567890abcdef1234567890abcdef <br>
-> - API Base: https://iotlabopenai.openai.azure.com/ <br>
-> - API Version: 2023-12-01-preview <br>
+> - API Base: https://your-resource.openai.azure.com/ <br>
+> - API Version: 2025-03-01-preview <br>
 6. Configure your assistant to use the Azure OpenAI Conversation.
 
 #  Options
@@ -45,15 +45,15 @@ Options for Azure OpenAI Conversation can be set via the user interface, by taki
 
 1. Browse to your Home Assistant instance.
 2. In the sidebar click on [Settings -> Devices & Services](https://my.home-assistant.io/redirect/integrations/).
-3. FInd the Azure Open AI Conversation integration and click 'Options'
+3. Find the Azure Open AI Conversation integration and click 'Configure'
 
 Options available (same as built-in OpenAI conversation):
-- **Prompt:**
+- **Instructions:**
 The starting text for the AI language model to generate new text from. This text can include information about your Home Assistant instance, devices, and areas and is written using [Home Assistant Templating](https://www.home-assistant.io/docs/configuration/templating).
 
 - **Model:** The name of the GPT language model deployed for text generation (i.e.- `my-gpt35-model`). You can find more details on the available models in the [Azure OpenAI Documentation](https://learn.microsoft.com/azure/cognitive-services/openai/concepts/models#finding-what-models-are-available). If you are having issues using an assistant that uses this integration please check this model is the model you actually deployed.
 
-- Maximum Tokens to Return in Response
+- **Maximum Tokens to Return in Response**
 The maximum number of words or "tokens" that the AI model should generate in its completion of the prompt. For more information, see the [Azure OpenAI Completion Documentation](https://learn.microsoft.com/azure/cognitive-services/openai/overview#tokens).
 
 - **Temperature:** A value that determines the level of creativity and risk-taking the model should use when generating text. A higher temperature means the model is more likely to generate unexpected results, while a lower temperature results in more deterministic results. See the [Azure OpenAI Completion Documentation](https://learn.microsoft.com/azure/cognitive-services/openai/how-to/completions) for more information.
