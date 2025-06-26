@@ -41,7 +41,6 @@ from homeassistant.helpers.typing import VolDictType
 
 from .const import (
     CONF_API_BASE,
-    CONF_API_VERSION,
     CONF_CHAT_MODEL,
     CONF_MAX_TOKENS,
     CONF_PROMPT,
@@ -69,13 +68,14 @@ from .const import (
     WEB_SEARCH_MODELS,
 )
 
+from . import normalize_azure_endpoint
+
 _LOGGER = logging.getLogger(__name__)
 
 STEP_USER_DATA_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_API_KEY): str,
         vol.Required(CONF_API_BASE): str,
-        vol.Required(CONF_API_VERSION): str,
     }
 )
 
@@ -91,10 +91,10 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> None:
 
     Data has the keys from STEP_USER_DATA_SCHEMA with values provided by the user.
     """
-    client = openai.AsyncAzureOpenAI(
+    client = openai.AsyncOpenAI(
+        base_url=normalize_azure_endpoint(data[CONF_API_BASE]),
+        default_query={"api-version": "preview"},
         api_key=data[CONF_API_KEY],
-        base_url=data[CONF_API_BASE],
-        api_version=data[CONF_API_VERSION],
         http_client=get_async_client(hass)
     )
     await hass.async_add_executor_job(client.with_options(timeout=10.0).models.list)
@@ -204,8 +204,8 @@ class AzureOpenAIOptionsFlow(OptionsFlow):
         if zone_home is not None:
             client = openai.AsyncOpenAI(
                 api_key=self.config_entry.data[CONF_API_KEY],
-                base_url=self.config_entry.data[CONF_API_BASE],
-                api_version=self.config_entry.data[CONF_API_VERSION],
+                base_url=normalize_azure_endpoint(self.config_entry.data[CONF_API_BASE]),
+                default_query={"api-version": "preview"},
                 http_client=get_async_client(self.hass),
             )
             location_schema = vol.Schema(
