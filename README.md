@@ -25,15 +25,26 @@ This is equivalent to the built-in [OpenAI Conversation integration](https://www
 
 # Limitations
 
-- **Home Assistant versions** required: 2025.6+
+<center>
+
+| Azure OpenAI Conversation Version | Home Assistant Version | Minimal API Version |
+| --------------------------------- | ---------------------- | ------------------- |
+| 0.x.y                             | 2023.4.x               | 2023-06-01-preview  |
+| 1.x.y                             | 2023.5+                | 2023-06-01-preview  |
+| 2.x.y                             | 2025.1                 | 2023-12-01-preview  |
+| 3.x.y                             | 2025.6                 | 2025-03-01-preview  |
+
+</center>
+
 
 # Installation and Configuration
+
 1. Download and install the integration from HACS: [Azure OpenAI Conversation](https://my.home-assistant.io/redirect/hacs_repository/?owner=joselcaguilar&repository=azure-openai-ha&category=integration).
 2. Restart your Home Assistant instance
 3. Go to [Settings -> Devices & Services -> Add Integration -> Azure OpenAI Conversation](https://my.home-assistant.io/redirect/config_flow_start/?domain=azure_openai_conversation)
 4.  To have a conversation, made sure to deploy a chat completion model (like gpt-4o-mini or gpt-4.1-mini) in Azure. 
 5. If you want to generate images using the available `generate_image` service, make sure to deploy the `dall-e-3` model as well.
-5. Type your `API Key`, `API Base` and `API Version` (API version must be no less than 2025-03-01-preview) used following the example below and hit submit:
+5. Type your `API Key`, `API Base` and `API Version` (API version must be no less than 2025-03-01-preview, use the latest available version) used following the example below and hit submit:
 > - API Key: 1234567890abcdef1234567890abcdef <br>
 > - API Base: https://your-resource.openai.azure.com/ <br>
 > - API Version: 2025-03-01-preview <br>
@@ -59,6 +70,10 @@ The maximum number of words or "tokens" that the AI model should generate in its
 - **Temperature:** A value that determines the level of creativity and risk-taking the model should use when generating text. A higher temperature means the model is more likely to generate unexpected results, while a lower temperature results in more deterministic results. See the [Azure OpenAI Completion Documentation](https://learn.microsoft.com/azure/cognitive-services/openai/how-to/completions) for more information.
 
 - **Top P:** An alternative to temperature, top_p determines the proportion of the most likely word choices the model should consider when generating text. A higher top_p means the model will only consider the most likely words, while a lower top_p means a wider range of words, including less likely ones, will be considered. For more information, see the [Azure OpenAI Completion Documentation](https://learn.microsoft.com/azure/cognitive-services/openai/how-to/completions).
+
+## API Version change
+
+This value couldn't be changed through options, to update it you must need to delete and recreate the integration. Make sure that you have all required values like API key saved before recreation.
 
 # Changelog
 
