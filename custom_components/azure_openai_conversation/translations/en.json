@@ -13,13 +13,11 @@
         "description": "Get the API Base URL and version from the target URI under EndPoint in Azure AI Foundry or in the Azure portal.",
         "data": {
           "api_key": "API Key",
-          "api_base": "API Base URL",
-          "api_version": "API version"
+          "api_base": "API Base URL"
         },
         "data_description": {
           "api_key": "",
-          "api_base": "Example base URL: https://xyz.cognitiveservices.azure.com",
-          "api_version": "Example API version: 2025-03-01-preview"
+          "api_base": "Example base URL: https://xyz.cognitiveservices.azure.com"
         }
       }
     }

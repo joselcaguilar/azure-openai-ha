@@ -38,7 +38,6 @@ from homeassistant.helpers.typing import ConfigType
 
 from .const import (
     CONF_API_BASE,
-    CONF_API_VERSION,
     CONF_CHAT_MODEL,
     CONF_FILENAMES,
     CONF_MAX_TOKENS,
@@ -246,9 +245,9 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 async def async_setup_entry(hass: HomeAssistant, entry: OpenAIConfigEntry) -> bool:
     """Set up Azure OpenAI Conversation from a config entry."""
 
-    client = openai.AsyncAzureOpenAI(
-        azure_endpoint=entry.data[CONF_API_BASE],
-        api_version=entry.data[CONF_API_VERSION],
+    client = openai.AsyncOpenAI(
+        base_url=normalize_azure_endpoint(entry.data[CONF_API_BASE]),
+        default_query={"api-version": "preview"},
         api_key=entry.data[CONF_API_KEY],
         http_client=get_async_client(hass),
     )
@@ -275,3 +274,16 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload Azure OpenAI."""
 
     return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+
+def normalize_azure_endpoint(uri: str) -> str:
+    """Normalize Azure OpenAI endpoint URI by ensuring it ends with /openai/v1/."""
+
+    normalized = uri.rstrip('/')
+
+    if not normalized.endswith('/openai/v1'):
+        normalized += '/openai/v1'
+
+    if not normalized.endswith('/'):
+        normalized += '/'
+
+    return normalized

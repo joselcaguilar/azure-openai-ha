@@ -6,8 +6,6 @@ DOMAIN = "azure_openai_conversation"
 LOGGER: logging.Logger = logging.getLogger(__package__)
 
 CONF_API_BASE = "api_base"
-CONF_API_VERSION = "api_version"
-
 CONF_CHAT_MODEL = "chat_model"
 CONF_FILENAMES = "filenames"
 CONF_MAX_TOKENS = "max_tokens"

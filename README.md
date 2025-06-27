@@ -27,12 +27,12 @@ This is equivalent to the built-in [OpenAI Conversation integration](https://www
 
 <center>
 
-| Azure OpenAI Conversation Version | Home Assistant Version | Minimal API Version |
-| --------------------------------- | ---------------------- | ------------------- |
-| 0.x.y                             | 2023.4.x               | 2023-06-01-preview  |
-| 1.x.y                             | 2023.5+                | 2023-06-01-preview  |
-| 2.x.y                             | 2025.1                 | 2023-12-01-preview  |
-| 3.x.y                             | 2025.6                 | 2025-03-01-preview  |
+| Azure OpenAI Conversation Version | Home Assistant Version | Minimal API Version    |
+| --------------------------------- | ---------------------- | ---------------------- |
+| 0.x.y                             | 2023.4.x               | 2023-06-01-preview     |
+| 1.x.y                             | 2023.5+                | 2023-06-01-preview     |
+| 2.x.y                             | 2025.1                 | 2023-12-01-preview     |
+| 3.1.y                             | 2025.6                 | - no need to specify - |
 
 </center>
 
@@ -42,13 +42,17 @@ This is equivalent to the built-in [OpenAI Conversation integration](https://www
 1. Download and install the integration from HACS: [Azure OpenAI Conversation](https://my.home-assistant.io/redirect/hacs_repository/?owner=joselcaguilar&repository=azure-openai-ha&category=integration).
 2. Restart your Home Assistant instance
 3. Go to [Settings -> Devices & Services -> Add Integration -> Azure OpenAI Conversation](https://my.home-assistant.io/redirect/config_flow_start/?domain=azure_openai_conversation)
-4.  To have a conversation, made sure to deploy a chat completion model (like gpt-4o-mini or gpt-4.1-mini) in Azure. 
+4. To have a conversation, made sure to deploy a chat completion model (like gpt-4o-mini or gpt-4.1-mini) in Azure. If your model is not the default `gpt-4o-mini`, then configure it on step 6. 
 5. If you want to generate images using the available `generate_image` service, make sure to deploy the `dall-e-3` model as well.
-5. Type your `API Key`, `API Base` and `API Version` (API version must be no less than 2025-03-01-preview, use the latest available version) used following the example below and hit submit:
-> - API Key: 1234567890abcdef1234567890abcdef <br>
-> - API Base: https://your-resource.openai.azure.com/ <br>
-> - API Version: 2025-03-01-preview <br>
-6. Configure your assistant to use the Azure OpenAI Conversation.
+5. Type your `API Key`, `API Base` used following the example below and hit submit:
+    ```yaml
+    API Key: 1234567890abcdef1234567890abcdef
+    API Base: https://your-resource.openai.azure.com/
+    
+    #API Version is required only for versions prior 3.1.0
+    API Version: 2025-03-01-preview
+    ```
+6. Conf igure your assistant to use the Azure OpenAI Conversation.
 
 #  Options
 
