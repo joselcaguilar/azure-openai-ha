@@ -33,6 +33,8 @@ This is equivalent to the built-in [OpenAI Conversation integration](https://www
 | 1.x.y                             | 2023.5+                | 2023-06-01-preview     |
 | 2.x.y                             | 2025.1                 | 2023-12-01-preview     |
 | 3.1.y                             | 2025.6                 | - no need to specify - |
+| 4.0.y                             | 2025.8                 | - no need to specify - |
+
 
 </center>
 
@@ -52,7 +54,7 @@ This is equivalent to the built-in [OpenAI Conversation integration](https://www
     #API Version is required only for versions prior 3.1.0
     API Version: 2025-03-01-preview
     ```
-6. Conf igure your assistant to use the Azure OpenAI Conversation.
+6. Configure your assistant to use the Azure OpenAI Conversation.
 
 #  Options
 
