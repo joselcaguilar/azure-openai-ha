@@ -33,8 +33,8 @@ This is equivalent to the built-in [OpenAI Conversation integration](https://www
 | 1.x.y                             | 2023.5+                | 2023-06-01-preview     |
 | 2.x.y                             | 2025.1                 | 2023-12-01-preview     |
 | 3.1.y                             | 2025.6                 | - no need to specify - |
-| 4.0.y                             | 2025.8                 | - no need to specify - |
-
+| 4.0.y                             | 2025.8 - 2025.9        | - no need to specify - |
+| 4.1.y                             | 2025.10+               | - no need to specify - |
 
 </center>
 
