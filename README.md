@@ -38,17 +38,23 @@ This is equivalent to the built-in [OpenAI Conversation integration](https://www
 
 </center>
 
-
 # Installation and Configuration
 
-1. Deploy an [Azure AI Foundry](https://portal.azure.com/#create/Microsoft.CognitiveServicesAIFoundry) instance to a **region supported by the [Responses API](https://learn.microsoft.com/en-us/azure/ai-foundry/openai/how-to/responses?tabs=python-secure#region-availability)**.
-2. To have a conversation, make sure to deploy a chat completion model (like `gpt-4o-mini` or `gpt-4.1-mini`) in Azure. If your model is not the default `gpt-4o-mini`, then configure it on step 6.
-3. If you want to generate images using the available `generate_image` service, make sure to deploy the `dall-e-3` model as well.
+## Configuring Azure Models
+
+1. Deploy an [Azure AI Foundry](https://portal.azure.com/#create/Microsoft.CognitiveServicesAIFoundry) instance to a **region supported by the [Responses API](https://learn.microsoft.com/en-us/azure/ai-foundry/openai/how-to/responses?tabs=python-secure#region-availability)**.  
+   *(If you already have a Foundry instance, you can skip this step.)*
+2. To enable conversations, deploy a chat completion model (such as `gpt-4o-mini` or `gpt-4.1-mini`).  
+   *If your model is not the default `gpt-4o-mini`, you’ll need to configure it later in step 6.*
+3. If you want to generate images using the `generate_image` service, also deploy the `dall-e-3` model.
+
+## Setting Up the Integration
+
 4. Download and install the integration from HACS: [Azure OpenAI Conversation](https://my.home-assistant.io/redirect/hacs_repository/?owner=joselcaguilar&repository=azure-openai-ha&category=integration).
 5. Restart your Home Assistant instance.
-6. [Click here](https://my.home-assistant.io/redirect/config_flow_start/?domain=azure_openai_conversation) or go to Settings -> Devices & Services -> Add Integration -> Azure OpenAI Conversation.
-5. Enter your `API Key` and `API Base URL` (use the `https://your-resource.openai.azure.com/` format) and hit Submit.
-6. Configure your assistant to use the Azure OpenAI Conversation.
+6. [Click here](https://my.home-assistant.io/redirect/config_flow_start/?domain=azure_openai_conversation) or go to **Settings → Devices & Services → Add Integration → Azure OpenAI Conversation**.
+7. Enter your `API Key` and `API Base URL` (use the format `https://your-resource.openai.azure.com/`) and hit **Submit**.
+8. Configure your assistant to use the Azure OpenAI Conversation.
 
 #  Options
 
