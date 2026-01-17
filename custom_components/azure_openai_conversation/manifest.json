@@ -10,5 +10,5 @@
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/joselcaguilar/azure-openai-ha/issues",
   "requirements": ["openai==2.11.0"],
-  "version": "2025.10.0"
+  "version": "2026.01.0"
 }
