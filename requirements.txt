@@ -1,5 +1,5 @@
 colorlog>=6.7.0
-homeassistant>=2025.6.3
+homeassistant>=2026.1.1
 pip>=21.0
 ruff>=0.1.0
-openai==1.99.5
+openai==2.11.0
