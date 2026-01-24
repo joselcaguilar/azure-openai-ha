@@ -66,6 +66,9 @@ from .const import (
     RECOMMENDED_WEB_SEARCH_CONTEXT_SIZE,
 )
 
+from .web_search import google_search
+from .const import CONF_GOOGLE_API_KEY, CONF_GOOGLE_CX
+
 # Max number of back and forth with the LLM to generate a response
 MAX_TOOL_ITERATIONS = 10
 
@@ -268,6 +271,40 @@ class AzureOpenAIConversationEntity(
         conversation.async_unset_agent(self.hass, self.entry)
         await super().async_will_remove_from_hass()
 
+    async def summarize_results(
+    client,
+    model,
+    results,
+    max_tokens=120,
+    ):
+    if not results:
+        return "Non ho trovato informazioni affidabili online."
+    
+    text = "\n".join(
+        f"{r['title']}: {r['snippet']}"
+        for r in results[:5]
+    )
+    
+    messages = [
+        {
+            "role": "system",
+            "content": (
+                "Riassumi in italiano in massimo 4 frasi. "
+                "Usa solo informazioni fattuali."
+            ),
+        },
+        {"role": "user", "content": text},
+    ]
+    
+    response = await client.responses.create(
+        model=model,
+        input=messages,
+        max_output_tokens=max_tokens,
+    )
+    
+    return response.output_text.strip()
+
+
     async def _async_handle_message(
         self,
         user_input: conversation.ConversationInput,
@@ -311,24 +348,56 @@ class AzureOpenAIConversationEntity(
                 for tool in chat_log.llm_api.tools
             ]
 
-        if options.get(CONF_WEB_SEARCH):
-            web_search = WebSearchToolParam(
-                type="web_search_preview",
-                search_context_size=options.get(
-                    CONF_WEB_SEARCH_CONTEXT_SIZE, RECOMMENDED_WEB_SEARCH_CONTEXT_SIZE
+        # If web search is enabled in options, perform Google search
+
+        messages.append(
+            EasyInputMessageParam(
+                type="message",
+                role="system",
+                content=(
+                    "Rispondi subito con: 'Sto cercando…' "
+                    "poi fornisci la risposta completa."
                 ),
             )
-            if options.get(CONF_WEB_SEARCH_USER_LOCATION):
-                web_search["user_location"] = UserLocation(
-                    type="approximate",
-                    city=options.get(CONF_WEB_SEARCH_CITY, ""),
-                    region=options.get(CONF_WEB_SEARCH_REGION, ""),
-                    country=options.get(CONF_WEB_SEARCH_COUNTRY, ""),
-                    timezone=options.get(CONF_WEB_SEARCH_TIMEZONE, ""),
+        )
+
+        
+        if options.get(CONF_WEB_SEARCH):
+            google_api_key = options.get(CONF_GOOGLE_API_KEY)
+            google_cx = options.get(CONF_GOOGLE_CX)
+            # Extract the user's query text for searching
+            user_query = chat_log.content[-1].content or ""
+            try:
+                results = await google_search(user_query, google_api_key, google_cx)
+                summary = await summarize_results(
+                    client=client,
+                    model=model,
+                    results=results,
                 )
-            if tools is None:
-                tools = []
-            tools.append(web_search)
+                
+                messages.append(
+                    EasyInputMessageParam(
+                        type="message",
+                        role="system",
+                        content=f"Risultato ricerca web:\n{summary}",
+                    )
+                )
+            except Exception as e:
+                LOGGER.error("Google Search failed: %s", e)
+                results = []
+        
+            # Format results into summary text
+            # (You can customize how results are injected into the prompt later)
+            results_text = "\n".join(
+                f"{r['title']}: {r['snippet']}" for r in results
+            )
+        
+            # Append search results context directly into the model input
+            messages.append(EasyInputMessageParam(
+                type="message",
+                role="system",
+                content=f"Web search results:\n{results_text}"
+            ))
 
         model = options.get(CONF_CHAT_MODEL, RECOMMENDED_CHAT_MODEL)
         messages = [
