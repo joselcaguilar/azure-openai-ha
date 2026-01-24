@@ -348,6 +348,8 @@ def openai_config_option_schema(
                 },
                 default=RECOMMENDED_WEB_SEARCH_USER_LOCATION,
             ): bool,
+            vol.Optional("google_api_key"): str,
+            vol.Optional("google_cx"): str,
         }
     )
     return schema
