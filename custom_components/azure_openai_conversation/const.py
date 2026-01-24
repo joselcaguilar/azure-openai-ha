@@ -5,6 +5,9 @@ import logging
 DOMAIN = "azure_openai_conversation"
 LOGGER: logging.Logger = logging.getLogger(__package__)
 
+CONF_GOOGLE_API_KEY = "google_api_key"
+CONF_GOOGLE_CX = "google_cx"
+
 CONF_API_BASE = "api_base"
 CONF_CHAT_MODEL = "chat_model"
 CONF_FILENAMES = "filenames"
