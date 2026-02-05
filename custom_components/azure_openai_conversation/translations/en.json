@@ -17,7 +17,7 @@
         },
         "data_description": {
           "api_key": "",
-          "api_base": "Example base URL: https://xyz.cognitiveservices.azure.com"
+          "api_base": "https://YOURINSTANCE.cognitiveservices.azure.com"
         }
       }
     }
