@@ -1,0 +1,18 @@
+services:
+  homeassistant:
+    image: ghcr.io/home-assistant/home-assistant:2026.2.1
+    container_name: homeassistant
+    network_mode: host
+    privileged: true
+    restart: unless-stopped
+    volumes:
+      - ./ha-config:/config
+      - ./custom_components/azure_openai_conversation:/config/custom_components/azure_openai_conversation
+    environment:
+      - TZ=Europe/London
+
+  hassfest:
+    image: ghcr.io/home-assistant/hassfest:latest
+    volumes:
+      - ./custom_components:/github/workspace/custom_components
+    profiles: ["tools"]

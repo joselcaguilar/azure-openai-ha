@@ -95,7 +95,7 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> None:
         base_url=normalize_azure_endpoint(data[CONF_API_BASE]),
         default_query={"api-version": "preview"},
         api_key=data[CONF_API_KEY],
-        http_client=get_async_client(hass)
+        http_client=get_async_client(hass),
     )
     await hass.async_add_executor_job(client.with_options(timeout=10.0).models.list)
 
@@ -111,7 +111,11 @@ class AzureOpenAIConfigFlow(ConfigFlow, domain=DOMAIN):
         """Handle the initial step."""
         if user_input is None:
             return self.async_show_form(
-                step_id="user", data_schema=STEP_USER_DATA_SCHEMA
+                step_id="user",
+                data_schema=STEP_USER_DATA_SCHEMA,
+                description_placeholders={
+                    "example_url": "https://xyz.services.ai.azure.com"
+                },
             )
 
         errors: dict[str, str] = {}
@@ -204,7 +208,9 @@ class AzureOpenAIOptionsFlow(OptionsFlow):
         if zone_home is not None:
             client = openai.AsyncOpenAI(
                 api_key=self.config_entry.data[CONF_API_KEY],
-                base_url=normalize_azure_endpoint(self.config_entry.data[CONF_API_BASE]),
+                base_url=normalize_azure_endpoint(
+                    self.config_entry.data[CONF_API_BASE]
+                ),
                 default_query={"api-version": "preview"},
                 http_client=get_async_client(self.hass),
             )
