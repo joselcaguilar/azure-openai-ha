@@ -16,3 +16,23 @@ services:
     volumes:
       - ./custom_components:/github/workspace/custom_components
     profiles: ["tools"]
+
+  hacs:
+    image: ghcr.io/hacs/action:main
+    volumes:
+      - .:/github/workspace
+    environment:
+      - GITHUB_WORKSPACE=/github/workspace
+      - GITHUB_REPOSITORY=joselcaguilar/azure-openai-ha
+      - CATEGORY=integration
+      - INPUT_IGNORE=brands
+      - INPUT_GITHUB_TOKEN=${GITHUB_TOKEN}
+    profiles: ["tools"]
+
+  ruff:
+    image: ghcr.io/astral-sh/ruff:latest
+    command: check .
+    volumes:
+      - .:/workspace
+    working_dir: /workspace
+    profiles: ["tools"]
