@@ -35,6 +35,8 @@ This is equivalent to the built-in [OpenAI Conversation integration](https://www
 | 3.1.y                             | 2025.6                 | - no need to specify - |
 | 4.0.y                             | 2025.8 - 2025.9        | - no need to specify - |
 | 4.1.y                             | 2025.10+               | - no need to specify - |
+| 4.2.y                             | 2025.12+               | - no need to specify - |
+| 4.3.y                             | 2026.2.1+              | - no need to specify - |
 
 </center>
 
@@ -88,6 +90,21 @@ Please reference the [release history](https://github.com/joselcaguilar/azure-op
 # How to Help
 
 While it'd be nice to have more developers, you can contribute without knowing how to code. You can [file bugs/feature requests](https://github.com/joselcaguilar/azure-openai-ha/issues), or you can help with other tasks like [UI Translations](#ui-translations) and updating the [README](./README.md).
+
+## Getting Started (Developers)
+
+1. Clone the repository and move into it.
+2. Copy the environment template and set your GitHub token (required for HACS checks):
+   - `cp .env.example .env`
+   - set `GITHUB_TOKEN` in `.env` with read-only access to **Contents** and **Metadata**.
+3. Run local checks using Docker:
+   - `make lint` runs Ruff
+   - `make hassfest` runs Home Assistant integration validation
+   - `make hacs` runs HACS validation
+   - `make test` runs all of the above
+4. (Optional) Start Home Assistant locally for manual testing:
+   - `docker compose up -d homeassistant`
+   - Integration files are mounted from `./custom_components/azure_openai_conversation` into the container.
 
 ## UI Translations
 
