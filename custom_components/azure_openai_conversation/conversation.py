@@ -1,6 +1,7 @@
 """Conversation support for OpenAI."""
 
 from collections.abc import AsyncGenerator, Callable
+from datetime import date, datetime, time
 import json
 from typing import Any, Literal, cast
 
@@ -68,6 +69,13 @@ from .const import (
 
 # Max number of back and forth with the LLM to generate a response
 MAX_TOOL_ITERATIONS = 10
+
+
+def _json_default(value: Any) -> str:
+    """Serialize values that appear in Home Assistant tool responses."""
+    if isinstance(value, (datetime, date, time)):
+        return value.isoformat()
+    return str(value)
 
 
 async def async_setup_entry(
@@ -147,7 +155,7 @@ def _convert_content_to_param(
             FunctionCallOutput(
                 type="function_call_output",
                 call_id=content.tool_call_id,
-                output=json.dumps(content.tool_result),
+                output=json.dumps(content.tool_result, default=_json_default),
             )
         ]
 
