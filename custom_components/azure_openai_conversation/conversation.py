@@ -1,6 +1,7 @@
 """Conversation support for OpenAI."""
 
 from collections.abc import AsyncGenerator, Callable
+from datetime import date, datetime, time
 import json
 from typing import Any, Literal, cast
 
@@ -70,6 +71,13 @@ from .const import (
 MAX_TOOL_ITERATIONS = 10
 
 
+def _json_default(value: Any) -> str:
+    """Serialize values that appear in Home Assistant tool responses."""
+    if isinstance(value, (datetime, date, time)):
+        return value.isoformat()
+    return str(value)
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: OpenAIConfigEntry,
@@ -84,10 +92,54 @@ def _format_tool(
     tool: llm.Tool, custom_serializer: Callable[[Any], Any] | None
 ) -> FunctionToolParam:
     """Format tool specification."""
+
+    def _to_azure_tool_schema(schema: Any) -> dict[str, Any]:
+        """Normalize schema to Azure/OpenAI function-tool requirements.
+
+        Azure rejects top-level oneOf/anyOf/allOf/enum/not and requires
+        an object at the top level.
+        """
+        if not isinstance(schema, dict):
+            return {"type": "object", "properties": {}}
+
+        normalized = dict(schema)
+
+        # HA tool schemas can be emitted as anyOf(object, null) for optional
+        # argument groups. Azure requires a top-level object.
+        for combiner in ("anyOf", "oneOf", "allOf"):
+            variants = normalized.get(combiner)
+            if isinstance(variants, list):
+                object_variant = next(
+                    (
+                        variant
+                        for variant in variants
+                        if isinstance(variant, dict)
+                        and (
+                            variant.get("type") == "object"
+                            or "properties" in variant
+                        )
+                    ),
+                    None,
+                )
+                if object_variant is not None:
+                    normalized = {**normalized, **object_variant}
+                normalized.pop(combiner, None)
+
+        normalized.pop("enum", None)
+        normalized.pop("not", None)
+
+        if normalized.get("type") != "object":
+            normalized["type"] = "object"
+
+        normalized.setdefault("properties", {})
+        return normalized
+
     return FunctionToolParam(
         type="function",
         name=tool.name,
-        parameters=convert(tool.parameters, custom_serializer=custom_serializer),
+        parameters=_to_azure_tool_schema(
+            convert(tool.parameters, custom_serializer=custom_serializer)
+        ),
         description=tool.description,
         strict=False,
     )
@@ -103,7 +155,7 @@ def _convert_content_to_param(
             FunctionCallOutput(
                 type="function_call_output",
                 call_id=content.tool_call_id,
-                output=json.dumps(content.tool_result),
+                output=json.dumps(content.tool_result, default=_json_default),
             )
         ]
 
