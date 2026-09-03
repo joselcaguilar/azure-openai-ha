@@ -1,1 +1,2 @@
 openai>=2.15.0,<3.0.0
+voluptuous-openapi>=0.4.1
