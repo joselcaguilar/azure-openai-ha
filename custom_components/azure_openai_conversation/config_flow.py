@@ -65,7 +65,6 @@ from .const import (
     RECOMMENDED_WEB_SEARCH_CONTEXT_SIZE,
     RECOMMENDED_WEB_SEARCH_USER_LOCATION,
     UNSUPPORTED_MODELS,
-    WEB_SEARCH_MODELS,
 )
 
 from . import normalize_azure_endpoint
@@ -172,12 +171,7 @@ class AzureOpenAIOptionsFlow(OptionsFlow):
                     errors[CONF_CHAT_MODEL] = "model_not_supported"
 
                 if user_input.get(CONF_WEB_SEARCH):
-                    if (
-                        user_input.get(CONF_CHAT_MODEL, RECOMMENDED_CHAT_MODEL)
-                        not in WEB_SEARCH_MODELS
-                    ):
-                        errors[CONF_WEB_SEARCH] = "web_search_not_supported"
-                    elif user_input.get(CONF_WEB_SEARCH_USER_LOCATION):
+                    if user_input.get(CONF_WEB_SEARCH_USER_LOCATION):
                         user_input.update(await self.get_location_data())
 
                 if not errors:

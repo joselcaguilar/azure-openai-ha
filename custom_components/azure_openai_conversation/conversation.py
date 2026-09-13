@@ -42,7 +42,7 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import device_registry as dr, intent, llm
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
-from . import OpenAIConfigEntry
+from . import OpenAIConfigEntry, async_responses_create_with_param_fallback
 from .const import (
     CONF_CHAT_MODEL,
     CONF_MAX_TOKENS,
@@ -365,7 +365,7 @@ class AzureOpenAIConversationEntity(
 
         if options.get(CONF_WEB_SEARCH):
             web_search = WebSearchToolParam(
-                type="web_search_preview",
+                type="web_search",
                 search_context_size=options.get(
                     CONF_WEB_SEARCH_CONTEXT_SIZE, RECOMMENDED_WEB_SEARCH_CONTEXT_SIZE
                 ),
@@ -407,17 +407,22 @@ class AzureOpenAIConversationEntity(
             if tools:
                 model_args["tools"] = tools
 
-            if model.startswith("o"):
-                model_args["reasoning"] = {
-                    "effort": options.get(
-                        CONF_REASONING_EFFORT, RECOMMENDED_REASONING_EFFORT
-                    )
-                }
-            else:
+            model_args["reasoning"] = {
+                "effort": options.get(
+                    CONF_REASONING_EFFORT, RECOMMENDED_REASONING_EFFORT
+                )
+            }
+
+            if not model.startswith("o"):
                 model_args["store"] = False
 
             try:
-                result = await client.responses.create(**model_args)
+                result = await async_responses_create_with_param_fallback(
+                    client,
+                    model_args,
+                    entry_id=self.entry.entry_id,
+                    model=model,
+                )
             except openai.RateLimitError as err:
                 LOGGER.error("Rate limited by Azure OpenAI: %s", err)
                 raise HomeAssistantError("Rate limited or insufficient funds") from err
