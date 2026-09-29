@@ -252,8 +252,9 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
             reasoning_effort = entry.options.get(
                 CONF_REASONING_EFFORT, RECOMMENDED_REASONING_EFFORT
             )
-            if reasoning_effort in ("", REASONING_EFFORT_DISABLED):
-                reasoning_effort = None
+            if reasoning_effort in ("", REASONING_EFFORT_DISABLED, "none"):
+                # Omitting the field lets GPT-6 Luna default to medium.
+                reasoning_effort = "none"
 
             send_sampling_parameters = entry.options.get(
                 CONF_SEND_SAMPLING_PARAMETERS,
