@@ -46,6 +46,8 @@ from .const import (
     CONF_PROMPT,
     CONF_REASONING_EFFORT,
     CONF_RECOMMENDED,
+    CONF_SEND_SAMPLING_PARAMETERS,
+    CONF_STRIP_WEB_CITATIONS,
     CONF_TEMPERATURE,
     CONF_TOP_P,
     CONF_WEB_SEARCH,
@@ -59,13 +61,15 @@ from .const import (
     RECOMMENDED_CHAT_MODEL,
     RECOMMENDED_MAX_TOKENS,
     RECOMMENDED_REASONING_EFFORT,
+    RECOMMENDED_SEND_SAMPLING_PARAMETERS,
+    RECOMMENDED_STRIP_WEB_CITATIONS,
     RECOMMENDED_TEMPERATURE,
     RECOMMENDED_TOP_P,
     RECOMMENDED_WEB_SEARCH,
     RECOMMENDED_WEB_SEARCH_CONTEXT_SIZE,
     RECOMMENDED_WEB_SEARCH_USER_LOCATION,
+    REASONING_EFFORT_DISABLED,
     UNSUPPORTED_MODELS,
-    WEB_SEARCH_MODELS,
 )
 
 from . import normalize_azure_endpoint
@@ -172,13 +176,12 @@ class AzureOpenAIOptionsFlow(OptionsFlow):
                     errors[CONF_CHAT_MODEL] = "model_not_supported"
 
                 if user_input.get(CONF_WEB_SEARCH):
-                    if (
-                        user_input.get(CONF_CHAT_MODEL, RECOMMENDED_CHAT_MODEL)
-                        not in WEB_SEARCH_MODELS
-                    ):
-                        errors[CONF_WEB_SEARCH] = "web_search_not_supported"
-                    elif user_input.get(CONF_WEB_SEARCH_USER_LOCATION):
-                        user_input.update(await self.get_location_data())
+                    if user_input.get(CONF_WEB_SEARCH_USER_LOCATION):
+                        user_input.update(
+                            await self.get_location_data(
+                                user_input.get(CONF_CHAT_MODEL)
+                            )
+                        )
 
                 if not errors:
                     return self.async_create_entry(title="", data=user_input)
@@ -201,7 +204,7 @@ class AzureOpenAIOptionsFlow(OptionsFlow):
             errors=errors,
         )
 
-    async def get_location_data(self) -> dict[str, str]:
+    async def get_location_data(self, model: str | None = None) -> dict[str, str]:
         """Get approximate location data of the user."""
         location_data: dict[str, str] = {}
         zone_home = self.hass.states.get(ENTITY_ID_HOME)
@@ -226,29 +229,43 @@ class AzureOpenAIOptionsFlow(OptionsFlow):
                     ): str,
                 }
             )
-            response = await client.responses.create(
-                model=RECOMMENDED_CHAT_MODEL,
-                input=[
-                    {
-                        "role": "system",
-                        "content": "Where are the following coordinates located: "
-                        f"({zone_home.attributes[ATTR_LATITUDE]},"
-                        f" {zone_home.attributes[ATTR_LONGITUDE]})?",
-                    }
-                ],
-                text={
-                    "format": {
-                        "type": "json_schema",
-                        "name": "approximate_location",
-                        "description": "Approximate location data of the user "
-                        "for refined web search results",
-                        "schema": convert(location_schema),
-                        "strict": False,
-                    }
-                },
-                store=False,
+            selected_model = (
+                model
+                or self.config_entry.options.get(CONF_CHAT_MODEL)
+                or RECOMMENDED_CHAT_MODEL
             )
-            location_data = location_schema(json.loads(response.output_text) or {})
+
+            try:
+                response = await client.responses.create(
+                    model=selected_model,
+                    input=[
+                        {
+                            "role": "system",
+                            "content": "Where are the following coordinates located: "
+                            f"({zone_home.attributes[ATTR_LATITUDE]},"
+                            f" {zone_home.attributes[ATTR_LONGITUDE]})?",
+                        }
+                    ],
+                    text={
+                        "format": {
+                            "type": "json_schema",
+                            "name": "approximate_location",
+                            "description": "Approximate location data of the user "
+                            "for refined web search results",
+                            "schema": convert(location_schema),
+                            "strict": False,
+                        }
+                    },
+                    store=False,
+                )
+                location_data = location_schema(json.loads(response.output_text) or {})
+            except (openai.OpenAIError, json.JSONDecodeError, vol.Invalid) as err:
+                _LOGGER.warning(
+                    "Could not infer city/region for web search location with model "
+                    "`%s`; falling back to country/timezone only: %s",
+                    selected_model,
+                    err,
+                )
 
         if self.hass.config.country:
             location_data[CONF_WEB_SEARCH_COUNTRY] = self.hass.config.country
@@ -275,6 +292,13 @@ def openai_config_option_schema(
         suggested_llm_apis, str
     ):
         suggested_llm_apis = [suggested_llm_apis]
+
+    selected_reasoning_effort = options.get(
+        CONF_REASONING_EFFORT, RECOMMENDED_REASONING_EFFORT
+    )
+    if selected_reasoning_effort == "":
+        selected_reasoning_effort = REASONING_EFFORT_DISABLED
+
     schema: VolDictType = {
         vol.Optional(
             CONF_PROMPT,
@@ -309,6 +333,13 @@ def openai_config_option_schema(
                 default=RECOMMENDED_MAX_TOKENS,
             ): int,
             vol.Optional(
+                CONF_SEND_SAMPLING_PARAMETERS,
+                description={
+                    "suggested_value": options.get(CONF_SEND_SAMPLING_PARAMETERS)
+                },
+                default=RECOMMENDED_SEND_SAMPLING_PARAMETERS,
+            ): bool,
+            vol.Optional(
                 CONF_TOP_P,
                 description={"suggested_value": options.get(CONF_TOP_P)},
                 default=RECOMMENDED_TOP_P,
@@ -320,11 +351,19 @@ def openai_config_option_schema(
             ): NumberSelector(NumberSelectorConfig(min=0, max=2, step=0.05)),
             vol.Optional(
                 CONF_REASONING_EFFORT,
-                description={"suggested_value": options.get(CONF_REASONING_EFFORT)},
-                default=RECOMMENDED_REASONING_EFFORT,
+                description={"suggested_value": selected_reasoning_effort},
+                default=selected_reasoning_effort,
             ): SelectSelector(
                 SelectSelectorConfig(
-                    options=["low", "medium", "high"],
+                    options=[
+                        SelectOptionDict(
+                            label="None",
+                            value=REASONING_EFFORT_DISABLED,
+                        ),
+                        SelectOptionDict(label="Low", value="low"),
+                        SelectOptionDict(label="Medium", value="medium"),
+                        SelectOptionDict(label="High", value="high"),
+                    ],
                     translation_key=CONF_REASONING_EFFORT,
                     mode=SelectSelectorMode.DROPDOWN,
                 )
@@ -333,6 +372,13 @@ def openai_config_option_schema(
                 CONF_WEB_SEARCH,
                 description={"suggested_value": options.get(CONF_WEB_SEARCH)},
                 default=RECOMMENDED_WEB_SEARCH,
+            ): bool,
+            vol.Optional(
+                CONF_STRIP_WEB_CITATIONS,
+                description={
+                    "suggested_value": options.get(CONF_STRIP_WEB_CITATIONS)
+                },
+                default=RECOMMENDED_STRIP_WEB_CITATIONS,
             ): bool,
             vol.Optional(
                 CONF_WEB_SEARCH_CONTEXT_SIZE,

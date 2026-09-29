@@ -13,6 +13,8 @@ CONF_PROMPT = "prompt"
 CONF_PROMPT = "prompt"
 CONF_REASONING_EFFORT = "reasoning_effort"
 CONF_RECOMMENDED = "recommended"
+CONF_SEND_SAMPLING_PARAMETERS = "send_sampling_parameters"
+CONF_STRIP_WEB_CITATIONS = "strip_web_citations"
 CONF_TEMPERATURE = "temperature"
 CONF_TOP_P = "top_p"
 CONF_WEB_SEARCH = "web_search"
@@ -25,11 +27,14 @@ CONF_WEB_SEARCH_TIMEZONE = "timezone"
 RECOMMENDED_CHAT_MODEL = "gpt-4o-mini"
 RECOMMENDED_MAX_TOKENS = 150
 RECOMMENDED_REASONING_EFFORT = "low"
+RECOMMENDED_SEND_SAMPLING_PARAMETERS = True
+RECOMMENDED_STRIP_WEB_CITATIONS = True
 RECOMMENDED_TEMPERATURE = 1.0
 RECOMMENDED_TOP_P = 1.0
 RECOMMENDED_WEB_SEARCH = False
 RECOMMENDED_WEB_SEARCH_CONTEXT_SIZE = "medium"
 RECOMMENDED_WEB_SEARCH_USER_LOCATION = False
+REASONING_EFFORT_DISABLED = "disabled"
 
 UNSUPPORTED_MODELS: list[str] = [
     "o1-mini",
@@ -41,13 +46,4 @@ UNSUPPORTED_MODELS: list[str] = [
     "gpt-4o-realtime-preview-2024-10-01",
     "gpt-4o-mini-realtime-preview",
     "gpt-4o-mini-realtime-preview-2024-12-17",
-]
-
-WEB_SEARCH_MODELS: list[str] = [
-    "gpt-4.1",
-    "gpt-4.1-mini",
-    "gpt-4o",
-    "gpt-4o-search-preview",
-    "gpt-4o-mini",
-    "gpt-4o-mini-search-preview",
 ]

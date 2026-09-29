@@ -5,6 +5,8 @@ from __future__ import annotations
 import base64
 from mimetypes import guess_file_type
 from pathlib import Path
+import re
+from typing import Any
 
 import openai
 from openai.types.images_response import ImagesResponse
@@ -43,6 +45,7 @@ from .const import (
     CONF_MAX_TOKENS,
     CONF_PROMPT,
     CONF_REASONING_EFFORT,
+    CONF_SEND_SAMPLING_PARAMETERS,
     CONF_TEMPERATURE,
     CONF_TOP_P,
     DOMAIN,
@@ -50,8 +53,10 @@ from .const import (
     RECOMMENDED_CHAT_MODEL,
     RECOMMENDED_MAX_TOKENS,
     RECOMMENDED_REASONING_EFFORT,
+    RECOMMENDED_SEND_SAMPLING_PARAMETERS,
     RECOMMENDED_TEMPERATURE,
     RECOMMENDED_TOP_P,
+    REASONING_EFFORT_DISABLED,
 )
 
 SERVICE_GENERATE_IMAGE = "generate_image"
@@ -61,6 +66,83 @@ PLATFORMS = (Platform.CONVERSATION,)
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 type OpenAIConfigEntry = ConfigEntry[openai.AsyncClient]
+
+
+_FALLBACK_SUPPORTED_MODEL_ARGS = frozenset(
+    {"reasoning", "top_p", "temperature", "store", "text"}
+)
+_UNSUPPORTED_MODEL_ARGS_CACHE: dict[tuple[str, str], set[str]] = {}
+_UNSUPPORTED_PARAMETER_PATTERN = re.compile(
+    r"unsupported parameter:\s*'([^']+)'", re.IGNORECASE
+)
+
+
+def _normalize_unsupported_param(param: str) -> str:
+    """Normalize unsupported parameter names from API errors."""
+    normalized = param.lower()
+    if normalized.startswith("reasoning"):
+        return "reasoning"
+    return normalized
+
+
+def _extract_unsupported_model_arg(err: openai.BadRequestError) -> str | None:
+    """Return unsupported request arg if API error indicates one."""
+    body = err.body if isinstance(err.body, dict) else {}
+    error = body.get("error") if isinstance(body.get("error"), dict) else {}
+    param = str(error.get("param", "")).strip()
+    message = str(error.get("message") or err).lower()
+
+    if param and any(
+        marker in message
+        for marker in ("unsupported parameter", "not supported", "unknown parameter")
+    ):
+        return _normalize_unsupported_param(param)
+
+    matched = _UNSUPPORTED_PARAMETER_PATTERN.search(message)
+    if matched:
+        return _normalize_unsupported_param(matched.group(1))
+
+    return None
+
+
+async def async_responses_create_with_param_fallback(
+    client: openai.AsyncClient,
+    model_args: dict[str, Any],
+    *,
+    entry_id: str,
+    model: str,
+) -> Any:
+    """Call responses.create with fallback for unsupported optional params."""
+    cache_key = (entry_id, model)
+    cached_unsupported_params = _UNSUPPORTED_MODEL_ARGS_CACHE.get(cache_key)
+    if cached_unsupported_params:
+        for arg in cached_unsupported_params:
+            model_args.pop(arg, None)
+
+    while True:
+        try:
+            return await client.responses.create(**model_args)
+        except openai.BadRequestError as err:
+            unsupported_arg = _extract_unsupported_model_arg(err)
+            if (
+                unsupported_arg is None
+                or unsupported_arg not in _FALLBACK_SUPPORTED_MODEL_ARGS
+                or unsupported_arg not in model_args
+            ):
+                raise
+
+            LOGGER.debug(
+                "Model `%s` rejected `%s`; retrying without it",
+                model,
+                unsupported_arg,
+            )
+            model_args.pop(unsupported_arg, None)
+
+            if cached_unsupported_params is None:
+                cached_unsupported_params = set()
+                _UNSUPPORTED_MODEL_ARGS_CACHE[cache_key] = cached_unsupported_params
+
+            cached_unsupported_params.add(unsupported_arg)
 
 
 def encode_file(file_path: str) -> tuple[str, str]:
@@ -167,28 +249,42 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         ]
 
         try:
+            reasoning_effort = entry.options.get(
+                CONF_REASONING_EFFORT, RECOMMENDED_REASONING_EFFORT
+            )
+            if reasoning_effort in ("", REASONING_EFFORT_DISABLED):
+                reasoning_effort = None
+
+            send_sampling_parameters = entry.options.get(
+                CONF_SEND_SAMPLING_PARAMETERS,
+                RECOMMENDED_SEND_SAMPLING_PARAMETERS,
+            )
+
             model_args = {
                 "model": model,
                 "input": messages,
                 "max_output_tokens": entry.options.get(
                     CONF_MAX_TOKENS, RECOMMENDED_MAX_TOKENS
                 ),
-                "top_p": entry.options.get(CONF_TOP_P, RECOMMENDED_TOP_P),
-                "temperature": entry.options.get(
-                    CONF_TEMPERATURE, RECOMMENDED_TEMPERATURE
-                ),
                 "user": call.context.user_id,
                 "store": False,
             }
 
-            if model.startswith("o"):
-                model_args["reasoning"] = {
-                    "effort": entry.options.get(
-                        CONF_REASONING_EFFORT, RECOMMENDED_REASONING_EFFORT
-                    )
-                }
+            if send_sampling_parameters:
+                model_args["top_p"] = entry.options.get(CONF_TOP_P, RECOMMENDED_TOP_P)
+                model_args["temperature"] = entry.options.get(
+                    CONF_TEMPERATURE, RECOMMENDED_TEMPERATURE
+                )
 
-            response: Response = await client.responses.create(**model_args)
+            if reasoning_effort:
+                model_args["reasoning"] = {"effort": reasoning_effort}
+
+            response: Response = await async_responses_create_with_param_fallback(
+                client,
+                model_args,
+                entry_id=entry.entry_id,
+                model=model,
+            )
 
         except openai.OpenAIError as err:
             raise HomeAssistantError(f"Error generating content: {err}") from err
