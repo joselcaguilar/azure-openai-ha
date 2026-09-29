@@ -6,6 +6,7 @@ import json
 from typing import Any, Literal, cast
 
 import openai
+import probatio
 from openai._streaming import AsyncStream
 from openai.types.responses import (
     EasyInputMessageParam,
@@ -32,7 +33,6 @@ from openai.types.responses import (
 )
 from openai.types.responses.response_input_param import FunctionCallOutput
 from openai.types.responses.web_search_tool_param import UserLocation
-from voluptuous_openapi import convert
 
 from homeassistant.components import conversation
 from homeassistant.config_entries import ConfigEntry
@@ -179,24 +179,18 @@ def _format_tool(
 ) -> FunctionToolParam:
     """Format tool specification."""
 
-    def _convert_tool_schema() -> Any:
-        """Convert tool schema, retrying without custom serializer.
+    def _convert_tool_schema() -> dict[str, Any]:
+        """Convert a Probatio tool schema to OpenAPI.
 
-        Some HA tool schemas convert to unsupported placeholders when a
-        serializer is supplied, but convert correctly without one.
+        Home Assistant 2026.9 tool schemas are Probatio schemas. The Assist
+        serializer returns probatio.UNSUPPORTED, which voluptuous-openapi does
+        not recognize, so conversion must go through probatio.to_openapi.
         """
-        converted = convert(tool.parameters, custom_serializer=custom_serializer)
-        if isinstance(converted, dict):
-            return converted
-
-        if custom_serializer is None:
-            return converted
-
-        fallback_converted = convert(tool.parameters)
-        if isinstance(fallback_converted, dict):
-            return fallback_converted
-
-        return converted
+        return probatio.to_openapi(
+            tool.parameters,
+            custom_serializer=custom_serializer,
+            openapi_version="3.1.0",
+        )
 
     def _to_azure_tool_schema(schema: Any) -> dict[str, Any]:
         """Normalize schema to Azure/OpenAI function-tool requirements.
