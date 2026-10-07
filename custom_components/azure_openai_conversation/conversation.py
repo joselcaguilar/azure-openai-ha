@@ -32,7 +32,7 @@ from openai.types.responses import (
 )
 from openai.types.responses.response_input_param import FunctionCallOutput
 from openai.types.responses.web_search_tool_param import UserLocation
-from voluptuous_openapi import convert
+from probatio import to_openapi
 
 from homeassistant.components import conversation
 from homeassistant.config_entries import ConfigEntry
@@ -138,7 +138,11 @@ def _format_tool(
         type="function",
         name=tool.name,
         parameters=_to_azure_tool_schema(
-            convert(tool.parameters, custom_serializer=custom_serializer)
+            to_openapi(
+                tool.parameters,
+                custom_serializer=custom_serializer,
+                openapi_version="3.1.0",
+            )
         ),
         description=tool.description,
         strict=False,
