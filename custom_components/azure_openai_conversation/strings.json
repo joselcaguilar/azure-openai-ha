@@ -1,118 +1,262 @@
 {
   "config": {
-    "step": {
-      "user": {
-        "data": {
-          "api_key": "[%key:common::config_flow::data::api_key%]",
-          "api_base": "[%key:common::config_flow::data::api_base%]"
-        },
-        "data_description": {
-          "api_base": "Example: {example_url}"
-        }
-      }
+    "abort": {
+      "already_configured": "[%key:common::config_flow::abort::already_configured_service%]",
+      "reauth_successful": "[%key:common::config_flow::abort::reauth_successful%]",
+      "reconfigure_successful": "[%key:common::config_flow::abort::reconfigure_successful%]"
     },
     "error": {
       "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]",
       "invalid_auth": "[%key:common::config_flow::error::invalid_auth%]",
       "unknown": "[%key:common::config_flow::error::unknown%]"
-    }
-  },
-  "options": {
+    },
     "step": {
-      "init": {
+      "user": {
+        "description": "Get the endpoint and an API key from the Keys and Endpoint section of your resource in Azure AI Foundry or in the Azure portal.",
         "data": {
-          "prompt": "Instructions",
-          "chat_model": "[%key:common::generic::model%]",
-          "max_tokens": "Maximum tokens to return in response",
-          "temperature": "Temperature",
-          "top_p": "Top P",
-          "llm_hass_api": "[%key:common::config_flow::data::llm_hass_api%]",
-          "recommended": "Recommended model settings",
-          "reasoning_effort": "Reasoning effort",
-          "web_search": "Enable web search",
-          "search_context_size": "Search context size",
-          "user_location": "Include home location"
+          "api_key": "[%key:common::config_flow::data::api_key%]",
+          "api_base": "API Base URL"
         },
         "data_description": {
-          "prompt": "Instruct how the LLM should respond. This can be a template.",
-          "reasoning_effort": "How many reasoning tokens the model should generate before creating a response to the prompt (for certain reasoning models)",
-          "web_search": "Allow the model to search the web for the latest information before generating a response",
-          "search_context_size": "High level guidance for the amount of context window space to use for the search",
-          "user_location": "Refine search results based on geography"
+          "api_key": "One of the keys of your Azure OpenAI or Azure AI Foundry resource.",
+          "api_base": "Example: {example_url}"
+        }
+      },
+      "reauth_confirm": {
+        "description": "Reauthentication required. Please enter your updated API key.",
+        "data": {
+          "api_key": "[%key:common::config_flow::data::api_key%]"
+        },
+        "data_description": {
+          "api_key": "One of the keys of your Azure OpenAI or Azure AI Foundry resource."
+        }
+      },
+      "reconfigure": {
+        "description": "Update the endpoint or the API key of your Azure OpenAI resource.",
+        "data": {
+          "api_key": "[%key:common::config_flow::data::api_key%]",
+          "api_base": "API Base URL"
+        },
+        "data_description": {
+          "api_key": "One of the keys of your Azure OpenAI or Azure AI Foundry resource.",
+          "api_base": "Example: {example_url}"
+        }
+      }
+    }
+  },
+  "config_subentries": {
+    "conversation": {
+      "abort": {
+        "entry_not_loaded": "Cannot add things while the configuration is disabled."
+      },
+      "entry_type": "Conversation agent",
+      "error": {
+        "code_interpreter_minimal_reasoning": "Code interpreter is not supported with minimal reasoning effort",
+        "model_not_supported": "This model is not supported, please select a different model",
+        "web_search_minimal_reasoning": "Web search is currently not supported with minimal reasoning effort"
+      },
+      "initiate_flow": {
+        "reconfigure": "Reconfigure conversation agent",
+        "user": "Add conversation agent"
+      },
+      "step": {
+        "additional": {
+          "data": {
+            "chat_model": "Model deployment",
+            "max_tokens": "Maximum tokens to return in response",
+            "store_responses": "Store requests and responses in Azure OpenAI",
+            "temperature": "Temperature",
+            "top_p": "Top P"
+          },
+          "data_description": {
+            "chat_model": "The name of your model deployment. Model specific options are shown when the deployment is named after the model, for example `gpt-5-mini`",
+            "store_responses": "If enabled, responses are stored by Azure OpenAI and can be retrieved later"
+          },
+          "title": "Additional settings"
+        },
+        "init": {
+          "data": {
+            "llm_hass_api": "[%key:common::config_flow::data::llm_hass_api%]",
+            "name": "[%key:common::config_flow::data::name%]",
+            "prompt": "Instructions",
+            "recommended": "Recommended model settings"
+          },
+          "data_description": {
+            "prompt": "Instruct how the LLM should respond. This can be a template."
+          }
+        },
+        "model": {
+          "data": {
+            "code_interpreter": "Enable code interpreter tool",
+            "inline_citations": "Include links in web search results",
+            "pro_mode": "Pro mode",
+            "reasoning_effort": "Reasoning effort",
+            "reasoning_summary": "Reasoning summary",
+            "search_context_size": "Search context size",
+            "user_location": "Include home location",
+            "verbosity": "Verbosity",
+            "web_search": "Enable web search"
+          },
+          "data_description": {
+            "code_interpreter": "This tool, also known as the python tool to the model, allows it to run code to answer questions",
+            "inline_citations": "If disabled, additional prompt is added to ask the model to not include source citations",
+            "pro_mode": "Perform more model work to improve reliability on difficult tasks and return a single final answer",
+            "reasoning_effort": "How many reasoning tokens the model should generate before creating a response to the prompt",
+            "reasoning_summary": "Controls the length and detail of reasoning summaries provided by the model",
+            "search_context_size": "High level guidance for the amount of context window space to use for the search",
+            "user_location": "Refine search results based on geography",
+            "verbosity": "How detailed the responses of the model should be",
+            "web_search": "Allow the model to search the web with Grounding with Bing Search before generating a response. Additional costs apply"
+          },
+          "title": "Model-specific options"
         }
       }
     },
-    "error": {
-      "model_not_supported": "This model is not supported, please select a different model",
-      "web_search_not_supported": "Web search is not supported by this model"
+    "ai_task_data": {
+      "abort": {
+        "entry_not_loaded": "Cannot add things while the configuration is disabled."
+      },
+      "entry_type": "AI task",
+      "error": {
+        "code_interpreter_minimal_reasoning": "Code interpreter is not supported with minimal reasoning effort",
+        "model_not_supported": "This model is not supported, please select a different model",
+        "web_search_minimal_reasoning": "Web search is currently not supported with minimal reasoning effort"
+      },
+      "initiate_flow": {
+        "reconfigure": "Reconfigure AI task",
+        "user": "Add AI task"
+      },
+      "step": {
+        "additional": {
+          "data": {
+            "chat_model": "Model deployment",
+            "max_tokens": "Maximum tokens to return in response",
+            "store_responses": "Store requests and responses in Azure OpenAI",
+            "temperature": "Temperature",
+            "top_p": "Top P"
+          },
+          "data_description": {
+            "chat_model": "The name of your model deployment. Model specific options are shown when the deployment is named after the model, for example `gpt-5-mini`",
+            "store_responses": "If enabled, responses are stored by Azure OpenAI and can be retrieved later"
+          },
+          "title": "Additional settings"
+        },
+        "init": {
+          "data": {
+            "name": "[%key:common::config_flow::data::name%]",
+            "recommended": "Recommended model settings"
+          }
+        },
+        "model": {
+          "data": {
+            "code_interpreter": "Enable code interpreter tool",
+            "inline_citations": "Include links in web search results",
+            "pro_mode": "Pro mode",
+            "reasoning_effort": "Reasoning effort",
+            "reasoning_summary": "Reasoning summary",
+            "search_context_size": "Search context size",
+            "user_location": "Include home location",
+            "verbosity": "Verbosity",
+            "web_search": "Enable web search",
+            "image_model": "Image model deployment"
+          },
+          "data_description": {
+            "code_interpreter": "This tool, also known as the python tool to the model, allows it to run code to answer questions",
+            "inline_citations": "If disabled, additional prompt is added to ask the model to not include source citations",
+            "pro_mode": "Perform more model work to improve reliability on difficult tasks and return a single final answer",
+            "reasoning_effort": "How many reasoning tokens the model should generate before creating a response to the prompt",
+            "reasoning_summary": "Controls the length and detail of reasoning summaries provided by the model",
+            "search_context_size": "High level guidance for the amount of context window space to use for the search",
+            "user_location": "Refine search results based on geography",
+            "verbosity": "How detailed the responses of the model should be",
+            "web_search": "Allow the model to search the web with Grounding with Bing Search before generating a response. Additional costs apply",
+            "image_model": "The name of the image model deployment used to generate images, for example `gpt-image-1`"
+          },
+          "title": "Model-specific options"
+        }
+      }
+    },
+    "stt": {
+      "abort": {
+        "entry_not_loaded": "Cannot add things while the configuration is disabled."
+      },
+      "entry_type": "Speech-to-text",
+      "initiate_flow": {
+        "reconfigure": "Reconfigure speech-to-text service",
+        "user": "Add speech-to-text service"
+      },
+      "step": {
+        "init": {
+          "data": {
+            "chat_model": "Model deployment",
+            "name": "[%key:common::config_flow::data::name%]",
+            "prompt": "Instructions"
+          },
+          "data_description": {
+            "chat_model": "The name of the deployment of the model to use to transcribe speech.",
+            "prompt": "Use this prompt to improve the quality of the transcripts. Translate to the pipeline language for best results."
+          }
+        }
+      }
+    },
+    "tts": {
+      "abort": {
+        "entry_not_loaded": "Cannot add things while the configuration is disabled."
+      },
+      "entry_type": "Text-to-speech",
+      "initiate_flow": {
+        "reconfigure": "Reconfigure text-to-speech service",
+        "user": "Add text-to-speech service"
+      },
+      "step": {
+        "init": {
+          "data": {
+            "chat_model": "Model deployment",
+            "name": "[%key:common::config_flow::data::name%]",
+            "prompt": "Instructions",
+            "tts_speed": "Speed"
+          },
+          "data_description": {
+            "chat_model": "The name of the deployment of the model to use to generate speech.",
+            "prompt": "Control aspects of speech, including accent, emotional range, intonation, impressions, speed of speech, tone, whispering, and more. Not supported by tts-1 and tts-1-hd",
+            "tts_speed": "Speed of the generated speech"
+          }
+        }
+      }
     }
   },
   "selector": {
     "reasoning_effort": {
       "options": {
+        "high": "[%key:common::state::high%]",
         "low": "[%key:common::state::low%]",
+        "max": "Max",
         "medium": "[%key:common::state::medium%]",
-        "high": "[%key:common::state::high%]"
+        "minimal": "Minimal",
+        "none": "None",
+        "xhigh": "X-High"
+      }
+    },
+    "reasoning_summary": {
+      "options": {
+        "auto": "[%key:common::state::auto%]",
+        "detailed": "Detailed",
+        "off": "[%key:common::state::off%]"
       }
     },
     "search_context_size": {
       "options": {
+        "high": "[%key:common::state::high%]",
         "low": "[%key:common::state::low%]",
-        "medium": "[%key:common::state::medium%]",
-        "high": "[%key:common::state::high%]"
-      }
-    }
-  },
-  "services": {
-    "generate_image": {
-      "name": "Generate image",
-      "description": "Turns a prompt into an image",
-      "fields": {
-        "config_entry": {
-          "name": "Config entry",
-          "description": "The config entry to use for this action"
-        },
-        "prompt": {
-          "name": "Prompt",
-          "description": "The text to turn into an image",
-          "example": "A photo of a dog"
-        },
-        "size": {
-          "name": "Size",
-          "description": "The size of the image to generate"
-        },
-        "quality": {
-          "name": "Quality",
-          "description": "The quality of the image that will be generated"
-        },
-        "style": {
-          "name": "Style",
-          "description": "The style of the generated image"
-        }
+        "medium": "[%key:common::state::medium%]"
       }
     },
-    "generate_content": {
-      "name": "Generate content",
-      "description": "Sends a conversational query to ChatGPT including any attached image or PDF files",
-      "fields": {
-        "config_entry": {
-          "name": "Config entry",
-          "description": "The config entry to use for this action"
-        },
-        "prompt": {
-          "name": "Prompt",
-          "description": "The prompt to send"
-        },
-        "filenames": {
-          "name": "Files",
-          "description": "List of files to upload"
-        }
+    "verbosity": {
+      "options": {
+        "high": "[%key:common::state::high%]",
+        "low": "[%key:common::state::low%]",
+        "medium": "[%key:common::state::medium%]"
       }
-    }
-  },
-  "exceptions": {
-    "invalid_config_entry": {
-      "message": "Invalid config entry provided. Got {config_entry}"
     }
   }
 }
