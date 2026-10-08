@@ -25,6 +25,7 @@ from .const import (
     CONF_RECOMMENDED,
     CONF_TEMPERATURE,
     CONF_TOP_P,
+    CONF_WEB_SEARCH_INLINE_CITATIONS,
     DEFAULT_AI_TASK_NAME,
     DOMAIN,
     LOGGER,
@@ -35,6 +36,10 @@ PLATFORMS = (Platform.AI_TASK, Platform.CONVERSATION, Platform.STT, Platform.TTS
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 type OpenAIConfigEntry = ConfigEntry[openai.AsyncClient]
+
+_LEGACY_CONF_SEND_SAMPLING_PARAMETERS = "send_sampling_parameters"
+_LEGACY_CONF_STRIP_WEB_CITATIONS = "strip_web_citations"
+_LEGACY_REASONING_EFFORT_DISABLED = "disabled"
 
 
 def normalize_azure_endpoint(uri: str) -> str:
@@ -120,6 +125,18 @@ def _migrate_options_to_subentries(
 ) -> None:
     """Move the conversation options of a version 1 entry into subentries."""
     options = dict(entry.options)
+    # Normalize options introduced by unreleased version 1 builds.
+    if options.get(CONF_REASONING_EFFORT) in (
+        "",
+        _LEGACY_REASONING_EFFORT_DISABLED,
+    ):
+        options[CONF_REASONING_EFFORT] = "none"
+    if (
+        strip_citations := options.pop(_LEGACY_CONF_STRIP_WEB_CITATIONS, None)
+    ) is not None:
+        options[CONF_WEB_SEARCH_INLINE_CITATIONS] = not strip_citations
+    options.pop(_LEGACY_CONF_SEND_SAMPLING_PARAMETERS, None)
+
     conversation = ConfigSubentry(
         data=MappingProxyType(options),
         subentry_type="conversation",
