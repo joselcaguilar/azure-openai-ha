@@ -204,7 +204,9 @@ async def _transform_stream(
                 yield {"role": "assistant"}
                 current_tool_call = event.item
         elif isinstance(event, ResponseOutputItemDoneEvent):
-            item = event.item.model_dump()
+            # openai 3.x models add attributes such as `async_` (alias `async`)
+            # that the API rejects when replayed by attribute name.
+            item = event.item.model_dump(by_alias=True, exclude_none=True)
             item.pop("status", None)
             if isinstance(event.item, ResponseReasoningItem):
                 messages.append(cast(ResponseReasoningItemParam, item))
