@@ -39,6 +39,7 @@ This is equivalent to the built-in [OpenAI Conversation integration](https://www
 | 4.3.y                             | 2026.2.1+              | - no need to specify - |
 | 4.4.y                             | 2026.6.0+              | - no need to specify - |
 | 4.5.y                             | 2026.9.0+              | - no need to specify - |
+| 5.0.y                             | 2026.10.0+             | - no need to specify - |
 
 </center>
 
