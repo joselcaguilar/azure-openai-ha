@@ -1,5 +1,5 @@
 {
-	"name": "Azure OpenAI HA - Python 3.13",
+	"name": "Azure OpenAI HA - Python 3.14",
 	"build": {
         "dockerfile": "Dockerfile",
         "context": ".."
