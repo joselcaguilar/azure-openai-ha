@@ -24,12 +24,22 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
       - name: Update PR
+        env:
+          DEPENDENCY_NAMES: ${{ steps.dependabot-metadata.outputs.dependency-names }}
+          NEW_VERSION: ${{ steps.dependabot-metadata.outputs.new-version }}
+          PREVIOUS_VERSION: ${{ steps.dependabot-metadata.outputs.previous-version }}
         run: |
-          list=$(echo ${{ steps.dependabot-metadata.outputs.dependency-names }})
-          if [[ $list == *"openai"* ]]; then
-              sed -i 's/${{ steps.dependabot-metadata.outputs.previous-version }}/${{ steps.dependabot-metadata.outputs.new-version }}/g' ${{ github.workspace }}/custom_components/azure_openai_conversation/manifest.json
+          if [[ "$DEPENDENCY_NAMES" == *"openai"* ]]; then
+            sed -i \
+              "s/$PREVIOUS_VERSION/$NEW_VERSION/g" \
+              "${{ github.workspace }}/custom_components/azure_openai_conversation/manifest.json"
           fi
 
-          git add ${{ github.workspace }}/custom_components/azure_openai_conversation/manifest.json
-          git commit -m "Updated openai dependency in manifest.json to ${{ steps.dependabot-metadata.outputs.new-version }}"
+          git add "${{ github.workspace }}/custom_components/azure_openai_conversation/manifest.json"
+          if git diff --cached --quiet; then
+            echo "No manifest update needed"
+            exit 0
+          fi
+
+          git commit -m "Updated openai dependency in manifest.json to $NEW_VERSION"
           git push
