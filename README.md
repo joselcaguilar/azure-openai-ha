@@ -75,7 +75,7 @@ Each conversation agent, AI task, speech-to-text and text-to-speech service has 
 2. In the sidebar click on [Settings -> Devices & Services](https://my.home-assistant.io/redirect/integrations/).
 3. Find the Azure OpenAI Conversation integration and click the ⋮ menu of the agent or service you want to change, then **Reconfigure**.
 
-Options available (same as built-in OpenAI conversation):
+Options available:
 - **Instructions:**
 The starting text for the AI language model to generate new text from. This text can include information about your Home Assistant instance, devices, and areas and is written using [Home Assistant Templating](https://www.home-assistant.io/docs/configuration/templating).
 
@@ -83,6 +83,8 @@ The starting text for the AI language model to generate new text from. This text
 
 - **Maximum Tokens to Return in Response**
 The maximum number of words or "tokens" that the AI model should generate in its completion of the prompt. For more information, see the [Azure OpenAI Completion Documentation](https://learn.microsoft.com/azure/cognitive-services/openai/overview#tokens).
+
+- **Send sampling parameters (temperature/top_p):** Enabled by default for each conversation agent and AI task. Disable **Recommended model settings** to access this option in **Additional settings**, then turn it off for newer models that reject `top_p` or `temperature`. When disabled, both parameters are omitted from the first request, regardless of the deployment name or reasoning effort. Your Temperature and Top P values remain saved and are used again if you re-enable this option for a model that supports them.
 
 - **Temperature:** A value that determines the level of creativity and risk-taking the model should use when generating text. A higher temperature means the model is more likely to generate unexpected results, while a lower temperature results in more deterministic results. See the [Azure OpenAI Completion Documentation](https://learn.microsoft.com/azure/cognitive-services/openai/how-to/completions) for more information.
 
@@ -103,6 +105,8 @@ Speech-to-text and text-to-speech services let you choose the model deployment a
 ## AI tasks
 
 Use the [`ai_task.generate_data`](https://www.home-assistant.io/integrations/ai_task/) action to generate text or structured data, with image or PDF attachments, and `ai_task.generate_image` to generate or edit images. They replace the `azure_openai_conversation.generate_content` and `azure_openai_conversation.generate_image` actions, which were removed in 5.0.
+
+The **Send sampling parameters (temperature/top_p)** option applies to `ai_task.generate_data`, including requests with image/PDF attachments and enabled tools. `ai_task.generate_image` uses the [Azure OpenAI Images API](https://learn.microsoft.com/azure/foundry/openai/how-to/dall-e#specify-api-options), which does not accept `temperature` or `top_p`; image generation and editing always omit both parameters, regardless of this setting.
 
 ## Endpoint and API key
 
@@ -135,8 +139,7 @@ While it'd be nice to have more developers, you can contribute without knowing h
 
 More languages can be added [here](./custom_components/azure_openai_conversation/translations), contributions are welcome :)
 
-Languages available:
-- English
+Translations are available for Chinese (Traditional), Dutch, English, French, German, Polish, Portuguese, Slovak, and Spanish. The sampling-option label and help text are translated for all of these languages; other UI text may fall back to English.
 
 ## Documentation
 
