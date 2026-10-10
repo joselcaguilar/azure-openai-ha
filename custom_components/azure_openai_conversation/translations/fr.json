@@ -17,5 +17,31 @@
         }
       }
     }
+  },
+  "config_subentries": {
+    "conversation": {
+      "step": {
+        "additional": {
+          "data": {
+            "send_sampling_parameters": "Envoyer les paramètres d'échantillonnage (temperature/top_p)"
+          },
+          "data_description": {
+            "send_sampling_parameters": "Désactivez cette option pour les modèles qui refusent temperature ou top_p. Les valeurs enregistrées sont ignorées tant que l'option est désactivée."
+          }
+        }
+      }
+    },
+    "ai_task_data": {
+      "step": {
+        "additional": {
+          "data": {
+            "send_sampling_parameters": "Envoyer les paramètres d'échantillonnage (temperature/top_p)"
+          },
+          "data_description": {
+            "send_sampling_parameters": "Désactivez cette option pour les modèles qui refusent temperature ou top_p. Les valeurs enregistrées sont ignorées tant que l'option est désactivée."
+          }
+        }
+      }
+    }
   }
 }

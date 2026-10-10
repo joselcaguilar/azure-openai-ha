@@ -64,12 +64,14 @@
           "data": {
             "chat_model": "Model deployment",
             "max_tokens": "Maximum tokens to return in response",
+            "send_sampling_parameters": "Send sampling parameters (temperature/top_p)",
             "store_responses": "Store requests and responses in Azure OpenAI",
             "temperature": "Temperature",
             "top_p": "Top P"
           },
           "data_description": {
             "chat_model": "The name of your model deployment. Model specific options are shown when the deployment is named after the model, for example `gpt-5-mini`",
+            "send_sampling_parameters": "Disable for models that reject temperature or top_p. The saved values are ignored while disabled.",
             "store_responses": "If enabled, responses are stored by Azure OpenAI and can be retrieved later"
           },
           "title": "Additional settings"
@@ -131,12 +133,14 @@
           "data": {
             "chat_model": "Model deployment",
             "max_tokens": "Maximum tokens to return in response",
+            "send_sampling_parameters": "Send sampling parameters (temperature/top_p)",
             "store_responses": "Store requests and responses in Azure OpenAI",
             "temperature": "Temperature",
             "top_p": "Top P"
           },
           "data_description": {
             "chat_model": "The name of your model deployment. Model specific options are shown when the deployment is named after the model, for example `gpt-5-mini`",
+            "send_sampling_parameters": "Disable for models that reject temperature or top_p. The saved values are ignored while disabled.",
             "store_responses": "If enabled, responses are stored by Azure OpenAI and can be retrieved later"
           },
           "title": "Additional settings"

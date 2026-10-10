@@ -75,6 +75,7 @@ from .const import (
     CONF_PRO_MODE,
     CONF_REASONING_EFFORT,
     CONF_REASONING_SUMMARY,
+    CONF_SEND_SAMPLING_PARAMETERS,
     CONF_STORE_RESPONSES,
     CONF_TEMPERATURE,
     CONF_TOP_P,
@@ -94,6 +95,7 @@ from .const import (
     RECOMMENDED_PRO_MODE,
     RECOMMENDED_REASONING_EFFORT,
     RECOMMENDED_REASONING_SUMMARY,
+    RECOMMENDED_SEND_SAMPLING_PARAMETERS,
     RECOMMENDED_STORE_RESPONSES,
     RECOMMENDED_STT_MODEL,
     RECOMMENDED_TEMPERATURE,
@@ -626,9 +628,9 @@ class AzureOpenAIBaseLLMEntity(Entity):
             stream=True,
         )
 
-        reasoning_model = model_args["model"].startswith(("o", "gpt-5", "gpt-6"))
-        if reasoning_model:
-            reasoning: Reasoning = {
+        reasoning: Reasoning | None = None
+        if model_args["model"].startswith(("o", "gpt-5", "gpt-6")):
+            reasoning = {
                 "effort": options.get(
                     CONF_REASONING_EFFORT, RECOMMENDED_REASONING_EFFORT
                 )
@@ -649,7 +651,9 @@ class AzureOpenAIBaseLLMEntity(Entity):
             # Azure needs the encrypted reasoning to continue without stored responses
             model_args["include"] = ["reasoning.encrypted_content"]
 
-        if not reasoning_model or model_args["reasoning"]["effort"] == "none":  # type: ignore[index]
+        if options.get(
+            CONF_SEND_SAMPLING_PARAMETERS, RECOMMENDED_SEND_SAMPLING_PARAMETERS
+        ) and (reasoning is None or reasoning["effort"] == "none"):
             model_args["top_p"] = options.get(CONF_TOP_P, RECOMMENDED_TOP_P)
             model_args["temperature"] = options.get(
                 CONF_TEMPERATURE, RECOMMENDED_TEMPERATURE

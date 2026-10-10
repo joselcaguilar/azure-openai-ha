@@ -23,6 +23,7 @@ from .const import (
     CONF_MAX_TOKENS,
     CONF_REASONING_EFFORT,
     CONF_RECOMMENDED,
+    CONF_SEND_SAMPLING_PARAMETERS,
     CONF_TEMPERATURE,
     CONF_TOP_P,
     CONF_WEB_SEARCH_INLINE_CITATIONS,
@@ -37,7 +38,6 @@ CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 type OpenAIConfigEntry = ConfigEntry[openai.AsyncClient]
 
-_LEGACY_CONF_SEND_SAMPLING_PARAMETERS = "send_sampling_parameters"
 _LEGACY_CONF_STRIP_WEB_CITATIONS = "strip_web_citations"
 _LEGACY_REASONING_EFFORT_DISABLED = "disabled"
 
@@ -135,8 +135,6 @@ def _migrate_options_to_subentries(
         strip_citations := options.pop(_LEGACY_CONF_STRIP_WEB_CITATIONS, None)
     ) is not None:
         options[CONF_WEB_SEARCH_INLINE_CITATIONS] = not strip_citations
-    options.pop(_LEGACY_CONF_SEND_SAMPLING_PARAMETERS, None)
-
     conversation = ConfigSubentry(
         data=MappingProxyType(options),
         subentry_type="conversation",
@@ -175,6 +173,7 @@ def _migrate_options_to_subentries(
                 for key in (
                     CONF_CHAT_MODEL,
                     CONF_MAX_TOKENS,
+                    CONF_SEND_SAMPLING_PARAMETERS,
                     CONF_TEMPERATURE,
                     CONF_TOP_P,
                     CONF_REASONING_EFFORT,

@@ -56,6 +56,7 @@ from .const import (
     CONF_REASONING_EFFORT,
     CONF_REASONING_SUMMARY,
     CONF_RECOMMENDED,
+    CONF_SEND_SAMPLING_PARAMETERS,
     CONF_STORE_RESPONSES,
     CONF_TEMPERATURE,
     CONF_TOP_P,
@@ -86,6 +87,7 @@ from .const import (
     RECOMMENDED_PRO_MODE,
     RECOMMENDED_REASONING_EFFORT,
     RECOMMENDED_REASONING_SUMMARY,
+    RECOMMENDED_SEND_SAMPLING_PARAMETERS,
     RECOMMENDED_STORE_RESPONSES,
     RECOMMENDED_STT_MODEL,
     RECOMMENDED_STT_OPTIONS,
@@ -374,6 +376,10 @@ class AzureOpenAISubentryFlowHandler(ConfigSubentryFlow):
                 CONF_MAX_TOKENS,
                 default=RECOMMENDED_MAX_TOKENS,
             ): int,
+            probatio.Optional(
+                CONF_SEND_SAMPLING_PARAMETERS,
+                default=RECOMMENDED_SEND_SAMPLING_PARAMETERS,
+            ): bool,
             probatio.Optional(
                 CONF_TOP_P,
                 default=RECOMMENDED_TOP_P,
