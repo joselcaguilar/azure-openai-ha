@@ -13,3 +13,17 @@ updates:
     ignore:
       # Dependabot should not update Home Assistant as that should match the homeassistant key in hacs.json
       - dependency-name: "homeassistant"
+      # Test dependencies must match Home Assistant core's homeassistant/package_constraints.txt for the targeted
+      # Home Assistant release, so bump them together with Home Assistant; security updates are still raised
+      - dependency-name: "gazetteer-matcher"
+        update-types: ["version-update:semver-major", "version-update:semver-minor", "version-update:semver-patch"]
+      - dependency-name: "hassil"
+        update-types: ["version-update:semver-major", "version-update:semver-minor", "version-update:semver-patch"]
+      - dependency-name: "home-assistant-intents"
+        update-types: ["version-update:semver-major", "version-update:semver-minor", "version-update:semver-patch"]
+      - dependency-name: "PyTurboJPEG"
+        update-types: ["version-update:semver-major", "version-update:semver-minor", "version-update:semver-patch"]
+      - dependency-name: "mutagen"
+        update-types: ["version-update:semver-major", "version-update:semver-minor", "version-update:semver-patch"]
+      - dependency-name: "ha-ffmpeg"
+        update-types: ["version-update:semver-major", "version-update:semver-minor", "version-update:semver-patch"]

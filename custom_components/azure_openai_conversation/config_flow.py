@@ -131,6 +131,7 @@ from .deployments import (
     DeploymentDiscoveryError,
     async_discover_deployments,
     deployment_subentries,
+    missing_deployment_services,
     sync_deployment_subentries,
     validate_resource_id,
 )
@@ -139,13 +140,17 @@ _LOGGER = logging.getLogger(__name__)
 
 STEP_USER_DATA_SCHEMA = probatio.Schema(
     {
-        probatio.Required(CONF_API_KEY): str,
+        probatio.Required(CONF_API_KEY): TextSelector(
+            TextSelectorConfig(type=TextSelectorType.PASSWORD)
+        ),
         probatio.Required(CONF_API_BASE): str,
     }
 )
 STEP_REAUTH_DATA_SCHEMA = probatio.Schema(
     {
-        probatio.Required(CONF_API_KEY): str,
+        probatio.Required(CONF_API_KEY): TextSelector(
+            TextSelectorConfig(type=TextSelectorType.PASSWORD)
+        ),
     }
 )
 
@@ -178,6 +183,14 @@ def _deployment_choices(
         for deployment in deployments
         if service in deployment["services"]
     ]
+
+
+def _deployment_list(deployments: Iterable[DeploymentData]) -> str:
+    """Render one Markdown list item per deployment, named like the selector options."""
+    return "\n".join(
+        f"- {deployment['name']} ({deployment['model_name']})"
+        for deployment in deployments
+    )
 
 
 def _default_deployment(entry: ConfigEntry, service: str, fallback: str) -> str:
@@ -544,17 +557,17 @@ class AzureOpenAIConfigFlow(
         )
 
     def _discovery_summary(self) -> dict[str, str]:
-        """Describe available services and unsupported models without exposing tokens."""
+        """List deployments with services left to add and unsupported models."""
         deployments = self._discovery.deployments if self._discovery else []
-        subentries = deployment_subentries(deployments)
+        missing = missing_deployment_services(self._existing_entry(), deployments)
+        available = [item for item in missing if item["services"]]
+        unsupported = [item for item in deployments if item["unsupported_reason"]]
+        # Reasons stay in debug logs; translated descriptions explain the categories.
         return {
-            "unsupported": "\n".join(
-                f"- {item['name']} ({item['model_name']}): {item['unsupported_reason']}"
-                for item in deployments
-                if item["unsupported_reason"]
-            )
-            or "None",
-            "service_count": str(len(subentries)),
+            "service_count": str(len(available)),
+            "services": _deployment_list(available),
+            "unsupported_count": str(len(unsupported)),
+            "unsupported": _deployment_list(unsupported),
         }
 
     async def async_step_discovery_confirm(
@@ -564,6 +577,10 @@ class AzureOpenAIConfigFlow(
         if self._discovery is None:
             return await self.async_step_discovery()
         if user_input is None:
+            entry = self._existing_entry()
+            missing = missing_deployment_services(entry, self._discovery.deployments)
+            if entry is not None and not deployment_subentries(missing):
+                return await self.async_step_discovery_all_added()
             schema: VolDictType = {}
             for service in (
                 "conversation",
@@ -572,7 +589,7 @@ class AzureOpenAIConfigFlow(
                 "stt",
                 "tts",
             ):
-                if choices := _deployment_choices(self._discovery.deployments, service):
+                if choices := _deployment_choices(missing, service):
                     schema[probatio.Optional(service, default=list)] = SelectSelector(
                         SelectSelectorConfig(
                             options=choices,
@@ -616,6 +633,19 @@ class AzureOpenAIConfigFlow(
             data=data,
             subentries=selected,
         )
+
+    async def async_step_discovery_all_added(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Explain that every compatible deployment already has its services."""
+        if user_input is None:
+            return self.async_show_form(
+                step_id="discovery_all_added",
+                data_schema=probatio.Schema({}),
+                description_placeholders=self._discovery_summary(),
+                last_step=True,
+            )
+        return await self.async_step_discovery_confirm({})
 
     async def async_step_reauth(
         self, entry_data: Mapping[str, Any]
