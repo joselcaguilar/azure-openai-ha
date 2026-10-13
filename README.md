@@ -97,11 +97,11 @@ Discovery reads the selected resource's actual ARM **deployments**, including al
 | Speech generation (`tts`, `tts-hd`, legacy `tts-1*`, `gpt-4o-mini-tts`) | One text-to-speech service per deployment |
 | Embeddings, realtime/audio chat, diarization, video, completion-only or other incompatible APIs | Reported in the discovery summary; no incompatible service is created |
 
-Batch-only deployments and deployments that have not succeeded are also reported rather than added. A chat-completions model is not assumed to support the Responses API merely because it supports chat. Capability-matched services remain subject to Azure model, region, quota, and networking availability.
+Batch-only deployments and deployments that have not succeeded are also reported rather than added. The discovery dialog lists these deployments by name and model; with debug logging enabled, the log shows why each one was not added. A chat-completions model is not assumed to support the Responses API merely because it supports chat. Capability-matched services remain subject to Azure model, region, quota, and networking availability.
 
-To add newly deployed models, use the **integration entry's** menu > **Reconfigure** > **Microsoft Entra ID and rediscover models**, then select which models to add for each service type. A valid linked account is reused. API-key configurations can migrate to Microsoft sign-in through the same menu. Selecting a conversation model does not also add an AI task; leave unwanted service types empty. You can leave every selection empty to refresh the inventory without adding services.
+To add newly deployed models, use the **integration entry's** menu > **Reconfigure** > **Microsoft Entra ID and rediscover models**, then select which models to add for each service type. Only model/service pairs that are not already added are listed; if every supported model is already added, the dialog says so, and submitting only saves the refreshed sign-in and deployment inventory. A valid linked account is reused. API-key configurations can migrate to Microsoft sign-in through the same menu. Selecting a conversation model does not also add an AI task; leave unwanted service types empty. You can leave every selection empty to refresh the inventory without adding services.
 
-Reconfiguration adds only explicitly selected missing services without duplicating matching deployment/service pairs or changing existing entity IDs, names, prompts, or customized options. Existing services remain configured even if not selected. Removed or unsupported deployments do not cause existing services to be deleted; remove or retarget stale services yourself. Services created by discovery use the deployment alias for API requests and the underlying model name for model-specific options, even when an alias is named `home-assistant` instead of `gpt-6.1-sol`.
+Reconfiguration adds only explicitly selected missing services without duplicating matching deployment/service pairs or changing existing entity IDs, names, prompts, or customized options. Existing services are not offered again and remain configured. Removed or unsupported deployments do not cause existing services to be deleted; remove or retarget stale services yourself. Services created by discovery use the deployment alias for API requests and the underlying model name for model-specific options, even when an alias is named `home-assistant` instead of `gpt-6.1-sol`.
 
 Delete an unwanted model/service from its menu under the integration entry. It stays removed across integration reloads, Home Assistant restarts, reauthentication, and rediscovery unless you explicitly select it again or manually add it. Startup refreshes existing deployment metadata without creating missing services. You do not need to delete the deployed model from Azure.
 
@@ -191,7 +191,7 @@ For the OAuth/discovery regression tests, create a Python 3.14 virtual environme
 
 More languages can be added [here](./custom_components/azure_openai_conversation/translations), contributions are welcome :)
 
-Translations are available for Chinese (Traditional), Dutch, English, French, German, Polish, Portuguese, Slovak, and Spanish. The sampling-option label and help text are translated for all of these languages; new OAuth/discovery text and other untranslated UI text fall back to English.
+The full UI is translated into Chinese (Traditional), Dutch, English, French, German, Polish, Portuguese, Slovak, and Spanish. Translation files use Home Assistant language codes (for example, `zh-Hant.json`, not `zh.json`), must contain the same keys as `en.json`, and must keep every `{placeholder}` unchanged; the tests enforce this.
 
 ## Documentation
 

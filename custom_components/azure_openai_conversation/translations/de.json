@@ -1,46 +1,359 @@
 {
+  "application_credentials": {
+    "description": "Registriere in [Microsoft Entra ID]({console_url}) eine Webanwendung mit diesem Umleitungs-URI: {redirect_url}. Füge für Microsoft Cognitive Services und Azure Service Management jeweils die delegierte Berechtigung user_impersonation hinzu. Gib die Client-ID und den geheimen Clientschlüssel der Anwendung ein, keinen API-Schlüssel einer Azure-Ressource. Details zu Berechtigungen und zur Einrichtung der Umleitung findest du in der Dokumentation der Integration."
+  },
   "config": {
     "abort": {
-      "single_instance_allowed": "Bereits konfiguriert. Es ist nur eine einzige Konfiguration möglich."
+      "already_configured": "Dienst ist bereits konfiguriert",
+      "missing_configuration": "Die Microsoft-Anmeldung ist nicht konfiguriert. Füge die Client-ID und den geheimen Clientschlüssel der Entra-Anwendung in den OAuth-Anmeldedaten von Home Assistant hinzu und versuche es dann erneut.",
+      "reauth_successful": "Die erneute Authentifizierung war erfolgreich",
+      "reconfigure_successful": "Die Neukonfiguration war erfolgreich"
     },
     "error": {
       "cannot_connect": "Verbindung fehlgeschlagen",
       "invalid_auth": "Ungültige Authentifizierung",
+      "deployment_access_denied": "Der angemeldete Benutzer kann die Bereitstellungen dieser Ressource nicht lesen. Stelle sicher, dass die App-Registrierung die Berechtigung für Azure Service Management enthält und die Zustimmung dafür erteilt wurde, und weise dem Benutzer auf Ressourcenebene die Rolle „Cognitive Services OpenAI User“ zu.",
+      "inference_access_denied": "Der angemeldete Benutzer kann Modelle erkennen, aber Azure OpenAI nicht aufrufen. Weise dem Benutzer auf Ressourcenebene die Rolle „Cognitive Services OpenAI User“ oder gleichwertige Inferenzberechtigungen zu.",
+      "resource_not_found": "Die Ressource wurde im ausgewählten Mandanten nicht gefunden. Überprüfe die Ressourcen-ID des Kontos und die Mandanten-ID.",
+      "invalid_resource_id": "Gib die ARM-Ressourcen-ID einer Ressource vom Typ Microsoft.CognitiveServices/accounts ein, keine Projekt-ID oder URL.",
+      "invalid_tenant_id": "Gib die Mandanten-ID des Verzeichnisses als UUID ein.",
+      "invalid_discovery_response": "Azure hat ungültige Bereitstellungsmetadaten oder einen nicht unterstützten Endpunkt zurückgegeben. Überprüfe die Ressource und versuche es erneut.",
+      "no_openai_deployments": "In dieser Ressource wurden keine OpenAI-Bereitstellungen gefunden. Modelle aus dem Katalog, die nicht bereitgestellt wurden, werden nicht hinzugefügt.",
+      "no_supported_deployments": "Es wurden OpenAI-Bereitstellungen gefunden, aber keine davon bietet eine von dieser Integration unterstützte API an. Sieh dir die Liste der nicht unterstützten Bereitstellungen an.",
       "unknown": "Unerwarteter Fehler"
     },
     "step": {
+      "user": {
+        "description": "Die Microsoft-Anmeldung erkennt bereitgestellte OpenAI-Modelle und lässt dich auswählen, welche Dienste hinzugefügt werden sollen. Die Authentifizierung per API-Schlüssel bleibt für die manuelle Konfiguration und API-Gateways verfügbar.",
+        "menu_options": {
+          "entra_id": "Anmeldung mit Microsoft Entra ID und Modellerkennung",
+          "api_key": "API-Schlüssel (manuelle Modellkonfiguration)"
+        }
+      },
       "api_key": {
+        "description": "Den Endpunkt und einen API-Schlüssel findest du im Abschnitt „Schlüssel und Endpunkt“ deiner Ressource in Azure AI Foundry oder im Azure-Portal.",
         "data": {
-          "api_key": "API Schlüssel",
-          "api_base": "API Basis in Azure",
-          "api_version": "API Version"
+          "api_key": "API-Schlüssel",
+          "api_base": "API-Basis-URL"
+        },
+        "data_description": {
+          "api_key": "Einer der Schlüssel deiner Azure OpenAI- oder Azure AI Foundry-Ressource.",
+          "api_base": "Beispiel: {example_url}"
+        }
+      },
+      "entra_id": {
+        "title": "Bereitgestellte OpenAI-Modelle erkennen",
+        "description": "Wähle die Foundry- oder Azure OpenAI-Ressource für die Erkennung aus. Du meldest dich über die OAuth-Anmeldedaten von Home Assistant mit Microsoft an. Dein Benutzer benötigt Inferenzzugriff und die Berechtigung, das Konto, die Bereitstellungen und die Modellmetadaten zu lesen.",
+        "data": {
+          "tenant_id": "Verzeichnis-ID (Mandant)",
+          "resource_id": "Azure-Ressourcen-ID"
+        },
+        "data_description": {
+          "tenant_id": "Die Mandanten-UUID aus Microsoft Entra ID > Übersicht.",
+          "resource_id": "Die ARM-ID des Kontos aus den Eigenschaften oder der JSON-Ansicht der Ressource im Azure-Portal, zum Beispiel /subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/my-group/providers/Microsoft.CognitiveServices/accounts/my-account. Gib keine Foundry-Projekt-ID ein."
+        }
+      },
+      "pick_implementation": {
+        "title": "OAuth-Anmeldedaten für Microsoft auswählen",
+        "data": {
+          "implementation": "OAuth-Anmeldedaten"
+        },
+        "data_description": {
+          "implementation": "Wähle die Entra-Anwendung aus, die für diese Home-Assistant-Instanz registriert wurde."
+        }
+      },
+      "discovery": {
+        "title": "Erkennung der Bereitstellungen wiederholen",
+        "description": "Die Erkennung wurde nicht abgeschlossen. Überprüfe den Fehler und versuche es erneut, nachdem du die Azure-Berechtigungen oder die Verbindung korrigiert hast.\n\nBereitstellungen, die nicht hinzugefügt werden können (keine unterstützte API, nur für Batch oder nicht erfolgreich bereitgestellt):\n{unsupported}"
+      },
+      "discovery_confirm": {
+        "title": "OpenAI-Dienste auswählen",
+        "description": "Dienste, die hinzugefügt werden können: {service_count}. Wähle für jeden Diensttyp die bereitgestellten Modelle aus, die hinzugefügt werden sollen; bereits zu Home Assistant hinzugefügte Dienste werden nicht aufgeführt. Standardmäßig ist nichts ausgewählt. Vorhandene Dienste, IDs, Namen, Anweisungen und angepasste Einstellungen bleiben erhalten; lass alle Felder leer, um die Erkennung zu aktualisieren, ohne Dienste hinzuzufügen. Gelöschte Dienste bleiben entfernt, sofern sie nicht ausdrücklich erneut ausgewählt werden.\n\nBereitstellungen, die nicht hinzugefügt werden können (keine unterstützte API, nur für Batch oder nicht erfolgreich bereitgestellt):\n{unsupported}\n\nEs werden keine Azure-Modelle bereitgestellt oder geändert.",
+        "data": {
+          "conversation": "Konversationsmodelle",
+          "ai_task_data": "Modelle für Daten-KI-Tasks",
+          "ai_task_image": "Modelle für Bild-KI-Tasks",
+          "stt": "Sprache-zu-Text-Modelle",
+          "tts": "Text-zu-Sprache-Modelle"
+        }
+      },
+      "discovery_all_added": {
+        "title": "Alle Modelle wurden bereits hinzugefügt",
+        "description": "Alle unterstützten Modelle, die in dieser Ressource bereitgestellt sind, wurden bereits für jeden kompatiblen Dienst zu Home Assistant hinzugefügt; es gibt also nichts Neues hinzuzufügen. Vorhandene Dienste und ihre Einstellungen bleiben erhalten; beim Fortfahren werden nur die aktualisierte Anmeldung und Bereitstellungsliste gespeichert.\n\nBereitstellungen, die nicht hinzugefügt werden können (keine unterstützte API, nur für Batch oder nicht erfolgreich bereitgestellt):\n{unsupported}\n\nEs werden keine Azure-Modelle bereitgestellt oder geändert."
+      },
+      "reauth_oauth_confirm": {
+        "description": "Melde dich erneut mit Microsoft an, um den Zugriff auf die konfigurierte Azure-Ressource zu erneuern. Vorhandene Dienste und ihre Optionen bleiben erhalten."
+      },
+      "reauth_confirm": {
+        "description": "Eine erneute Authentifizierung ist erforderlich. Bitte gib deinen aktualisierten API-Schlüssel ein.",
+        "data": {
+          "api_key": "API-Schlüssel"
+        },
+        "data_description": {
+          "api_key": "Einer der Schlüssel deiner Azure OpenAI- oder Azure AI Foundry-Ressource."
+        }
+      },
+      "reconfigure": {
+        "description": "Die Microsoft-Anmeldung aktualisiert die Liste der bereitgestellten Modelle und lässt dich weitere Dienste auswählen. Dabei wird ein gültiges verknüpftes Konto wiederverwendet, oder du kannst von einem API-Schlüssel migrieren. Wähle „API-Schlüssel oder Endpunkt aktualisieren“, um die manuelle Konfiguration beizubehalten.",
+        "menu_options": {
+          "entra_id": "Anmeldung mit Microsoft Entra ID und erneute Modellerkennung",
+          "api_key": "API-Schlüssel oder Endpunkt aktualisieren"
         }
       }
     }
   },
   "config_subentries": {
     "conversation": {
+      "abort": {
+        "entry_not_loaded": "Es können keine Dinge hinzugefügt werden, wenn die Konfiguration deaktiviert ist."
+      },
+      "entry_type": "Konversationsagent",
+      "error": {
+        "code_interpreter_minimal_reasoning": "Der Code-Interpreter wird mit minimalem Reasoning-Aufwand nicht unterstützt",
+        "model_not_supported": "Dieses Modell wird nicht unterstützt, bitte wähle ein anderes Modell",
+        "reasoning_effort_not_supported": "Wähle einen Reasoning-Aufwand, der vom zugrunde liegenden Modell der gewählten Bereitstellung unterstützt wird",
+        "web_search_minimal_reasoning": "Die Websuche wird derzeit mit minimalem Reasoning-Aufwand nicht unterstützt"
+      },
+      "initiate_flow": {
+        "reconfigure": "Konversationsagent neu konfigurieren",
+        "user": "Konversationsagent hinzufügen"
+      },
       "step": {
-        "init": {
+        "additional": {
           "data": {
-            "send_sampling_parameters": "Sampling-Parameter senden (temperature/top_p)"
+            "max_tokens": "Maximalzahl Token in der Antwort",
+            "store_responses": "Anfragen und Antworten in Azure OpenAI speichern"
           },
           "data_description": {
-            "send_sampling_parameters": "Standardmäßig deaktiviert. Temperature und Top P werden nur bei aktivierter Option angezeigt. Gespeicherte Werte bleiben bei deaktivierter Option erhalten."
+            "store_responses": "Wenn aktiviert, werden Antworten von Azure OpenAI gespeichert und können später abgerufen werden"
+          },
+          "title": "Weitere Einstellungen"
+        },
+        "init": {
+          "data": {
+            "chat_model": "Modellbereitstellung",
+            "llm_hass_api": "Home Assistant steuern",
+            "name": "Name",
+            "prompt": "Anweisungen",
+            "recommended": "Empfohlene Modelleinstellungen",
+            "reasoning_effort": "Reasoning-Aufwand",
+            "send_sampling_parameters": "Sampling-Parameter senden (temperature/top_p)",
+            "temperature": "Temperatur",
+            "top_p": "Top P"
+          },
+          "data_description": {
+            "chat_model": "Der genaue Name der Azure-Bereitstellung. Bei Anmeldung mit Microsoft zeigt die Auswahl bereitgestellte OpenAI-Modelle und die Namen der zugrunde liegenden Modelle.",
+            "recommended": "Empfohlene erweiterte Einstellungen verwenden, ohne die ausgewählte Bereitstellung, das Sampling oder den Reasoning-Aufwand zu ändern.",
+            "reasoning_effort": "Wie viel Reasoning das Modell vor dem Antworten durchführt. Die verfügbaren Stufen hängen vom zugrunde liegenden Modell ab; der Wert gilt auch bei empfohlenen Einstellungen.",
+            "send_sampling_parameters": "Standardmäßig deaktiviert. Temperatur und Top P werden nur bei aktivierter Option angezeigt; ihre gespeicherten Werte bleiben bei deaktivierter Option erhalten. Bei Reasoning-Modellen werden diese Parameter nur gesendet, wenn der Reasoning-Aufwand auf „Kein“ gesetzt ist.",
+            "prompt": "Gib an, wie das LLM antworten soll. Dies kann ein Template sein."
           }
+        },
+        "model": {
+          "data": {
+            "code_interpreter": "Codeinterpreter-Werkzeug aktivieren",
+            "inline_citations": "Links in Web-Suchergebnisse einbeziehen",
+            "pro_mode": "Pro-Modus",
+            "reasoning_summary": "Reasoning-Zusammenfassung",
+            "search_context_size": "Größe des Suchkontexts",
+            "user_location": "Standort des Zuhauses einbeziehen",
+            "verbosity": "Ausführlichkeit",
+            "web_search": "Websuche aktivieren"
+          },
+          "data_description": {
+            "code_interpreter": "Dieses Werkzeug, das auch als Python-Tool für das Modell bezeichnet wird, ermöglicht das Ausführen von Code zum Beantworten von Fragen",
+            "inline_citations": "Wenn deaktiviert, wird ein zusätzlicher Prompt an das Modell hinzugefügt, keine Quellenangaben zu machen",
+            "pro_mode": "Weitere Modellberechnungen durchführen, um die Zuverlässigkeit bei schwierigen Aufgaben zu verbessern und ein einziges Endergebnis zu erhalten",
+            "reasoning_summary": "Steuert die Länge und Detailliertheit der vom Modell gelieferten Zusammenfassungen der Schlussfolgerungen",
+            "search_context_size": "Allgemeine Leitlinie für den Umfang des für die Suche zu verwendenden Kontextfensters",
+            "user_location": "Suchergebnisse auf der Geografie basierend verfeinern",
+            "verbosity": "Wie ausführlich die Antworten des Modells sein sollen",
+            "web_search": "Dem Modell ermöglichen, vor dem Generieren einer Antwort mit Grounding with Bing Search im Web zu suchen. Es fallen zusätzliche Kosten an"
+          },
+          "title": "Modellspezifische Optionen"
         }
       }
     },
     "ai_task_data": {
+      "abort": {
+        "entry_not_loaded": "Es können keine Dinge hinzugefügt werden, wenn die Konfiguration deaktiviert ist."
+      },
+      "entry_type": "KI-Task",
+      "error": {
+        "code_interpreter_minimal_reasoning": "Der Code-Interpreter wird mit minimalem Reasoning-Aufwand nicht unterstützt",
+        "model_not_supported": "Dieses Modell wird nicht unterstützt, bitte wähle ein anderes Modell",
+        "reasoning_effort_not_supported": "Wähle einen Reasoning-Aufwand, der vom zugrunde liegenden Modell der gewählten Bereitstellung unterstützt wird",
+        "web_search_minimal_reasoning": "Die Websuche wird derzeit mit minimalem Reasoning-Aufwand nicht unterstützt"
+      },
+      "initiate_flow": {
+        "reconfigure": "KI-Task neu konfigurieren",
+        "user": "KI-Task hinzufügen"
+      },
+      "step": {
+        "additional": {
+          "data": {
+            "max_tokens": "Maximalzahl Token in der Antwort",
+            "store_responses": "Anfragen und Antworten in Azure OpenAI speichern"
+          },
+          "data_description": {
+            "store_responses": "Wenn aktiviert, werden Antworten von Azure OpenAI gespeichert und können später abgerufen werden"
+          },
+          "title": "Weitere Einstellungen"
+        },
+        "init": {
+          "data": {
+            "chat_model": "Modellbereitstellung",
+            "name": "Name",
+            "recommended": "Empfohlene Modelleinstellungen",
+            "reasoning_effort": "Reasoning-Aufwand",
+            "send_sampling_parameters": "Sampling-Parameter senden (temperature/top_p)",
+            "temperature": "Temperatur",
+            "top_p": "Top P"
+          },
+          "data_description": {
+            "chat_model": "Der genaue Name der Azure-Bereitstellung. Bei Anmeldung mit Microsoft zeigt die Auswahl bereitgestellte OpenAI-Modelle und die Namen der zugrunde liegenden Modelle.",
+            "recommended": "Empfohlene erweiterte Einstellungen verwenden, ohne die ausgewählte Bereitstellung, das Sampling oder den Reasoning-Aufwand zu ändern.",
+            "reasoning_effort": "Wie viel Reasoning das Modell vor dem Antworten durchführt. Die verfügbaren Stufen hängen vom zugrunde liegenden Modell ab; der Wert gilt auch bei empfohlenen Einstellungen.",
+            "send_sampling_parameters": "Standardmäßig deaktiviert. Temperatur und Top P werden nur bei aktivierter Option angezeigt; ihre gespeicherten Werte bleiben bei deaktivierter Option erhalten. Bei Reasoning-Modellen werden diese Parameter nur gesendet, wenn der Reasoning-Aufwand auf „Kein“ gesetzt ist."
+          }
+        },
+        "model": {
+          "data": {
+            "code_interpreter": "Codeinterpreter-Werkzeug aktivieren",
+            "inline_citations": "Links in Web-Suchergebnisse einbeziehen",
+            "pro_mode": "Pro-Modus",
+            "reasoning_summary": "Reasoning-Zusammenfassung",
+            "search_context_size": "Größe des Suchkontexts",
+            "user_location": "Standort des Zuhauses einbeziehen",
+            "verbosity": "Ausführlichkeit",
+            "web_search": "Websuche aktivieren",
+            "image_model": "Bildmodell-Bereitstellung"
+          },
+          "data_description": {
+            "code_interpreter": "Dieses Werkzeug, das auch als Python-Tool für das Modell bezeichnet wird, ermöglicht das Ausführen von Code zum Beantworten von Fragen",
+            "inline_citations": "Wenn deaktiviert, wird ein zusätzlicher Prompt an das Modell hinzugefügt, keine Quellenangaben zu machen",
+            "pro_mode": "Weitere Modellberechnungen durchführen, um die Zuverlässigkeit bei schwierigen Aufgaben zu verbessern und ein einziges Endergebnis zu erhalten",
+            "reasoning_summary": "Steuert die Länge und Detailliertheit der vom Modell gelieferten Zusammenfassungen der Schlussfolgerungen",
+            "search_context_size": "Allgemeine Leitlinie für den Umfang des für die Suche zu verwendenden Kontextfensters",
+            "user_location": "Suchergebnisse auf der Geografie basierend verfeinern",
+            "verbosity": "Wie ausführlich die Antworten des Modells sein sollen",
+            "web_search": "Dem Modell ermöglichen, vor dem Generieren einer Antwort mit Grounding with Bing Search im Web zu suchen. Es fallen zusätzliche Kosten an",
+            "image_model": "Optionale Bildmodell-Bereitstellung für diesen Daten-Task. Erkannte Chat-Tasks generieren keine Bilder, sofern keine ausgewählt ist; für Bildmodell-Bereitstellungen gibt es außerdem eigene, dafür vorgesehene Tasks."
+          },
+          "title": "Modellspezifische Optionen"
+        }
+      }
+    },
+    "ai_task_image": {
+      "abort": {
+        "entry_not_loaded": "Es können keine Dinge hinzugefügt werden, wenn die Konfiguration deaktiviert ist."
+      },
+      "entry_type": "Bild-KI-Task",
+      "error": {
+        "model_not_supported": "Wähle eine unterstützte Bildmodell-Bereitstellung aus."
+      },
+      "initiate_flow": {
+        "reconfigure": "Bild-KI-Task neu konfigurieren",
+        "user": "Bild-KI-Task hinzufügen"
+      },
       "step": {
         "init": {
           "data": {
-            "send_sampling_parameters": "Sampling-Parameter senden (temperature/top_p)"
+            "name": "Name",
+            "image_model": "Bildmodell-Bereitstellung"
           },
           "data_description": {
-            "send_sampling_parameters": "Standardmäßig deaktiviert. Temperature und Top P werden nur bei aktivierter Option angezeigt. Gespeicherte Werte bleiben bei deaktivierter Option erhalten."
+            "image_model": "Der genaue Bereitstellungsname eines OpenAI-Bildmodells. Dieser Task unterstützt die Bildgenerierung, nicht die Generierung von Text oder strukturierten Daten."
           }
         }
+      }
+    },
+    "stt": {
+      "abort": {
+        "entry_not_loaded": "Es können keine Dinge hinzugefügt werden, wenn die Konfiguration deaktiviert ist."
+      },
+      "entry_type": "Sprache-zu-Text",
+      "error": {
+        "model_not_supported": "Wähle eine unterstützte Sprache-zu-Text-Bereitstellung aus."
+      },
+      "initiate_flow": {
+        "reconfigure": "Sprache-zu-Text-Dienst neu konfigurieren",
+        "user": "Sprache-zu-Text-Dienst hinzufügen"
+      },
+      "step": {
+        "init": {
+          "data": {
+            "chat_model": "Modellbereitstellung",
+            "name": "Name",
+            "prompt": "Anweisungen"
+          },
+          "data_description": {
+            "chat_model": "Der Name der Bereitstellung des Modells, das zur Transkription von Sprache verwendet werden soll.",
+            "prompt": "Verwende diesen Prompt, um die Qualität der Transkripte zu verbessern. Übersetze ihn in die Pipeline-Sprache, um optimale Ergebnisse zu erzielen."
+          }
+        }
+      }
+    },
+    "tts": {
+      "abort": {
+        "entry_not_loaded": "Es können keine Dinge hinzugefügt werden, wenn die Konfiguration deaktiviert ist."
+      },
+      "entry_type": "Text-zu-Sprache",
+      "error": {
+        "model_not_supported": "Wähle eine unterstützte Text-zu-Sprache-Bereitstellung aus."
+      },
+      "initiate_flow": {
+        "reconfigure": "Text-zu-Sprache-Dienst neu konfigurieren",
+        "user": "Text-zu-Sprache-Dienst hinzufügen"
+      },
+      "step": {
+        "init": {
+          "data": {
+            "chat_model": "Modellbereitstellung",
+            "name": "Name",
+            "prompt": "Anweisungen",
+            "tts_speed": "Geschwindigkeit"
+          },
+          "data_description": {
+            "chat_model": "Der Name der Bereitstellung des Modells, das zur Sprachgenerierung verwendet werden soll.",
+            "prompt": "Aspekte der Sprache steuern, einschließlich Akzent, emotionaler Bandbreite, Intonation, Imitationen, Sprechgeschwindigkeit, Tonfall, Flüstern und mehr. Von tts-1 und tts-1-hd nicht unterstützt",
+            "tts_speed": "Geschwindigkeit der generierten Sprache"
+          }
+        }
+      }
+    }
+  },
+  "selector": {
+    "reasoning_effort": {
+      "options": {
+        "high": "Hoch",
+        "low": "Niedrig",
+        "max": "Max",
+        "medium": "Mittel",
+        "minimal": "Minimal",
+        "none": "Kein",
+        "xhigh": "X-Hoch"
+      }
+    },
+    "reasoning_summary": {
+      "options": {
+        "auto": "Auto",
+        "detailed": "Ausführlich",
+        "off": "Aus"
+      }
+    },
+    "search_context_size": {
+      "options": {
+        "high": "Hoch",
+        "low": "Niedrig",
+        "medium": "Mittel"
+      }
+    },
+    "verbosity": {
+      "options": {
+        "high": "Hoch",
+        "low": "Niedrig",
+        "medium": "Mittel"
       }
     }
   }

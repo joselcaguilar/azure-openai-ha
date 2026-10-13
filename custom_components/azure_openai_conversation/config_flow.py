@@ -131,6 +131,7 @@ from .deployments import (
     DeploymentDiscoveryError,
     async_discover_deployments,
     deployment_subentries,
+    missing_deployment_services,
     sync_deployment_subentries,
     validate_resource_id,
 )
@@ -544,17 +545,18 @@ class AzureOpenAIConfigFlow(
         )
 
     def _discovery_summary(self) -> dict[str, str]:
-        """Describe available services and unsupported models without exposing tokens."""
+        """Count services left to add and name unsupported models without tokens."""
         deployments = self._discovery.deployments if self._discovery else []
-        subentries = deployment_subentries(deployments)
+        missing = missing_deployment_services(self._existing_entry(), deployments)
+        # Reasons stay in debug logs; translated descriptions explain the categories.
         return {
             "unsupported": "\n".join(
-                f"- {item['name']} ({item['model_name']}): {item['unsupported_reason']}"
+                f"- {item['name']} ({item['model_name']})"
                 for item in deployments
                 if item["unsupported_reason"]
             )
-            or "None",
-            "service_count": str(len(subentries)),
+            or "—",
+            "service_count": str(len(deployment_subentries(missing))),
         }
 
     async def async_step_discovery_confirm(
@@ -564,6 +566,10 @@ class AzureOpenAIConfigFlow(
         if self._discovery is None:
             return await self.async_step_discovery()
         if user_input is None:
+            entry = self._existing_entry()
+            missing = missing_deployment_services(entry, self._discovery.deployments)
+            if entry is not None and not deployment_subentries(missing):
+                return await self.async_step_discovery_all_added()
             schema: VolDictType = {}
             for service in (
                 "conversation",
@@ -572,7 +578,7 @@ class AzureOpenAIConfigFlow(
                 "stt",
                 "tts",
             ):
-                if choices := _deployment_choices(self._discovery.deployments, service):
+                if choices := _deployment_choices(missing, service):
                     schema[probatio.Optional(service, default=list)] = SelectSelector(
                         SelectSelectorConfig(
                             options=choices,
@@ -616,6 +622,19 @@ class AzureOpenAIConfigFlow(
             data=data,
             subentries=selected,
         )
+
+    async def async_step_discovery_all_added(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Explain that every compatible deployment already has its services."""
+        if user_input is None:
+            return self.async_show_form(
+                step_id="discovery_all_added",
+                data_schema=probatio.Schema({}),
+                description_placeholders=self._discovery_summary(),
+                last_step=True,
+            )
+        return await self.async_step_discovery_confirm({})
 
     async def async_step_reauth(
         self, entry_data: Mapping[str, Any]

@@ -1,0 +1,360 @@
+{
+  "application_credentials": {
+    "description": "請在 [Microsoft Entra ID]({console_url}) 中註冊 Web 應用程式，並將 {redirect_url} 設為重新導向 URI。為 Microsoft Cognitive Services 和 Azure Service Management 新增委派的 user_impersonation 權限。請輸入該應用程式的用戶端識別碼與用戶端密碼，而非 Azure 資源的 API 金鑰。如需權限與重新導向的設定說明，請參閱整合文件。"
+  },
+  "config": {
+    "abort": {
+      "already_configured": "服務已經設定完成",
+      "missing_configuration": "尚未設定 Microsoft 登入。請在 Home Assistant 的應用憑證中新增 Entra 應用程式的用戶端識別碼與用戶端密碼，然後再試一次。",
+      "reauth_successful": "重新認證成功",
+      "reconfigure_successful": "重新設定成功"
+    },
+    "error": {
+      "cannot_connect": "連線失敗",
+      "invalid_auth": "身份驗證無效",
+      "deployment_access_denied": "已登入的使用者無法讀取此資源的部署。請確認應用程式註冊具有已授與同意的 Azure Service Management 權限，並授與該使用者資源範圍的 Cognitive Services OpenAI User 存取權。",
+      "inference_access_denied": "已登入的使用者可以探索模型，但無法呼叫 Azure OpenAI。請授與資源範圍的 Cognitive Services OpenAI User 存取權，或同等的推斷權限。",
+      "resource_not_found": "在所選租用戶中找不到該資源。請檢查帳戶資源識別碼與租用戶識別碼。",
+      "invalid_resource_id": "請輸入 Microsoft.CognitiveServices/accounts 資源的 ARM 資源識別碼，而非專案識別碼或 URL。",
+      "invalid_tenant_id": "請以 UUID 格式輸入目錄的租用戶識別碼。",
+      "invalid_discovery_response": "Azure 傳回了無效的部署中繼資料或不支援的端點。請檢查資源後再試一次。",
+      "no_openai_deployments": "此資源上找不到任何 OpenAI 部署。模型目錄中尚未部署的模型不會新增。",
+      "no_supported_deployments": "已找到 OpenAI 部署，但沒有任何部署提供此整合支援的 API。請參閱不支援的部署清單。",
+      "unknown": "未預期錯誤"
+    },
+    "step": {
+      "user": {
+        "description": "使用 Microsoft 登入可探索已部署的 OpenAI 模型，並選擇要新增哪些服務。API 金鑰驗證仍可用於手動設定及 API 閘道。",
+        "menu_options": {
+          "entra_id": "Microsoft Entra ID 登入與模型探索",
+          "api_key": "API 金鑰（手動設定模型）"
+        }
+      },
+      "api_key": {
+        "description": "請在 Azure AI Foundry 或 Azure 入口網站中，從資源的「金鑰和端點」區段取得端點與 API 金鑰。",
+        "data": {
+          "api_key": "API 金鑰",
+          "api_base": "API 基礎 URL"
+        },
+        "data_description": {
+          "api_key": "Azure OpenAI 或 Azure AI Foundry 資源的其中一個金鑰。",
+          "api_base": "範例：{example_url}"
+        }
+      },
+      "entra_id": {
+        "title": "探索已部署的 OpenAI 模型",
+        "description": "選擇要探索的 Foundry 或 Azure OpenAI 資源。接著將透過 Home Assistant 的應用憑證使用 Microsoft 登入。登入的使用者需要推斷存取權，以及讀取帳戶、部署與模型中繼資料的權限。",
+        "data": {
+          "tenant_id": "目錄（租用戶）識別碼",
+          "resource_id": "Azure 資源識別碼"
+        },
+        "data_description": {
+          "tenant_id": "租用戶 UUID，可在 Microsoft Entra ID > 概觀中找到。",
+          "resource_id": "帳戶的 ARM 識別碼，可在 Azure 入口網站上該資源的「屬性」或「JSON 檢視」中找到，例如 /subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/my-group/providers/Microsoft.CognitiveServices/accounts/my-account。請勿輸入 Foundry 專案識別碼。"
+        }
+      },
+      "pick_implementation": {
+        "title": "選擇 Microsoft 應用憑證",
+        "data": {
+          "implementation": "應用憑證"
+        },
+        "data_description": {
+          "implementation": "選擇為此 Home Assistant 實例註冊的 Entra 應用程式。"
+        }
+      },
+      "discovery": {
+        "title": "重試部署探索",
+        "description": "探索未完成。請檢查錯誤訊息，並在修正 Azure 權限或連線問題後再試一次。\n\n無法新增的部署（沒有支援的 API、僅限批次或未成功佈建）：\n{unsupported}"
+      },
+      "discovery_confirm": {
+        "title": "選擇 OpenAI 服務",
+        "description": "可新增的服務數量：{service_count}。請為每種服務類型選擇要新增的已部署模型；已新增至 Home Assistant 的服務不會列出。預設不會選取任何項目。現有服務及其識別碼、名稱、指示與自訂設定都會保留；若要重新整理探索結果而不新增服務，請將所有欄位留空。已刪除的服務除非再次明確選取，否則會維持移除狀態。\n\n無法新增的部署（沒有支援的 API、僅限批次或未成功佈建）：\n{unsupported}\n\n不會部署或修改任何 Azure 模型。",
+        "data": {
+          "conversation": "對話模型",
+          "ai_task_data": "資料 AI 任務模型",
+          "ai_task_image": "影像 AI 任務模型",
+          "stt": "語音轉文字模型",
+          "tts": "文字轉語音模型"
+        }
+      },
+      "discovery_all_added": {
+        "title": "所有模型皆已新增",
+        "description": "此資源上部署的每個支援模型，皆已針對各項相容服務新增至 Home Assistant，因此沒有新的項目可新增。現有服務及其設定都會保留；繼續操作只會儲存重新整理後的登入資訊與部署清單。\n\n無法新增的部署（沒有支援的 API、僅限批次或未成功佈建）：\n{unsupported}\n\n不會部署或修改任何 Azure 模型。"
+      },
+      "reauth_oauth_confirm": {
+        "description": "請再次使用 Microsoft 登入，以更新對已設定 Azure 資源的存取權。現有服務及其選項都會保留。"
+      },
+      "reauth_confirm": {
+        "description": "需要重新驗證。請輸入更新的 API 金鑰。",
+        "data": {
+          "api_key": "API 金鑰"
+        },
+        "data_description": {
+          "api_key": "Azure OpenAI 或 Azure AI Foundry 資源的其中一個金鑰。"
+        }
+      },
+      "reconfigure": {
+        "description": "使用 Microsoft 登入會重新整理已部署模型的清單，並可選擇要新增的其他服務。此選項會沿用有效的已連結帳戶，也可用於從 API 金鑰遷移。若要保留手動設定，請選擇「更新 API 金鑰或端點」。",
+        "menu_options": {
+          "entra_id": "使用 Microsoft Entra ID 重新探索模型",
+          "api_key": "更新 API 金鑰或端點"
+        }
+      }
+    }
+  },
+  "config_subentries": {
+    "conversation": {
+      "abort": {
+        "entry_not_loaded": "當設定被停用時，無法新增項目。"
+      },
+      "entry_type": "對話助理",
+      "error": {
+        "code_interpreter_minimal_reasoning": "推理等級為「最小」時不支援程式碼解譯器",
+        "model_not_supported": "不支援此模型，請選擇其他模型",
+        "reasoning_effort_not_supported": "請選擇所選部署之底層模型支援的推理等級",
+        "web_search_minimal_reasoning": "推理等級為「最小」時目前不支援網頁搜尋"
+      },
+      "initiate_flow": {
+        "reconfigure": "重新設定對話助理",
+        "user": "新增對話助理"
+      },
+      "step": {
+        "additional": {
+          "data": {
+            "max_tokens": "回應返回最高權杖數",
+            "store_responses": "在 Azure OpenAI 中儲存請求和回應"
+          },
+          "data_description": {
+            "store_responses": "若啟用，回應會由 Azure OpenAI 儲存，之後可再擷取"
+          },
+          "title": "其他設定"
+        },
+        "init": {
+          "data": {
+            "chat_model": "模型部署",
+            "llm_hass_api": "控制 Home Assistant",
+            "name": "名稱",
+            "prompt": "指示",
+            "recommended": "建議模型設定",
+            "reasoning_effort": "推理等級",
+            "send_sampling_parameters": "傳送取樣參數（temperature/top_p）",
+            "temperature": "溫度",
+            "top_p": "Top P"
+          },
+          "data_description": {
+            "chat_model": "Azure 部署的確切名稱。使用 Microsoft 登入時，選項會顯示已部署的 OpenAI 模型及其底層模型名稱。",
+            "recommended": "使用建議的進階設定，但不變更所選部署、取樣或推理等級。",
+            "reasoning_effort": "模型在回應前進行推理的程度。可用等級取決於底層模型；此設定在使用建議設定時同樣有效。",
+            "send_sampling_parameters": "預設為關閉。僅在啟用時才會顯示「溫度」和「Top P」；停用期間仍會保留其已儲存的值。推理模型僅在推理等級設為「無」時才會傳送這些參數。",
+            "prompt": "指示 LLM 如何回應。可以為模板。"
+          }
+        },
+        "model": {
+          "data": {
+            "code_interpreter": "啟用程式碼解譯器工具",
+            "inline_citations": "於網頁搜尋結果中包含連結",
+            "pro_mode": "專業模式",
+            "reasoning_summary": "推理摘要",
+            "search_context_size": "搜尋內容大小",
+            "user_location": "包含家庭所在位置",
+            "verbosity": "詳細程度",
+            "web_search": "啟用網頁搜尋"
+          },
+          "data_description": {
+            "code_interpreter": "此工具對模型而言又稱為 python 工具，可讓模型執行程式碼來回答問題",
+            "inline_citations": "若停用，會加入額外的提示，要求模型不要包含來源引用",
+            "pro_mode": "讓模型進行更多運算，以提升困難任務的可靠性，並只傳回單一最終答案",
+            "reasoning_summary": "控制模型提供的推理摘要的長度與詳細程度",
+            "search_context_size": "概略指定搜尋可使用多少內容視窗空間",
+            "user_location": "根據地理位置最佳化搜尋結果",
+            "verbosity": "模型回應應有的詳細程度",
+            "web_search": "允許模型在生成回應前透過 Grounding with Bing Search 搜尋網頁。會產生額外費用"
+          },
+          "title": "模型特定選項"
+        }
+      }
+    },
+    "ai_task_data": {
+      "abort": {
+        "entry_not_loaded": "當設定被停用時，無法新增項目。"
+      },
+      "entry_type": "AI 任務",
+      "error": {
+        "code_interpreter_minimal_reasoning": "推理等級為「最小」時不支援程式碼解譯器",
+        "model_not_supported": "不支援此模型，請選擇其他模型",
+        "reasoning_effort_not_supported": "請選擇所選部署之底層模型支援的推理等級",
+        "web_search_minimal_reasoning": "推理等級為「最小」時目前不支援網頁搜尋"
+      },
+      "initiate_flow": {
+        "reconfigure": "重新設定 AI 任務",
+        "user": "新增 AI 任務"
+      },
+      "step": {
+        "additional": {
+          "data": {
+            "max_tokens": "回應返回最高權杖數",
+            "store_responses": "在 Azure OpenAI 中儲存請求和回應"
+          },
+          "data_description": {
+            "store_responses": "若啟用，回應會由 Azure OpenAI 儲存，之後可再擷取"
+          },
+          "title": "其他設定"
+        },
+        "init": {
+          "data": {
+            "chat_model": "模型部署",
+            "name": "名稱",
+            "recommended": "建議模型設定",
+            "reasoning_effort": "推理等級",
+            "send_sampling_parameters": "傳送取樣參數（temperature/top_p）",
+            "temperature": "溫度",
+            "top_p": "Top P"
+          },
+          "data_description": {
+            "chat_model": "Azure 部署的確切名稱。使用 Microsoft 登入時，選項會顯示已部署的 OpenAI 模型及其底層模型名稱。",
+            "recommended": "使用建議的進階設定，但不變更所選部署、取樣或推理等級。",
+            "reasoning_effort": "模型在回應前進行推理的程度。可用等級取決於底層模型；此設定在使用建議設定時同樣有效。",
+            "send_sampling_parameters": "預設為關閉。僅在啟用時才會顯示「溫度」和「Top P」；停用期間仍會保留其已儲存的值。推理模型僅在推理等級設為「無」時才會傳送這些參數。"
+          }
+        },
+        "model": {
+          "data": {
+            "code_interpreter": "啟用程式碼解譯器工具",
+            "inline_citations": "於網頁搜尋結果中包含連結",
+            "pro_mode": "專業模式",
+            "reasoning_summary": "推理摘要",
+            "search_context_size": "搜尋內容大小",
+            "user_location": "包含家庭所在位置",
+            "verbosity": "詳細程度",
+            "web_search": "啟用網頁搜尋",
+            "image_model": "影像模型部署"
+          },
+          "data_description": {
+            "code_interpreter": "此工具對模型而言又稱為 python 工具，可讓模型執行程式碼來回答問題",
+            "inline_citations": "若停用，會加入額外的提示，要求模型不要包含來源引用",
+            "pro_mode": "讓模型進行更多運算，以提升困難任務的可靠性，並只傳回單一最終答案",
+            "reasoning_summary": "控制模型提供的推理摘要的長度與詳細程度",
+            "search_context_size": "概略指定搜尋可使用多少內容視窗空間",
+            "user_location": "根據地理位置最佳化搜尋結果",
+            "verbosity": "模型回應應有的詳細程度",
+            "web_search": "允許模型在生成回應前透過 Grounding with Bing Search 搜尋網頁。會產生額外費用",
+            "image_model": "此資料任務可選用的影像部署。除非選擇影像部署，否則透過探索新增的聊天模型任務不會生成影像；影像部署也另有專屬任務。"
+          },
+          "title": "模型特定選項"
+        }
+      }
+    },
+    "ai_task_image": {
+      "abort": {
+        "entry_not_loaded": "當設定被停用時，無法新增項目。"
+      },
+      "entry_type": "影像 AI 任務",
+      "error": {
+        "model_not_supported": "請選擇支援的影像部署。"
+      },
+      "initiate_flow": {
+        "reconfigure": "重新設定影像 AI 任務",
+        "user": "新增影像 AI 任務"
+      },
+      "step": {
+        "init": {
+          "data": {
+            "name": "名稱",
+            "image_model": "影像模型部署"
+          },
+          "data_description": {
+            "image_model": "OpenAI 影像模型的確切部署名稱。此任務支援影像生成，不支援文字或結構化資料生成。"
+          }
+        }
+      }
+    },
+    "stt": {
+      "abort": {
+        "entry_not_loaded": "當設定被停用時，無法新增項目。"
+      },
+      "entry_type": "語音轉文字",
+      "error": {
+        "model_not_supported": "請選擇支援的語音轉文字部署。"
+      },
+      "initiate_flow": {
+        "reconfigure": "重新設定語音轉文字服務",
+        "user": "新增語音轉文字服務"
+      },
+      "step": {
+        "init": {
+          "data": {
+            "chat_model": "模型部署",
+            "name": "名稱",
+            "prompt": "指示"
+          },
+          "data_description": {
+            "chat_model": "用於轉錄語音的模型部署名稱。",
+            "prompt": "使用此提示詞以提升轉錄品質。為獲得最佳結果，請翻譯成語音助理語言。"
+          }
+        }
+      }
+    },
+    "tts": {
+      "abort": {
+        "entry_not_loaded": "當設定被停用時，無法新增項目。"
+      },
+      "entry_type": "文字轉語音",
+      "error": {
+        "model_not_supported": "請選擇支援的文字轉語音部署。"
+      },
+      "initiate_flow": {
+        "reconfigure": "重新設定文字轉語音服務",
+        "user": "新增文字轉語音服務"
+      },
+      "step": {
+        "init": {
+          "data": {
+            "chat_model": "模型部署",
+            "name": "名稱",
+            "prompt": "指示",
+            "tts_speed": "速度"
+          },
+          "data_description": {
+            "chat_model": "用於生成語音的模型部署名稱。",
+            "prompt": "控制語音的各個面向，包括口音、情感範圍、語調、模仿、語速、音調、耳語等。tts-1 與 tts-1-hd 不支援此功能",
+            "tts_speed": "生成語音的速度"
+          }
+        }
+      }
+    }
+  },
+  "selector": {
+    "reasoning_effort": {
+      "options": {
+        "high": "高",
+        "low": "低",
+        "max": "最高",
+        "medium": "中",
+        "minimal": "最小",
+        "none": "無",
+        "xhigh": "超高"
+      }
+    },
+    "reasoning_summary": {
+      "options": {
+        "auto": "自動",
+        "detailed": "詳細",
+        "off": "關閉"
+      }
+    },
+    "search_context_size": {
+      "options": {
+        "high": "高",
+        "low": "低",
+        "medium": "中"
+      }
+    },
+    "verbosity": {
+      "options": {
+        "high": "高",
+        "low": "低",
+        "medium": "中"
+      }
+    }
+  }
+}

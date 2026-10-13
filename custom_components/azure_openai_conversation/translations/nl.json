@@ -1,46 +1,359 @@
 {
+  "application_credentials": {
+    "description": "Registreer een webapplicatie in [Microsoft Entra ID]({console_url}) met deze omleidings-URI: {redirect_url}. Voeg de gedelegeerde machtigingen user_impersonation toe voor Microsoft Cognitive Services en Azure Service Management. Voer de client-ID en het clientgeheim van de applicatie in, niet een API-sleutel van een Azure-resource. Raadpleeg de documentatie van de integratie voor het instellen van de machtigingen en de omleiding."
+  },
   "config": {
     "abort": {
-      "single_instance_allowed": "Al geconfigureerd. Slechts één configuratie mogelijk."
+      "already_configured": "Dienst is al geconfigureerd",
+      "missing_configuration": "Microsoft-aanmelding is niet geconfigureerd. Voeg de client-ID en het geheim van de Entra-applicatie toe bij “Inloggegevens van applicatie” in Home Assistant en probeer het opnieuw.",
+      "reauth_successful": "Herauthenticatie geslaagd",
+      "reconfigure_successful": "De herconfiguratie is gelukt"
     },
     "error": {
       "cannot_connect": "Kan geen verbinding maken",
       "invalid_auth": "Ongeldige authenticatie",
+      "deployment_access_denied": "De aangemelde gebruiker kan de implementaties van deze resource niet lezen. Zorg ervoor dat de app-registratie de machtiging Azure Service Management met verleende toestemming heeft en geef de gebruiker op resourceniveau toegang als Cognitive Services OpenAI User.",
+      "inference_access_denied": "De aangemelde gebruiker kan modellen detecteren, maar kan Azure OpenAI niet aanroepen. Verleen op resourceniveau toegang als Cognitive Services OpenAI User of gelijkwaardige inferentiemachtigingen.",
+      "resource_not_found": "De resource is niet gevonden in de geselecteerde tenant. Controleer de resource-ID van het account en de tenant-ID.",
+      "invalid_resource_id": "Voer de ARM-resource-ID in van een resource van het type Microsoft.CognitiveServices/accounts, geen project-ID of URL.",
+      "invalid_tenant_id": "Voer de tenant-ID van de map in als UUID.",
+      "invalid_discovery_response": "Azure heeft ongeldige implementatiemetadata of een niet-ondersteund eindpunt geretourneerd. Controleer de resource en probeer het opnieuw.",
+      "no_openai_deployments": "Er zijn geen OpenAI-implementaties gevonden in deze resource. Catalogusmodellen die niet zijn geïmplementeerd, worden niet toegevoegd.",
+      "no_supported_deployments": "Er zijn OpenAI-implementaties gevonden, maar geen ervan biedt een API die door deze integratie wordt ondersteund. Bekijk de lijst met niet-ondersteunde implementaties.",
       "unknown": "Onverwachte fout"
     },
     "step": {
+      "user": {
+        "description": "Microsoft-aanmelding detecteert geïmplementeerde OpenAI-modellen en laat je kiezen welke services je wilt toevoegen. Authenticatie met een API-sleutel blijft beschikbaar voor handmatige configuratie en API-gateways.",
+        "menu_options": {
+          "entra_id": "Aanmelden met Microsoft Entra ID en modeldetectie",
+          "api_key": "API-sleutel (handmatige modelconfiguratie)"
+        }
+      },
       "api_key": {
+        "description": "Haal het eindpunt en een API-sleutel op in het gedeelte “Sleutels en eindpunt” van je resource in Azure AI Foundry of in de Azure Portal.",
         "data": {
-          "api_key": "API sleutel",
-          "api_base": "API Basis in Azure",
-          "api_version": "API versie"
+          "api_key": "API-sleutel",
+          "api_base": "API-basis-URL"
+        },
+        "data_description": {
+          "api_key": "Een van de sleutels van je Azure OpenAI- of Azure AI Foundry-resource.",
+          "api_base": "Voorbeeld: {example_url}"
+        }
+      },
+      "entra_id": {
+        "title": "Geïmplementeerde OpenAI-modellen detecteren",
+        "description": "Kies de Foundry- of Azure OpenAI-resource waarin je modellen wilt detecteren. Je meldt je aan bij Microsoft via “Inloggegevens van applicatie” in Home Assistant. Je gebruiker heeft inferentietoegang nodig en toestemming om het account, de implementaties en de modelmetadata te lezen.",
+        "data": {
+          "tenant_id": "Map-ID (tenant)",
+          "resource_id": "Azure-resource-ID"
+        },
+        "data_description": {
+          "tenant_id": "De UUID van de tenant uit Microsoft Entra ID > Overzicht.",
+          "resource_id": "De ARM-ID van het account uit “Eigenschappen” of “JSON-weergave” van de resource in de Azure Portal, bijvoorbeeld /subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/my-group/providers/Microsoft.CognitiveServices/accounts/my-account. Voer geen Foundry-project-ID in."
+        }
+      },
+      "pick_implementation": {
+        "title": "Inloggegevens van Microsoft-applicatie selecteren",
+        "data": {
+          "implementation": "Inloggegevens van applicatie"
+        },
+        "data_description": {
+          "implementation": "Selecteer de Entra-applicatie die voor deze Home Assistant-instantie is geregistreerd."
+        }
+      },
+      "discovery": {
+        "title": "Detectie van implementaties opnieuw proberen",
+        "description": "De detectie is niet voltooid. Controleer de fout en probeer het opnieuw nadat je de Azure-machtigingen of de verbinding hebt hersteld.\n\nImplementaties die niet kunnen worden toegevoegd (geen ondersteunde API, alleen batch of niet succesvol ingericht):\n{unsupported}"
+      },
+      "discovery_confirm": {
+        "title": "OpenAI-services kiezen",
+        "description": "Services die kunnen worden toegevoegd: {service_count}. Selecteer per servicetype de geïmplementeerde modellen die je wilt toevoegen; services die al aan Home Assistant zijn toegevoegd, worden niet weergegeven. Standaard is niets geselecteerd. Bestaande services en hun ID's, namen, instructies en aangepaste instellingen blijven behouden; laat alle velden leeg om de detectie te vernieuwen zonder services toe te voegen. Verwijderde services blijven verwijderd, tenzij je ze expliciet opnieuw selecteert.\n\nImplementaties die niet kunnen worden toegevoegd (geen ondersteunde API, alleen batch of niet succesvol ingericht):\n{unsupported}\n\nEr worden geen Azure-modellen geïmplementeerd of gewijzigd.",
+        "data": {
+          "conversation": "Gespreksmodellen",
+          "ai_task_data": "Modellen voor AI-gegevenstaken",
+          "ai_task_image": "Modellen voor AI-afbeeldingstaken",
+          "stt": "Spraak-naar-tekst-modellen",
+          "tts": "Tekst-naar-spraak-modellen"
+        }
+      },
+      "discovery_all_added": {
+        "title": "Alle modellen zijn al toegevoegd",
+        "description": "Elk ondersteund model dat in deze resource is geïmplementeerd, is al aan Home Assistant toegevoegd voor elke compatibele service, dus er is niets nieuws om toe te voegen. Bestaande services en hun instellingen blijven behouden; doorgaan slaat alleen de vernieuwde aanmelding en de lijst met implementaties op.\n\nImplementaties die niet kunnen worden toegevoegd (geen ondersteunde API, alleen batch of niet succesvol ingericht):\n{unsupported}\n\nEr worden geen Azure-modellen geïmplementeerd of gewijzigd."
+      },
+      "reauth_oauth_confirm": {
+        "description": "Meld je opnieuw aan bij Microsoft om de toegang tot de geconfigureerde Azure-resource te vernieuwen. Bestaande services en hun opties blijven behouden."
+      },
+      "reauth_confirm": {
+        "description": "Opnieuw authenticeren is vereist. Voer de bijgewerkte API-sleutel in.",
+        "data": {
+          "api_key": "API-sleutel"
+        },
+        "data_description": {
+          "api_key": "Een van de sleutels van je Azure OpenAI- of Azure AI Foundry-resource."
+        }
+      },
+      "reconfigure": {
+        "description": "Microsoft-aanmelding vernieuwt de inventaris van geïmplementeerde modellen en laat je extra services kiezen. Er wordt een geldig gekoppeld account hergebruikt, of je kunt migreren vanaf een API-sleutel. Kies “API-sleutel of eindpunt bijwerken” om de handmatige configuratie te behouden.",
+        "menu_options": {
+          "entra_id": "Microsoft Entra ID en modellen opnieuw detecteren",
+          "api_key": "API-sleutel of eindpunt bijwerken"
         }
       }
     }
   },
   "config_subentries": {
     "conversation": {
+      "abort": {
+        "entry_not_loaded": "Kan geen dingen toevoegen wanneer de configuratie is uitgeschakeld."
+      },
+      "entry_type": "Gespreksagent",
+      "error": {
+        "code_interpreter_minimal_reasoning": "De code-interpreter wordt niet ondersteund met minimale redeneerinspanning",
+        "model_not_supported": "Dit model wordt niet ondersteund, selecteer een ander model",
+        "reasoning_effort_not_supported": "Selecteer een redeneerinspanning die wordt ondersteund door het onderliggende model van de gekozen implementatie",
+        "web_search_minimal_reasoning": "Zoeken op het web wordt momenteel niet ondersteund met minimale redeneerinspanning"
+      },
+      "initiate_flow": {
+        "reconfigure": "Gespreksagent opnieuw configureren",
+        "user": "Gespreksagent toevoegen"
+      },
       "step": {
-        "init": {
+        "additional": {
           "data": {
-            "send_sampling_parameters": "Samplingparameters verzenden (temperature/top_p)"
+            "max_tokens": "Maximaal aantal tokens in het antwoord",
+            "store_responses": "Verzoeken en antwoorden opslaan in Azure OpenAI"
           },
           "data_description": {
-            "send_sampling_parameters": "Standaard uitgeschakeld. Temperature en Top P verschijnen alleen als deze optie is ingeschakeld. Opgeslagen waarden blijven bewaard wanneer de optie is uitgeschakeld."
+            "store_responses": "Indien ingeschakeld, worden antwoorden door Azure OpenAI opgeslagen en kunnen ze later worden opgehaald"
+          },
+          "title": "Aanvullende instellingen"
+        },
+        "init": {
+          "data": {
+            "chat_model": "Modelimplementatie",
+            "llm_hass_api": "Beheer Home Assistant",
+            "name": "Naam",
+            "prompt": "Instructies",
+            "recommended": "Aanbevolen modelinstellingen",
+            "reasoning_effort": "Redeneerinspanning",
+            "send_sampling_parameters": "Samplingparameters verzenden (temperature/top_p)",
+            "temperature": "Temperatuur",
+            "top_p": "Top P"
+          },
+          "data_description": {
+            "chat_model": "De exacte naam van de Azure-implementatie. Met Microsoft-aanmelding tonen de keuzes geïmplementeerde OpenAI-modellen en de namen van hun onderliggende modellen.",
+            "recommended": "Gebruik de aanbevolen geavanceerde instellingen zonder de geselecteerde implementatie, sampling of redeneerinspanning te wijzigen.",
+            "reasoning_effort": "Hoeveel redeneerwerk het model uitvoert voordat het antwoordt. De beschikbare niveaus hangen af van het onderliggende model; dit geldt ook bij aanbevolen instellingen.",
+            "send_sampling_parameters": "Standaard uitgeschakeld. “Temperatuur” en “Top P” worden alleen weergegeven wanneer deze optie is ingeschakeld, en hun opgeslagen waarden blijven behouden zolang ze is uitgeschakeld. Redeneermodellen verzenden deze parameters alleen als de redeneerinspanning is ingesteld op “Geen”.",
+            "prompt": "Geef aan hoe de LLM moet reageren. Dit kan een template zijn."
           }
+        },
+        "model": {
+          "data": {
+            "code_interpreter": "Code-interpretertool inschakelen",
+            "inline_citations": "Links opnemen in webzoekresultaten",
+            "pro_mode": "Pro-modus",
+            "reasoning_summary": "Redeneersamenvatting",
+            "search_context_size": "Grootte van zoekcontext",
+            "user_location": "Thuislocatie opnemen",
+            "verbosity": "Detailniveau",
+            "web_search": "Zoeken op het web inschakelen"
+          },
+          "data_description": {
+            "code_interpreter": "Met deze tool, voor het model ook bekend als de Python-tool, kan het code uitvoeren om vragen te beantwoorden",
+            "inline_citations": "Indien uitgeschakeld, wordt een extra prompt toegevoegd die het model vraagt geen bronvermeldingen op te nemen",
+            "pro_mode": "Voer meer modelberekeningen uit om de betrouwbaarheid bij complexe taken te verbeteren en geef één definitief antwoord terug",
+            "reasoning_summary": "Bepaalt de lengte en het detailniveau van de redeneersamenvattingen die het model geeft",
+            "search_context_size": "Globale richtlijn voor hoeveel ruimte van het contextvenster voor de zoekopdracht wordt gebruikt",
+            "user_location": "Verfijn zoekresultaten op basis van geografische locatie",
+            "verbosity": "Hoe gedetailleerd de antwoorden van het model moeten zijn",
+            "web_search": "Sta het model toe op het web te zoeken met Grounding with Bing Search voordat het een antwoord genereert. Er zijn extra kosten van toepassing"
+          },
+          "title": "Modelspecifieke opties"
         }
       }
     },
     "ai_task_data": {
+      "abort": {
+        "entry_not_loaded": "Kan geen dingen toevoegen wanneer de configuratie is uitgeschakeld."
+      },
+      "entry_type": "AI-taak",
+      "error": {
+        "code_interpreter_minimal_reasoning": "De code-interpreter wordt niet ondersteund met minimale redeneerinspanning",
+        "model_not_supported": "Dit model wordt niet ondersteund, selecteer een ander model",
+        "reasoning_effort_not_supported": "Selecteer een redeneerinspanning die wordt ondersteund door het onderliggende model van de gekozen implementatie",
+        "web_search_minimal_reasoning": "Zoeken op het web wordt momenteel niet ondersteund met minimale redeneerinspanning"
+      },
+      "initiate_flow": {
+        "reconfigure": "AI-taak opnieuw configureren",
+        "user": "AI-taak toevoegen"
+      },
+      "step": {
+        "additional": {
+          "data": {
+            "max_tokens": "Maximaal aantal tokens in het antwoord",
+            "store_responses": "Verzoeken en antwoorden opslaan in Azure OpenAI"
+          },
+          "data_description": {
+            "store_responses": "Indien ingeschakeld, worden antwoorden door Azure OpenAI opgeslagen en kunnen ze later worden opgehaald"
+          },
+          "title": "Aanvullende instellingen"
+        },
+        "init": {
+          "data": {
+            "chat_model": "Modelimplementatie",
+            "name": "Naam",
+            "recommended": "Aanbevolen modelinstellingen",
+            "reasoning_effort": "Redeneerinspanning",
+            "send_sampling_parameters": "Samplingparameters verzenden (temperature/top_p)",
+            "temperature": "Temperatuur",
+            "top_p": "Top P"
+          },
+          "data_description": {
+            "chat_model": "De exacte naam van de Azure-implementatie. Met Microsoft-aanmelding tonen de keuzes geïmplementeerde OpenAI-modellen en de namen van hun onderliggende modellen.",
+            "recommended": "Gebruik de aanbevolen geavanceerde instellingen zonder de geselecteerde implementatie, sampling of redeneerinspanning te wijzigen.",
+            "reasoning_effort": "Hoeveel redeneerwerk het model uitvoert voordat het antwoordt. De beschikbare niveaus hangen af van het onderliggende model; dit geldt ook bij aanbevolen instellingen.",
+            "send_sampling_parameters": "Standaard uitgeschakeld. “Temperatuur” en “Top P” worden alleen weergegeven wanneer deze optie is ingeschakeld, en hun opgeslagen waarden blijven behouden zolang ze is uitgeschakeld. Redeneermodellen verzenden deze parameters alleen als de redeneerinspanning is ingesteld op “Geen”."
+          }
+        },
+        "model": {
+          "data": {
+            "code_interpreter": "Code-interpretertool inschakelen",
+            "inline_citations": "Links opnemen in webzoekresultaten",
+            "pro_mode": "Pro-modus",
+            "reasoning_summary": "Redeneersamenvatting",
+            "search_context_size": "Grootte van zoekcontext",
+            "user_location": "Thuislocatie opnemen",
+            "verbosity": "Detailniveau",
+            "web_search": "Zoeken op het web inschakelen",
+            "image_model": "Implementatie van afbeeldingsmodel"
+          },
+          "data_description": {
+            "code_interpreter": "Met deze tool, voor het model ook bekend als de Python-tool, kan het code uitvoeren om vragen te beantwoorden",
+            "inline_citations": "Indien uitgeschakeld, wordt een extra prompt toegevoegd die het model vraagt geen bronvermeldingen op te nemen",
+            "pro_mode": "Voer meer modelberekeningen uit om de betrouwbaarheid bij complexe taken te verbeteren en geef één definitief antwoord terug",
+            "reasoning_summary": "Bepaalt de lengte en het detailniveau van de redeneersamenvattingen die het model geeft",
+            "search_context_size": "Globale richtlijn voor hoeveel ruimte van het contextvenster voor de zoekopdracht wordt gebruikt",
+            "user_location": "Verfijn zoekresultaten op basis van geografische locatie",
+            "verbosity": "Hoe gedetailleerd de antwoorden van het model moeten zijn",
+            "web_search": "Sta het model toe op het web te zoeken met Grounding with Bing Search voordat het een antwoord genereert. Er zijn extra kosten van toepassing",
+            "image_model": "Optionele afbeeldingsimplementatie voor deze gegevenstaak. Gedetecteerde chattaken genereren geen afbeeldingen, tenzij er een is geselecteerd; afbeeldingsimplementaties hebben ook hun eigen specifieke taken."
+          },
+          "title": "Modelspecifieke opties"
+        }
+      }
+    },
+    "ai_task_image": {
+      "abort": {
+        "entry_not_loaded": "Kan geen dingen toevoegen wanneer de configuratie is uitgeschakeld."
+      },
+      "entry_type": "AI-afbeeldingstaak",
+      "error": {
+        "model_not_supported": "Selecteer een ondersteunde afbeeldingsimplementatie."
+      },
+      "initiate_flow": {
+        "reconfigure": "AI-afbeeldingstaak opnieuw configureren",
+        "user": "AI-afbeeldingstaak toevoegen"
+      },
       "step": {
         "init": {
           "data": {
-            "send_sampling_parameters": "Samplingparameters verzenden (temperature/top_p)"
+            "name": "Naam",
+            "image_model": "Implementatie van afbeeldingsmodel"
           },
           "data_description": {
-            "send_sampling_parameters": "Standaard uitgeschakeld. Temperature en Top P verschijnen alleen als deze optie is ingeschakeld. Opgeslagen waarden blijven bewaard wanneer de optie is uitgeschakeld."
+            "image_model": "De exacte implementatienaam van een OpenAI-afbeeldingsmodel. Deze taak ondersteunt het genereren van afbeeldingen, niet van tekst of gestructureerde gegevens."
           }
         }
+      }
+    },
+    "stt": {
+      "abort": {
+        "entry_not_loaded": "Kan geen dingen toevoegen wanneer de configuratie is uitgeschakeld."
+      },
+      "entry_type": "Spraak-naar-tekst",
+      "error": {
+        "model_not_supported": "Selecteer een ondersteunde spraak-naar-tekst-implementatie."
+      },
+      "initiate_flow": {
+        "reconfigure": "Spraak-naar-tekst-service opnieuw configureren",
+        "user": "Spraak-naar-tekst-service toevoegen"
+      },
+      "step": {
+        "init": {
+          "data": {
+            "chat_model": "Modelimplementatie",
+            "name": "Naam",
+            "prompt": "Instructies"
+          },
+          "data_description": {
+            "chat_model": "De naam van de implementatie van het model dat wordt gebruikt om spraak te transcriberen.",
+            "prompt": "Gebruik deze prompt om de kwaliteit van de transcripties te verbeteren. Vertaal de prompt naar de taal van de pipeline voor de beste resultaten."
+          }
+        }
+      }
+    },
+    "tts": {
+      "abort": {
+        "entry_not_loaded": "Kan geen dingen toevoegen wanneer de configuratie is uitgeschakeld."
+      },
+      "entry_type": "Tekst-naar-spraak",
+      "error": {
+        "model_not_supported": "Selecteer een ondersteunde tekst-naar-spraak-implementatie."
+      },
+      "initiate_flow": {
+        "reconfigure": "Tekst-naar-spraak-service opnieuw configureren",
+        "user": "Tekst-naar-spraak-service toevoegen"
+      },
+      "step": {
+        "init": {
+          "data": {
+            "chat_model": "Modelimplementatie",
+            "name": "Naam",
+            "prompt": "Instructies",
+            "tts_speed": "Snelheid"
+          },
+          "data_description": {
+            "chat_model": "De naam van de implementatie van het model dat wordt gebruikt om spraak te genereren.",
+            "prompt": "Bepaal aspecten van de spraak, zoals accent, emotioneel bereik, intonatie, imitaties, spreeksnelheid, toon, fluisteren en meer. Niet ondersteund door tts-1 en tts-1-hd",
+            "tts_speed": "Snelheid van de gegenereerde spraak"
+          }
+        }
+      }
+    }
+  },
+  "selector": {
+    "reasoning_effort": {
+      "options": {
+        "high": "Hoog",
+        "low": "Laag",
+        "max": "Maximaal",
+        "medium": "Gemiddeld",
+        "minimal": "Minimaal",
+        "none": "Geen",
+        "xhigh": "Zeer hoog"
+      }
+    },
+    "reasoning_summary": {
+      "options": {
+        "auto": "Automatisch",
+        "detailed": "Gedetailleerd",
+        "off": "Uit"
+      }
+    },
+    "search_context_size": {
+      "options": {
+        "high": "Hoog",
+        "low": "Laag",
+        "medium": "Gemiddeld"
+      }
+    },
+    "verbosity": {
+      "options": {
+        "high": "Hoog",
+        "low": "Laag",
+        "medium": "Gemiddeld"
       }
     }
   }

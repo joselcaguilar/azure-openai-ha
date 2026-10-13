@@ -20,6 +20,7 @@ from custom_components.azure_openai_conversation.deployments import (
     DeploymentDiscoveryError,
     async_discover_deployments,
     deployment_subentries,
+    missing_deployment_services,
     supported_services,
     sync_deployment_subentries,
     validate_inference_endpoint,
@@ -330,3 +331,45 @@ def test_legacy_default_is_made_explicit(hass: HomeAssistant) -> None:
     assert len(entry.subentries) == 1
     assert existing.data[CONF_CHAT_MODEL] == "gpt-4o-mini"
     assert not sync_deployment_subentries(hass, entry)
+
+
+def test_missing_services_exclude_added_and_legacy_defaults(
+    hass: HomeAssistant, deployment_inventory: list[DeploymentData]
+) -> None:
+    """Offer only compatible services that the entry does not already provide."""
+    assert missing_deployment_services(None, deployment_inventory) == (
+        deployment_inventory
+    )
+    legacy = DeploymentData(
+        id=f"{RESOURCE_ID}/deployments/gpt-4o-mini",
+        name="gpt-4o-mini",
+        model_name="gpt-4o-mini",
+        services=["conversation", "ai_task_data"],
+        unsupported_reason="",
+    )
+    inventory = [*deployment_inventory, legacy]
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={CONF_DEPLOYMENTS: inventory},
+        subentries_data=[
+            *(
+                item
+                for item in deployment_subentries(deployment_inventory)
+                if item["subentry_type"] != "tts"
+            ),
+            {
+                "subentry_type": "conversation",
+                "title": "Existing assistant",
+                "unique_id": None,
+                "data": {"recommended": True},
+            },
+        ],
+    )
+    entry.add_to_hass(hass)
+    missing = missing_deployment_services(entry, inventory)
+    assert [item["name"] for item in missing] == [item["name"] for item in inventory]
+    assert {item["name"]: item["services"] for item in missing if item["services"]} == {
+        "gpt-4o-mini": ["ai_task_data"],
+        "speak": ["tts"],
+    }
+    assert legacy["services"] == ["conversation", "ai_task_data"]

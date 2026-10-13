@@ -382,6 +382,41 @@ def deployment_subentries(
     return subentries
 
 
+def _existing_subentries(
+    entry: ConfigEntry, service: str, deployment_name: str
+) -> list[ConfigSubentry]:
+    """Return services of one type that already use a deployment."""
+    model_key = _MODEL_KEYS[service]
+    return [
+        subentry
+        for subentry in entry.subentries.values()
+        if subentry.subentry_type == service
+        and subentry.data.get(model_key, _LEGACY_MODELS[service]) == deployment_name
+    ]
+
+
+def missing_deployment_services(
+    entry: ConfigEntry | None, deployments: Iterable[DeploymentData]
+) -> list[DeploymentData]:
+    """Limit each deployment to compatible services not yet added to the entry."""
+    if entry is None:
+        return list(deployments)
+    return [
+        DeploymentData(
+            id=deployment["id"],
+            name=deployment["name"],
+            model_name=deployment["model_name"],
+            services=[
+                service
+                for service in deployment["services"]
+                if not _existing_subentries(entry, service, deployment["name"])
+            ],
+            unsupported_reason=deployment["unsupported_reason"],
+        )
+        for deployment in deployments
+    ]
+
+
 def sync_deployment_subentries(
     hass: HomeAssistant,
     entry: ConfigEntry,
@@ -394,13 +429,7 @@ def sync_deployment_subentries(
         service = candidate["subentry_type"]
         model_key = _MODEL_KEYS[service]
         deployment = candidate["data"][model_key]
-        existing = [
-            subentry
-            for subentry in entry.subentries.values()
-            if subentry.subentry_type == service
-            and subentry.data.get(model_key, _LEGACY_MODELS[service]) == deployment
-        ]
-        if existing:
+        if existing := _existing_subentries(entry, service, deployment):
             for subentry in existing:
                 updates = {
                     model_key: deployment,

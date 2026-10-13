@@ -64,11 +64,11 @@
       },
       "discovery": {
         "title": "Retry deployment discovery",
-        "description": "Discovery did not complete. Check the error and retry after correcting Azure permissions or connectivity.\n\nDeployments without a supported API:\n{unsupported}"
+        "description": "Discovery did not complete. Check the error and retry after correcting Azure permissions or connectivity.\n\nDeployments that cannot be added (no supported API, batch-only, or not successfully provisioned):\n{unsupported}"
       },
       "discovery_confirm": {
         "title": "Choose OpenAI services",
-        "description": "Available services: {service_count}. Select the deployed models to add for each service type. Nothing is selected by default. Existing services, IDs, names, instructions, and customized settings are preserved; leave all fields empty to refresh discovery without adding services. Deleted services stay removed unless explicitly selected again.\n\nDeployments without a supported API:\n{unsupported}\n\nNo Azure models are deployed or modified.",
+        "description": "Services available to add: {service_count}. Select the deployed models to add for each service type; services already added to Home Assistant are not listed. Nothing is selected by default. Existing services, IDs, names, instructions, and customized settings are preserved; leave all fields empty to refresh discovery without adding services. Deleted services stay removed unless explicitly selected again.\n\nDeployments that cannot be added (no supported API, batch-only, or not successfully provisioned):\n{unsupported}\n\nNo Azure models are deployed or modified.",
         "data": {
           "conversation": "Conversation models",
           "ai_task_data": "Data AI task models",
@@ -76,6 +76,10 @@
           "stt": "Speech-to-text models",
           "tts": "Text-to-speech models"
         }
+      },
+      "discovery_all_added": {
+        "title": "All models are already added",
+        "description": "Every supported model deployed on this resource is already added to Home Assistant for each compatible service, so there is nothing new to add. Existing services and their settings are preserved; continuing only saves the refreshed sign-in and deployment list.\n\nDeployments that cannot be added (no supported API, batch-only, or not successfully provisioned):\n{unsupported}\n\nNo Azure models are deployed or modified."
       },
       "reauth_oauth_confirm": {
         "description": "Sign in with Microsoft again to renew access to the configured Azure resource. Existing services and their options will be preserved."
@@ -90,7 +94,7 @@
         }
       },
       "reconfigure": {
-        "description": "Microsoft sign-in refreshes the deployed-model inventory and lets you choose additional services. It reuses a valid linked account or lets you migrate from an API key. Choose API key to keep manual configuration.",
+        "description": "Microsoft sign-in refreshes the deployed-model inventory and lets you choose additional services. It reuses a valid linked account or lets you migrate from an API key. Choose \"Update API key or endpoint\" to keep manual configuration.",
         "menu_options": {
           "entra_id": "Microsoft Entra ID and rediscover models",
           "api_key": "Update API key or endpoint"

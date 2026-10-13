@@ -1,46 +1,359 @@
 {
+  "application_credentials": {
+    "description": "Registra una aplicación web en [Microsoft Entra ID]({console_url}) con este URI de redirección: {redirect_url}. Añade los permisos delegados user_impersonation para Microsoft Cognitive Services y Azure Service Management. Introduce el ID de cliente y el secreto de cliente de la aplicación, no una clave API de un recurso de Azure. Consulta la documentación de la integración para configurar los permisos y la redirección."
+  },
   "config": {
     "abort": {
-      "single_instance_allowed": "Ya est\u00e1 configurado. Solo es posible una \u00fanica configuraci\u00f3n."
+      "already_configured": "El servicio ya está configurado",
+      "missing_configuration": "El inicio de sesión con Microsoft no está configurado. Añade el ID de cliente y el secreto de la aplicación de Entra en «Credenciales de la aplicación» de Home Assistant y vuelve a intentarlo.",
+      "reauth_successful": "La autenticación se volvió a realizar correctamente",
+      "reconfigure_successful": "Se volvió a configurar correctamente"
     },
     "error": {
       "cannot_connect": "No se pudo conectar",
-      "invalid_auth": "Autenticaci\u00f3n no v\u00e1lida",
+      "invalid_auth": "Autenticación no válida",
+      "deployment_access_denied": "El usuario que ha iniciado sesión no puede leer las implementaciones de este recurso. Asegúrate de que el registro de la aplicación tiene el permiso de Azure Service Management con el consentimiento otorgado y concede al usuario acceso de Cognitive Services OpenAI User en el ámbito del recurso.",
+      "inference_access_denied": "El usuario que ha iniciado sesión puede detectar modelos, pero no puede llamar a Azure OpenAI. Concede acceso de Cognitive Services OpenAI User en el ámbito del recurso o permisos de inferencia equivalentes.",
+      "resource_not_found": "No se encontró el recurso en el inquilino seleccionado. Comprueba el ID de recurso de la cuenta y el ID del inquilino.",
+      "invalid_resource_id": "Introduce el ID de recurso de ARM de un recurso Microsoft.CognitiveServices/accounts, no un ID de proyecto ni una URL.",
+      "invalid_tenant_id": "Introduce el ID del inquilino del directorio en formato UUID.",
+      "invalid_discovery_response": "Azure devolvió metadatos de implementación no válidos o un punto de conexión no compatible. Comprueba el recurso y vuelve a intentarlo.",
+      "no_openai_deployments": "No se encontraron implementaciones de OpenAI en este recurso. Los modelos del catálogo que no se han implementado no se añaden.",
+      "no_supported_deployments": "Se encontraron implementaciones de OpenAI, pero ninguna expone una API compatible con esta integración. Consulta la lista de implementaciones no compatibles.",
       "unknown": "Error inesperado"
     },
     "step": {
+      "user": {
+        "description": "El inicio de sesión con Microsoft detecta los modelos de OpenAI implementados y te permite elegir qué servicios añadir. La autenticación con clave API sigue disponible para la configuración manual y las puertas de enlace de API.",
+        "menu_options": {
+          "entra_id": "Inicio de sesión con Microsoft Entra ID y detección de modelos",
+          "api_key": "Clave API (configuración manual de modelos)"
+        }
+      },
       "api_key": {
+        "description": "Obtén el punto de conexión y una clave API en la sección «Claves y punto de conexión» de tu recurso en Azure AI Foundry o en Azure Portal.",
         "data": {
           "api_key": "Clave API",
-          "api_base": "Base API en Azure",
-          "api_version": "Versi\u00f3n de la API"
+          "api_base": "URL base de la API"
+        },
+        "data_description": {
+          "api_key": "Una de las claves de tu recurso de Azure OpenAI o Azure AI Foundry.",
+          "api_base": "Ejemplo: {example_url}"
+        }
+      },
+      "entra_id": {
+        "title": "Detectar modelos de OpenAI implementados",
+        "description": "Elige el recurso de Foundry o Azure OpenAI en el que quieres detectar modelos. Iniciarás sesión con Microsoft mediante «Credenciales de la aplicación» de Home Assistant. Tu usuario necesita acceso de inferencia y permiso para leer la cuenta, las implementaciones y los metadatos de los modelos.",
+        "data": {
+          "tenant_id": "ID del directorio (inquilino)",
+          "resource_id": "ID de recurso de Azure"
+        },
+        "data_description": {
+          "tenant_id": "El UUID del inquilino que aparece en Microsoft Entra ID > Información general.",
+          "resource_id": "El ID de ARM de la cuenta, que aparece en «Propiedades» o en «Vista JSON» del recurso en Azure Portal; por ejemplo, /subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/my-group/providers/Microsoft.CognitiveServices/accounts/my-account. No introduzcas un ID de proyecto de Foundry."
+        }
+      },
+      "pick_implementation": {
+        "title": "Seleccionar las credenciales de la aplicación de Microsoft",
+        "data": {
+          "implementation": "Credenciales de la aplicación"
+        },
+        "data_description": {
+          "implementation": "Selecciona la aplicación de Entra registrada para esta instancia de Home Assistant."
+        }
+      },
+      "discovery": {
+        "title": "Reintentar la detección de implementaciones",
+        "description": "La detección no se completó. Revisa el error y vuelve a intentarlo después de corregir los permisos de Azure o la conectividad.\n\nImplementaciones que no se pueden añadir (sin API compatible, solo por lotes o no aprovisionadas correctamente):\n{unsupported}"
+      },
+      "discovery_confirm": {
+        "title": "Elegir los servicios de OpenAI",
+        "description": "Servicios disponibles para añadir: {service_count}. Selecciona los modelos implementados que quieres añadir para cada tipo de servicio; los servicios ya añadidos a Home Assistant no aparecen en la lista. No hay nada seleccionado de forma predeterminada. Se conservan los servicios existentes y sus ID, nombres, instrucciones y ajustes personalizados; deja todos los campos vacíos para actualizar la detección sin añadir servicios. Los servicios eliminados no se vuelven a añadir salvo que los selecciones de nuevo explícitamente.\n\nImplementaciones que no se pueden añadir (sin API compatible, solo por lotes o no aprovisionadas correctamente):\n{unsupported}\n\nNo se implementa ni se modifica ningún modelo de Azure.",
+        "data": {
+          "conversation": "Modelos de conversación",
+          "ai_task_data": "Modelos de tareas de IA de datos",
+          "ai_task_image": "Modelos de tareas de IA de imágenes",
+          "stt": "Modelos de voz a texto",
+          "tts": "Modelos de texto a voz"
+        }
+      },
+      "discovery_all_added": {
+        "title": "Todos los modelos ya están añadidos",
+        "description": "Todos los modelos compatibles implementados en este recurso ya se han añadido a Home Assistant para cada servicio con el que son compatibles, por lo que no hay nada nuevo que añadir. Se conservan los servicios existentes y sus ajustes; al continuar, solo se guardan el inicio de sesión actualizado y la lista de implementaciones.\n\nImplementaciones que no se pueden añadir (sin API compatible, solo por lotes o no aprovisionadas correctamente):\n{unsupported}\n\nNo se implementa ni se modifica ningún modelo de Azure."
+      },
+      "reauth_oauth_confirm": {
+        "description": "Vuelve a iniciar sesión con Microsoft para renovar el acceso al recurso de Azure configurado. Se conservarán los servicios existentes y sus opciones."
+      },
+      "reauth_confirm": {
+        "description": "Es necesaria una nueva autenticación. Por favor, introduce tu clave API actualizada.",
+        "data": {
+          "api_key": "Clave API"
+        },
+        "data_description": {
+          "api_key": "Una de las claves de tu recurso de Azure OpenAI o Azure AI Foundry."
+        }
+      },
+      "reconfigure": {
+        "description": "El inicio de sesión con Microsoft actualiza el inventario de modelos implementados y te permite elegir servicios adicionales. Reutiliza una cuenta vinculada válida o te permite migrar desde una clave API. Elige «Actualizar la clave API o el punto de conexión» para mantener la configuración manual.",
+        "menu_options": {
+          "entra_id": "Microsoft Entra ID y volver a detectar los modelos",
+          "api_key": "Actualizar la clave API o el punto de conexión"
         }
       }
     }
   },
   "config_subentries": {
     "conversation": {
+      "abort": {
+        "entry_not_loaded": "No se pueden añadir cosas mientras la configuración está desactivada."
+      },
+      "entry_type": "Agente de conversación",
+      "error": {
+        "code_interpreter_minimal_reasoning": "El intérprete de código no es compatible con un esfuerzo de razonamiento mínimo",
+        "model_not_supported": "Este modelo no es compatible, por favor, selecciona un modelo diferente",
+        "reasoning_effort_not_supported": "Selecciona un esfuerzo de razonamiento compatible con el modelo subyacente de la implementación elegida",
+        "web_search_minimal_reasoning": "Actualmente, la búsqueda web no es compatible con un esfuerzo de razonamiento mínimo"
+      },
+      "initiate_flow": {
+        "reconfigure": "Volver a configurar el agente de conversación",
+        "user": "Añadir agente de conversación"
+      },
       "step": {
-        "init": {
+        "additional": {
           "data": {
-            "send_sampling_parameters": "Enviar par\u00e1metros de muestreo (temperature/top_p)"
+            "max_tokens": "Máximo de tokens para devolver en respuesta",
+            "store_responses": "Almacenar solicitudes y respuestas en Azure OpenAI"
           },
           "data_description": {
-            "send_sampling_parameters": "Desactivada por defecto. Temperature y Top P solo aparecen al activar esta opci\u00f3n. Los valores guardados se conservan mientras est\u00e9 desactivada."
+            "store_responses": "Si está habilitado, Azure OpenAI almacena las respuestas y se pueden recuperar más tarde"
+          },
+          "title": "Configuración adicional"
+        },
+        "init": {
+          "data": {
+            "chat_model": "Implementación del modelo",
+            "llm_hass_api": "Controla Home Assistant",
+            "name": "Nombre",
+            "prompt": "Instrucciones",
+            "recommended": "Ajustes recomendados del modelo",
+            "reasoning_effort": "Esfuerzo de razonamiento",
+            "send_sampling_parameters": "Enviar parámetros de muestreo (temperature/top_p)",
+            "temperature": "Temperatura",
+            "top_p": "Top P"
+          },
+          "data_description": {
+            "chat_model": "El nombre exacto de la implementación de Azure. Con el inicio de sesión con Microsoft, las opciones muestran los modelos de OpenAI implementados y los nombres de sus modelos subyacentes.",
+            "recommended": "Usa los ajustes avanzados recomendados sin cambiar la implementación seleccionada, el muestreo ni el esfuerzo de razonamiento.",
+            "reasoning_effort": "Cuánto razona el modelo antes de responder. Los niveles disponibles dependen del modelo subyacente; esto también se aplica con los ajustes recomendados.",
+            "send_sampling_parameters": "Desactivado de forma predeterminada. «Temperatura» y «Top P» solo aparecen cuando está activado, y sus valores guardados se conservan mientras está desactivado. Los modelos de razonamiento solo envían estos parámetros con el esfuerzo de razonamiento establecido en «Ninguno».",
+            "prompt": "Indica cómo debe responder el LLM. Puede ser una plantilla."
           }
+        },
+        "model": {
+          "data": {
+            "code_interpreter": "Habilitar la herramienta de interpretación de código",
+            "inline_citations": "Incluir enlaces en los resultados de las búsquedas web",
+            "pro_mode": "Modo profesional",
+            "reasoning_summary": "Resumen del razonamiento",
+            "search_context_size": "Tamaño del contexto de búsqueda",
+            "user_location": "Incluir ubicación de la casa",
+            "verbosity": "Nivel de detalle",
+            "web_search": "Habilitar la búsqueda web"
+          },
+          "data_description": {
+            "code_interpreter": "Esta herramienta, también conocida como la herramienta Python para el modelo, le permite ejecutar código para responder preguntas",
+            "inline_citations": "Si está deshabilitado, se añade una instrucción adicional para pedir al modelo que no incluya citas de fuentes",
+            "pro_mode": "Realiza un procesamiento más exhaustivo del modelo para mejorar la fiabilidad en tareas complejas y devolver una única respuesta final",
+            "reasoning_summary": "Controla la longitud y el detalle de los resúmenes de razonamiento proporcionados por el modelo",
+            "search_context_size": "Orientación de alto nivel sobre la cantidad de espacio de la ventana de contexto que se debe utilizar para la búsqueda",
+            "user_location": "Refinar los resultados de búsqueda según la geografía",
+            "verbosity": "Cuán detalladas deben ser las respuestas del modelo",
+            "web_search": "Permite que el modelo busque en la web con Grounding with Bing Search antes de generar una respuesta. Se aplican costes adicionales"
+          },
+          "title": "Opciones específicas del modelo"
         }
       }
     },
     "ai_task_data": {
+      "abort": {
+        "entry_not_loaded": "No se pueden añadir cosas mientras la configuración está desactivada."
+      },
+      "entry_type": "Tarea de IA",
+      "error": {
+        "code_interpreter_minimal_reasoning": "El intérprete de código no es compatible con un esfuerzo de razonamiento mínimo",
+        "model_not_supported": "Este modelo no es compatible, por favor, selecciona un modelo diferente",
+        "reasoning_effort_not_supported": "Selecciona un esfuerzo de razonamiento compatible con el modelo subyacente de la implementación elegida",
+        "web_search_minimal_reasoning": "Actualmente, la búsqueda web no es compatible con un esfuerzo de razonamiento mínimo"
+      },
+      "initiate_flow": {
+        "reconfigure": "Volver a configurar la tarea de IA",
+        "user": "Añadir tarea de IA"
+      },
+      "step": {
+        "additional": {
+          "data": {
+            "max_tokens": "Máximo de tokens para devolver en respuesta",
+            "store_responses": "Almacenar solicitudes y respuestas en Azure OpenAI"
+          },
+          "data_description": {
+            "store_responses": "Si está habilitado, Azure OpenAI almacena las respuestas y se pueden recuperar más tarde"
+          },
+          "title": "Configuración adicional"
+        },
+        "init": {
+          "data": {
+            "chat_model": "Implementación del modelo",
+            "name": "Nombre",
+            "recommended": "Ajustes recomendados del modelo",
+            "reasoning_effort": "Esfuerzo de razonamiento",
+            "send_sampling_parameters": "Enviar parámetros de muestreo (temperature/top_p)",
+            "temperature": "Temperatura",
+            "top_p": "Top P"
+          },
+          "data_description": {
+            "chat_model": "El nombre exacto de la implementación de Azure. Con el inicio de sesión con Microsoft, las opciones muestran los modelos de OpenAI implementados y los nombres de sus modelos subyacentes.",
+            "recommended": "Usa los ajustes avanzados recomendados sin cambiar la implementación seleccionada, el muestreo ni el esfuerzo de razonamiento.",
+            "reasoning_effort": "Cuánto razona el modelo antes de responder. Los niveles disponibles dependen del modelo subyacente; esto también se aplica con los ajustes recomendados.",
+            "send_sampling_parameters": "Desactivado de forma predeterminada. «Temperatura» y «Top P» solo aparecen cuando está activado, y sus valores guardados se conservan mientras está desactivado. Los modelos de razonamiento solo envían estos parámetros con el esfuerzo de razonamiento establecido en «Ninguno»."
+          }
+        },
+        "model": {
+          "data": {
+            "code_interpreter": "Habilitar la herramienta de interpretación de código",
+            "inline_citations": "Incluir enlaces en los resultados de las búsquedas web",
+            "pro_mode": "Modo profesional",
+            "reasoning_summary": "Resumen del razonamiento",
+            "search_context_size": "Tamaño del contexto de búsqueda",
+            "user_location": "Incluir ubicación de la casa",
+            "verbosity": "Nivel de detalle",
+            "web_search": "Habilitar la búsqueda web",
+            "image_model": "Implementación del modelo de imágenes"
+          },
+          "data_description": {
+            "code_interpreter": "Esta herramienta, también conocida como la herramienta Python para el modelo, le permite ejecutar código para responder preguntas",
+            "inline_citations": "Si está deshabilitado, se añade una instrucción adicional para pedir al modelo que no incluya citas de fuentes",
+            "pro_mode": "Realiza un procesamiento más exhaustivo del modelo para mejorar la fiabilidad en tareas complejas y devolver una única respuesta final",
+            "reasoning_summary": "Controla la longitud y el detalle de los resúmenes de razonamiento proporcionados por el modelo",
+            "search_context_size": "Orientación de alto nivel sobre la cantidad de espacio de la ventana de contexto que se debe utilizar para la búsqueda",
+            "user_location": "Refinar los resultados de búsqueda según la geografía",
+            "verbosity": "Cuán detalladas deben ser las respuestas del modelo",
+            "web_search": "Permite que el modelo busque en la web con Grounding with Bing Search antes de generar una respuesta. Se aplican costes adicionales",
+            "image_model": "Implementación de imágenes opcional para esta tarea de datos. Las tareas de chat detectadas no generan imágenes a menos que se seleccione una; las implementaciones de imágenes también tienen sus propias tareas dedicadas."
+          },
+          "title": "Opciones específicas del modelo"
+        }
+      }
+    },
+    "ai_task_image": {
+      "abort": {
+        "entry_not_loaded": "No se pueden añadir cosas mientras la configuración está desactivada."
+      },
+      "entry_type": "Tarea de IA de imágenes",
+      "error": {
+        "model_not_supported": "Selecciona una implementación de imágenes compatible."
+      },
+      "initiate_flow": {
+        "reconfigure": "Volver a configurar la tarea de IA de imágenes",
+        "user": "Añadir tarea de IA de imágenes"
+      },
       "step": {
         "init": {
           "data": {
-            "send_sampling_parameters": "Enviar par\u00e1metros de muestreo (temperature/top_p)"
+            "name": "Nombre",
+            "image_model": "Implementación del modelo de imágenes"
           },
           "data_description": {
-            "send_sampling_parameters": "Desactivada por defecto. Temperature y Top P solo aparecen al activar esta opci\u00f3n. Los valores guardados se conservan mientras est\u00e9 desactivada."
+            "image_model": "El nombre exacto de la implementación de un modelo de imágenes de OpenAI. Esta tarea admite la generación de imágenes, no la generación de texto ni de datos estructurados."
           }
         }
+      }
+    },
+    "stt": {
+      "abort": {
+        "entry_not_loaded": "No se pueden añadir cosas mientras la configuración está desactivada."
+      },
+      "entry_type": "Voz a texto",
+      "error": {
+        "model_not_supported": "Selecciona una implementación de voz a texto compatible."
+      },
+      "initiate_flow": {
+        "reconfigure": "Volver a configurar el servicio de voz a texto",
+        "user": "Añadir servicio de voz a texto"
+      },
+      "step": {
+        "init": {
+          "data": {
+            "chat_model": "Implementación del modelo",
+            "name": "Nombre",
+            "prompt": "Instrucciones"
+          },
+          "data_description": {
+            "chat_model": "El nombre de la implementación del modelo que se usará para transcribir la voz.",
+            "prompt": "Usa este prompt para mejorar la calidad de las transcripciones. Tradúcelo al idioma del pipeline para obtener los mejores resultados."
+          }
+        }
+      }
+    },
+    "tts": {
+      "abort": {
+        "entry_not_loaded": "No se pueden añadir cosas mientras la configuración está desactivada."
+      },
+      "entry_type": "Texto a voz",
+      "error": {
+        "model_not_supported": "Selecciona una implementación de texto a voz compatible."
+      },
+      "initiate_flow": {
+        "reconfigure": "Volver a configurar el servicio de texto a voz",
+        "user": "Añadir servicio de texto a voz"
+      },
+      "step": {
+        "init": {
+          "data": {
+            "chat_model": "Implementación del modelo",
+            "name": "Nombre",
+            "prompt": "Instrucciones",
+            "tts_speed": "Velocidad"
+          },
+          "data_description": {
+            "chat_model": "El nombre de la implementación del modelo que se usará para generar la voz.",
+            "prompt": "Controla aspectos de la voz, como el acento, el rango emocional, la entonación, las imitaciones, la velocidad del habla, el tono, el susurro y más. No es compatible con tts-1 ni tts-1-hd",
+            "tts_speed": "Velocidad de la voz generada"
+          }
+        }
+      }
+    }
+  },
+  "selector": {
+    "reasoning_effort": {
+      "options": {
+        "high": "Alto",
+        "low": "Bajo",
+        "max": "Máximo",
+        "medium": "Medio",
+        "minimal": "Mínimo",
+        "none": "Ninguno",
+        "xhigh": "Muy alto"
+      }
+    },
+    "reasoning_summary": {
+      "options": {
+        "auto": "Auto",
+        "detailed": "Detallado",
+        "off": "Apagado"
+      }
+    },
+    "search_context_size": {
+      "options": {
+        "high": "Alto",
+        "low": "Bajo",
+        "medium": "Medio"
+      }
+    },
+    "verbosity": {
+      "options": {
+        "high": "Alto",
+        "low": "Bajo",
+        "medium": "Medio"
       }
     }
   }

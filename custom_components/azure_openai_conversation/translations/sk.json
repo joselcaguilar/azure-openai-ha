@@ -1,46 +1,359 @@
 {
+  "application_credentials": {
+    "description": "Zaregistrujte webovú aplikáciu v [Microsoft Entra ID]({console_url}) s týmto URI presmerovania: {redirect_url}. Pridajte delegované povolenia user_impersonation pre Microsoft Cognitive Services a Azure Service Management. Zadajte ID klienta a tajný kľúč klienta aplikácie, nie API kľúč prostriedku Azure. Informácie o povoleniach a nastavení presmerovania nájdete v dokumentácii integrácie."
+  },
   "config": {
     "abort": {
-      "single_instance_allowed": "Už je nakonfigurovaný. Je možná len jedna konfigurácia."
+      "already_configured": "Služba už je nakonfigurovaná",
+      "missing_configuration": "Prihlásenie cez Microsoft nie je nakonfigurované. Pridajte ID klienta a tajný kľúč aplikácie Entra v časti Prihlasovacie údaje aplikácie v Home Assistant a potom to skúste znova.",
+      "reauth_successful": "Opätovné overenie bolo úspešné",
+      "reconfigure_successful": "Rekonfigurácia bola úspešná"
     },
     "error": {
       "cannot_connect": "Nepodarilo sa pripojiť",
       "invalid_auth": "Neplatné overenie",
+      "deployment_access_denied": "Prihlásený používateľ nemôže čítať nasadenia tohto prostriedku. Skontrolujte, či má registrácia aplikácie povolenie Azure Service Management s udeleným súhlasom, a udeľte používateľovi prístup s rolou Cognitive Services OpenAI User na úrovni prostriedku.",
+      "inference_access_denied": "Prihlásený používateľ môže zisťovať modely, ale nemôže volať Azure OpenAI. Udeľte prístup s rolou Cognitive Services OpenAI User na úrovni prostriedku alebo ekvivalentné povolenia na inferenciu.",
+      "resource_not_found": "Prostriedok sa vo vybranom nájomníkovi nenašiel. Skontrolujte ID prostriedku konta a ID nájomníka.",
+      "invalid_resource_id": "Zadajte ARM ID prostriedku typu Microsoft.CognitiveServices/accounts, nie ID projektu ani adresu URL.",
+      "invalid_tenant_id": "Zadajte ID nájomníka adresára vo formáte UUID.",
+      "invalid_discovery_response": "Azure vrátil neplatné metaúdaje nasadení alebo nepodporovaný koncový bod. Skontrolujte prostriedok a skúste to znova.",
+      "no_openai_deployments": "V tomto prostriedku sa nenašli žiadne nasadenia OpenAI. Modely z katalógu, ktoré neboli nasadené, sa nepridávajú.",
+      "no_supported_deployments": "Našli sa nasadenia OpenAI, ale žiadne z nich neposkytuje API podporované touto integráciou. Pozrite si zoznam nepodporovaných nasadení.",
       "unknown": "Neočakávaná chyba"
     },
     "step": {
+      "user": {
+        "description": "Prihlásenie cez Microsoft zistí nasadené modely OpenAI a umožní vám vybrať, ktoré služby sa majú pridať. Overenie pomocou API kľúča zostáva k dispozícii na manuálnu konfiguráciu a brány API.",
+        "menu_options": {
+          "entra_id": "Prihlásenie cez Microsoft Entra ID a zisťovanie modelov",
+          "api_key": "API kľúč (manuálna konfigurácia modelov)"
+        }
+      },
       "api_key": {
+        "description": "Získajte koncový bod a API kľúč v časti Keys and Endpoint vášho prostriedku v Azure AI Foundry alebo na portáli Azure.",
         "data": {
           "api_key": "API kľúč",
-          "api_base": "API základňa v Azure",
-          "api_version": "API verzia"
+          "api_base": "Základná adresa URL API"
+        },
+        "data_description": {
+          "api_key": "Jeden z kľúčov vášho prostriedku Azure OpenAI alebo Azure AI Foundry.",
+          "api_base": "Príklad: {example_url}"
+        }
+      },
+      "entra_id": {
+        "title": "Zisťovanie nasadených modelov OpenAI",
+        "description": "Vyberte prostriedok Foundry alebo Azure OpenAI, v ktorom sa majú zistiť modely. Prihlásite sa cez Microsoft pomocou funkcie Prihlasovacie údaje aplikácie v Home Assistant. Váš používateľ potrebuje prístup na inferenciu a povolenie na čítanie konta, nasadení a metaúdajov modelov.",
+        "data": {
+          "tenant_id": "ID adresára (nájomníka)",
+          "resource_id": "ID prostriedku Azure"
+        },
+        "data_description": {
+          "tenant_id": "UUID nájomníka zo stránky Microsoft Entra ID > Overview.",
+          "resource_id": "ARM ID konta z časti Properties alebo JSON view prostriedku na portáli Azure, napríklad /subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/my-group/providers/Microsoft.CognitiveServices/accounts/my-account. Nezadávajte ID projektu Foundry."
+        }
+      },
+      "pick_implementation": {
+        "title": "Vyberte prihlasovacie údaje aplikácie Microsoft",
+        "data": {
+          "implementation": "Prihlasovacie údaje aplikácie"
+        },
+        "data_description": {
+          "implementation": "Vyberte aplikáciu Entra zaregistrovanú pre túto inštanciu Home Assistant."
+        }
+      },
+      "discovery": {
+        "title": "Opakovať zisťovanie nasadení",
+        "description": "Zisťovanie sa nedokončilo. Skontrolujte chybu a po oprave povolení alebo pripojenia k Azure to skúste znova.\n\nNasadenia, ktoré nemožno pridať (bez podporovaného API, iba dávkové alebo bez úspešného zriadenia):\n{unsupported}"
+      },
+      "discovery_confirm": {
+        "title": "Vyberte služby OpenAI",
+        "description": "Služby dostupné na pridanie: {service_count}. Pre každý typ služby vyberte nasadené modely, ktoré sa majú pridať; služby, ktoré už boli pridané do Home Assistant, sa nezobrazujú. Predvolene nie je vybraté nič. Existujúce služby, ID, názvy, inštrukcie a prispôsobené nastavenia sa zachovajú; ak chcete obnoviť zisťovanie bez pridania služieb, nechajte všetky polia prázdne. Odstránené služby zostanú odstránené, pokiaľ ich znova výslovne nevyberiete.\n\nNasadenia, ktoré nemožno pridať (bez podporovaného API, iba dávkové alebo bez úspešného zriadenia):\n{unsupported}\n\nŽiadne modely v Azure sa nenasadzujú ani neupravujú.",
+        "data": {
+          "conversation": "Modely pre konverzáciu",
+          "ai_task_data": "Modely pre dátové úlohy AI",
+          "ai_task_image": "Modely pre obrázkové úlohy AI",
+          "stt": "Modely pre prevod reči na text",
+          "tts": "Modely pre prevod textu na reč"
+        }
+      },
+      "discovery_all_added": {
+        "title": "Všetky modely už sú pridané",
+        "description": "Každý podporovaný model nasadený v tomto prostriedku už je pridaný do Home Assistant pre každú kompatibilnú službu, takže nie je čo nové pridať. Existujúce služby a ich nastavenia sa zachovajú; pokračovaním sa uloží iba obnovené prihlásenie a zoznam nasadení.\n\nNasadenia, ktoré nemožno pridať (bez podporovaného API, iba dávkové alebo bez úspešného zriadenia):\n{unsupported}\n\nŽiadne modely v Azure sa nenasadzujú ani neupravujú."
+      },
+      "reauth_oauth_confirm": {
+        "description": "Znova sa prihláste cez Microsoft, aby ste obnovili prístup k nakonfigurovanému prostriedku Azure. Existujúce služby a ich možnosti sa zachovajú."
+      },
+      "reauth_confirm": {
+        "description": "Vyžaduje sa opätovné overenie. Zadajte svoj aktualizovaný kľúč API.",
+        "data": {
+          "api_key": "API kľúč"
+        },
+        "data_description": {
+          "api_key": "Jeden z kľúčov vášho prostriedku Azure OpenAI alebo Azure AI Foundry."
+        }
+      },
+      "reconfigure": {
+        "description": "Prihlásenie cez Microsoft obnoví zoznam nasadených modelov a umožní vám vybrať ďalšie služby. Znova použije platné prepojené konto alebo vám umožní prejsť z API kľúča. Ak chcete zachovať manuálnu konfiguráciu, vyberte možnosť „Aktualizovať API kľúč alebo koncový bod“.",
+        "menu_options": {
+          "entra_id": "Microsoft Entra ID a opätovné zisťovanie modelov",
+          "api_key": "Aktualizovať API kľúč alebo koncový bod"
         }
       }
     }
   },
   "config_subentries": {
     "conversation": {
+      "abort": {
+        "entry_not_loaded": "Nie je možné pridávať veci, keď je konfigurácia vypnutá."
+      },
+      "entry_type": "Agent pre konverzáciu",
+      "error": {
+        "code_interpreter_minimal_reasoning": "Interpret kódu nie je podporovaný s minimálnym úsilím o uvažovanie",
+        "model_not_supported": "Tento model nie je podporovaný, vyberte iný model",
+        "reasoning_effort_not_supported": "Vyberte úsilie o uvažovanie podporované základným modelom zvoleného nasadenia",
+        "web_search_minimal_reasoning": "Vyhľadávanie na webe v súčasnosti nie je podporované s minimálnym úsilím o uvažovanie"
+      },
+      "initiate_flow": {
+        "reconfigure": "Rekonfigurácia agenta konverzácie",
+        "user": "Pridať agenta na konverzáciu"
+      },
       "step": {
-        "init": {
+        "additional": {
           "data": {
-            "send_sampling_parameters": "Odosielať parametre vzorkovania (temperature/top_p)"
+            "max_tokens": "Maximálny počet tokenov, ktoré sa majú vrátiť v odpovedi",
+            "store_responses": "Ukladanie požiadaviek a odpovedí v Azure OpenAI"
           },
           "data_description": {
-            "send_sampling_parameters": "Predvolene vypnuté. Temperature a Top P sa zobrazia iba po zapnutí tejto možnosti. Uložené hodnoty sa zachovajú aj pri jej vypnutí."
+            "store_responses": "Ak je povolené, odpovede ukladá Azure OpenAI a možno ich neskôr načítať"
+          },
+          "title": "Rozšírené nastavenia"
+        },
+        "init": {
+          "data": {
+            "chat_model": "Nasadenie modelu",
+            "llm_hass_api": "Ovládanie Home Assistant",
+            "name": "Názov",
+            "prompt": "Inštrukcie",
+            "recommended": "Odporúčané nastavenia modelu",
+            "reasoning_effort": "Úsilie o uvažovanie",
+            "send_sampling_parameters": "Odosielať parametre vzorkovania (temperature/top_p)",
+            "temperature": "Teplota",
+            "top_p": "Top P"
+          },
+          "data_description": {
+            "chat_model": "Presný názov nasadenia v Azure. Pri prihlásení cez Microsoft sa v ponuke zobrazujú nasadené modely OpenAI a názvy ich základných modelov.",
+            "recommended": "Použiť odporúčané rozšírené nastavenia bez zmeny vybraného nasadenia, vzorkovania alebo úsilia o uvažovanie.",
+            "reasoning_effort": "Koľko model uvažuje pred odpoveďou. Dostupné úrovne závisia od základného modelu; platí to aj pri odporúčaných nastaveniach.",
+            "send_sampling_parameters": "Predvolene vypnuté. Teplota a Top P sa zobrazia iba po zapnutí tejto možnosti a ich uložené hodnoty sa pri vypnutí zachovajú. Modely s uvažovaním odosielajú tieto parametre iba vtedy, keď je úsilie o uvažovanie nastavené na Žiadne.",
+            "prompt": "Pokyn, ako by mal LLM reagovať. Môže ísť o šablónu."
           }
+        },
+        "model": {
+          "data": {
+            "code_interpreter": "Povolenie nástroja na interpretáciu kódu",
+            "inline_citations": "Zahrnúť odkazy do výsledkov webového vyhľadávania",
+            "pro_mode": "Režim Pro",
+            "reasoning_summary": "Zhrnutie uvažovania",
+            "search_context_size": "Veľkosť kontextu vyhľadávania",
+            "user_location": "Zahrnúť domovskú polohu",
+            "verbosity": "Podrobnosť odpovedí",
+            "web_search": "Povoliť vyhľadávanie na webe"
+          },
+          "data_description": {
+            "code_interpreter": "Tento nástroj, známy aj ako nástroj python pre model, umožňuje spustiť kód na zodpovedanie otázok",
+            "inline_citations": "Ak je vypnuté, pridá sa ďalšia výzva, aby model neuvádzal citácie zdrojov",
+            "pro_mode": "Model vykoná viac práce, aby zvýšil spoľahlivosť pri náročných úlohách, a vráti jednu konečnú odpoveď",
+            "reasoning_summary": "Určuje dĺžku a mieru podrobností zhrnutí uvažovania, ktoré poskytuje model",
+            "search_context_size": "Vysokoúrovňové pokyny pre veľkosť priestoru kontextového okna, ktorý sa má použiť na vyhľadávanie",
+            "user_location": "Spresnenie výsledkov vyhľadávania na základe geografického hľadiska",
+            "verbosity": "Aké podrobné majú byť odpovede modelu",
+            "web_search": "Umožniť modelu pred vygenerovaním odpovede vyhľadávať na webe pomocou Grounding with Bing Search. Účtujú sa ďalšie poplatky"
+          },
+          "title": "Možnosti špecifické pre model"
         }
       }
     },
     "ai_task_data": {
+      "abort": {
+        "entry_not_loaded": "Nie je možné pridávať veci, keď je konfigurácia vypnutá."
+      },
+      "entry_type": "Úloha AI",
+      "error": {
+        "code_interpreter_minimal_reasoning": "Interpret kódu nie je podporovaný s minimálnym úsilím o uvažovanie",
+        "model_not_supported": "Tento model nie je podporovaný, vyberte iný model",
+        "reasoning_effort_not_supported": "Vyberte úsilie o uvažovanie podporované základným modelom zvoleného nasadenia",
+        "web_search_minimal_reasoning": "Vyhľadávanie na webe v súčasnosti nie je podporované s minimálnym úsilím o uvažovanie"
+      },
+      "initiate_flow": {
+        "reconfigure": "Rekonfigurácia úlohy AI",
+        "user": "Pridať AI úlohu"
+      },
+      "step": {
+        "additional": {
+          "data": {
+            "max_tokens": "Maximálny počet tokenov, ktoré sa majú vrátiť v odpovedi",
+            "store_responses": "Ukladanie požiadaviek a odpovedí v Azure OpenAI"
+          },
+          "data_description": {
+            "store_responses": "Ak je povolené, odpovede ukladá Azure OpenAI a možno ich neskôr načítať"
+          },
+          "title": "Rozšírené nastavenia"
+        },
+        "init": {
+          "data": {
+            "chat_model": "Nasadenie modelu",
+            "name": "Názov",
+            "recommended": "Odporúčané nastavenia modelu",
+            "reasoning_effort": "Úsilie o uvažovanie",
+            "send_sampling_parameters": "Odosielať parametre vzorkovania (temperature/top_p)",
+            "temperature": "Teplota",
+            "top_p": "Top P"
+          },
+          "data_description": {
+            "chat_model": "Presný názov nasadenia v Azure. Pri prihlásení cez Microsoft sa v ponuke zobrazujú nasadené modely OpenAI a názvy ich základných modelov.",
+            "recommended": "Použiť odporúčané rozšírené nastavenia bez zmeny vybraného nasadenia, vzorkovania alebo úsilia o uvažovanie.",
+            "reasoning_effort": "Koľko model uvažuje pred odpoveďou. Dostupné úrovne závisia od základného modelu; platí to aj pri odporúčaných nastaveniach.",
+            "send_sampling_parameters": "Predvolene vypnuté. Teplota a Top P sa zobrazia iba po zapnutí tejto možnosti a ich uložené hodnoty sa pri vypnutí zachovajú. Modely s uvažovaním odosielajú tieto parametre iba vtedy, keď je úsilie o uvažovanie nastavené na Žiadne."
+          }
+        },
+        "model": {
+          "data": {
+            "code_interpreter": "Povolenie nástroja na interpretáciu kódu",
+            "inline_citations": "Zahrnúť odkazy do výsledkov webového vyhľadávania",
+            "pro_mode": "Režim Pro",
+            "reasoning_summary": "Zhrnutie uvažovania",
+            "search_context_size": "Veľkosť kontextu vyhľadávania",
+            "user_location": "Zahrnúť domovskú polohu",
+            "verbosity": "Podrobnosť odpovedí",
+            "web_search": "Povoliť vyhľadávanie na webe",
+            "image_model": "Nasadenie obrázkového modelu"
+          },
+          "data_description": {
+            "code_interpreter": "Tento nástroj, známy aj ako nástroj python pre model, umožňuje spustiť kód na zodpovedanie otázok",
+            "inline_citations": "Ak je vypnuté, pridá sa ďalšia výzva, aby model neuvádzal citácie zdrojov",
+            "pro_mode": "Model vykoná viac práce, aby zvýšil spoľahlivosť pri náročných úlohách, a vráti jednu konečnú odpoveď",
+            "reasoning_summary": "Určuje dĺžku a mieru podrobností zhrnutí uvažovania, ktoré poskytuje model",
+            "search_context_size": "Vysokoúrovňové pokyny pre veľkosť priestoru kontextového okna, ktorý sa má použiť na vyhľadávanie",
+            "user_location": "Spresnenie výsledkov vyhľadávania na základe geografického hľadiska",
+            "verbosity": "Aké podrobné majú byť odpovede modelu",
+            "web_search": "Umožniť modelu pred vygenerovaním odpovede vyhľadávať na webe pomocou Grounding with Bing Search. Účtujú sa ďalšie poplatky",
+            "image_model": "Voliteľné nasadenie obrázkového modelu pre túto dátovú úlohu. Úlohy s chatovými modelmi pridané zisťovaním negenerujú obrázky, pokiaľ nie je vybraté takéto nasadenie; nasadenia obrázkových modelov majú aj vlastné vyhradené úlohy."
+          },
+          "title": "Možnosti špecifické pre model"
+        }
+      }
+    },
+    "ai_task_image": {
+      "abort": {
+        "entry_not_loaded": "Nie je možné pridávať veci, keď je konfigurácia vypnutá."
+      },
+      "entry_type": "Obrázková úloha AI",
+      "error": {
+        "model_not_supported": "Vyberte podporované nasadenie obrázkového modelu."
+      },
+      "initiate_flow": {
+        "reconfigure": "Rekonfigurácia obrázkovej úlohy AI",
+        "user": "Pridať obrázkovú AI úlohu"
+      },
       "step": {
         "init": {
           "data": {
-            "send_sampling_parameters": "Odosielať parametre vzorkovania (temperature/top_p)"
+            "name": "Názov",
+            "image_model": "Nasadenie obrázkového modelu"
           },
           "data_description": {
-            "send_sampling_parameters": "Predvolene vypnuté. Temperature a Top P sa zobrazia iba po zapnutí tejto možnosti. Uložené hodnoty sa zachovajú aj pri jej vypnutí."
+            "image_model": "Presný názov nasadenia obrázkového modelu OpenAI. Táto úloha podporuje generovanie obrázkov, nie generovanie textu ani štruktúrovaných údajov."
           }
         }
+      }
+    },
+    "stt": {
+      "abort": {
+        "entry_not_loaded": "Nie je možné pridávať veci, keď je konfigurácia vypnutá."
+      },
+      "entry_type": "Prevod reči na text",
+      "error": {
+        "model_not_supported": "Vyberte podporované nasadenie prevodu reči na text."
+      },
+      "initiate_flow": {
+        "reconfigure": "Rekonfigurácia služby prevodu reči na text",
+        "user": "Pridať službu prevodu reči na text"
+      },
+      "step": {
+        "init": {
+          "data": {
+            "chat_model": "Nasadenie modelu",
+            "name": "Názov",
+            "prompt": "Inštrukcie"
+          },
+          "data_description": {
+            "chat_model": "Názov nasadenia modelu, ktorý sa má použiť na prepis reči.",
+            "prompt": "Túto výzvu použite na zlepšenie kvality prepisov. Na dosiahnutie najlepších výsledkov ju preložte do jazyka kanála."
+          }
+        }
+      }
+    },
+    "tts": {
+      "abort": {
+        "entry_not_loaded": "Nie je možné pridávať veci, keď je konfigurácia vypnutá."
+      },
+      "entry_type": "Prevod textu na reč",
+      "error": {
+        "model_not_supported": "Vyberte podporované nasadenie prevodu textu na reč."
+      },
+      "initiate_flow": {
+        "reconfigure": "Rekonfigurácia služby prevodu textu na reč",
+        "user": "Pridať službu prevodu textu na reč"
+      },
+      "step": {
+        "init": {
+          "data": {
+            "chat_model": "Nasadenie modelu",
+            "name": "Názov",
+            "prompt": "Inštrukcie",
+            "tts_speed": "Rýchlosť"
+          },
+          "data_description": {
+            "chat_model": "Názov nasadenia modelu, ktorý sa má použiť na generovanie reči.",
+            "prompt": "Ovládanie aspektov reči vrátane prízvuku, emocionálneho rozsahu, intonácie, imitácií, rýchlosti reči, tónu, šepotu a ďalších. Modely tts-1 a tts-1-hd to nepodporujú",
+            "tts_speed": "Rýchlosť generovanej reči"
+          }
+        }
+      }
+    }
+  },
+  "selector": {
+    "reasoning_effort": {
+      "options": {
+        "high": "Vysoké",
+        "low": "Nízke",
+        "max": "Maximálne",
+        "medium": "Stredné",
+        "minimal": "Minimálne",
+        "none": "Žiadne",
+        "xhigh": "Veľmi vysoké"
+      }
+    },
+    "reasoning_summary": {
+      "options": {
+        "auto": "Auto",
+        "detailed": "Podrobné",
+        "off": "Vypnuté"
+      }
+    },
+    "search_context_size": {
+      "options": {
+        "high": "Vysoká",
+        "low": "Nízka",
+        "medium": "Stredná"
+      }
+    },
+    "verbosity": {
+      "options": {
+        "high": "Vysoká",
+        "low": "Nízka",
+        "medium": "Stredná"
       }
     }
   }

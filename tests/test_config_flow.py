@@ -1,10 +1,12 @@
 """Exercise native setup, browser OAuth, reauthentication, and service configuration."""
 
+from pathlib import Path
 from unittest.mock import AsyncMock, Mock, PropertyMock, patch
 from urllib.parse import parse_qs, urlsplit
 import base64
 import hashlib
 import json
+import string
 
 import httpx
 import openai
@@ -50,6 +52,9 @@ from custom_components.azure_openai_conversation.deployments import (
 from .const import ENDPOINT, REDIRECT_URI, RESOURCE_ID, TENANT_ID
 
 CONFIG_FLOW = "custom_components.azure_openai_conversation.config_flow"
+INTEGRATION = Path(__file__).parents[1] / "custom_components" / DOMAIN
+LANGUAGES = ["en", "de", "es", "fr", "nl", "pl", "pt", "sk", "zh-Hant"]
+DISCOVERY_SERVICES = ("conversation", "ai_task_data", "ai_task_image", "stt", "tts")
 MANAGEMENT_TOKEN_RESPONSE = {"access_token": "management-token", "expires_in": 3600}
 MALFORMED_TOKEN = {"access_token": "do-not-log-this-token", "expires_in": "invalid"}
 pytestmark = pytest.mark.usefixtures("native_exposed_entities")
@@ -63,6 +68,44 @@ def _form_fields(result: dict) -> dict[str, dict]:
             result["data_schema"], custom_serializer=cv.custom_serializer
         )
     }
+
+
+def _flatten(data: dict, prefix: str = "") -> dict[str, str]:
+    """Flatten nested translation keys the way Home Assistant does."""
+    flat: dict[str, str] = {}
+    for key, value in data.items():
+        if isinstance(value, dict):
+            flat.update(_flatten(value, f"{prefix}{key}."))
+        else:
+            flat[f"{prefix}{key}"] = value
+    return flat
+
+
+def _strings(name: str) -> dict[str, str]:
+    """Load flattened strings.json or one shipped translation file."""
+    path = INTEGRATION / (
+        "strings.json" if name == "strings" else f"translations/{name}.json"
+    )
+    return _flatten(json.loads(path.read_text(encoding="utf-8")))
+
+
+def _placeholders(value: str) -> set[str]:
+    """Collect placeholders exactly as Home Assistant validates localized strings."""
+    return {
+        field for _, field, _, _ in string.Formatter().parse(value) if field is not None
+    }
+
+
+def _assert_description_placeholders(result: dict) -> None:
+    """Supply every placeholder the step's text uses, or the frontend cannot render it."""
+    prefix = f"config.step.{result['step_id']}."
+    used = {
+        placeholder
+        for key, value in _strings("en").items()
+        if key.startswith(prefix)
+        for placeholder in _placeholders(value)
+    }
+    assert used <= set(result["description_placeholders"] or {})
 
 
 async def _authorize(
@@ -279,6 +322,10 @@ async def test_api_key_migrates_to_browser_oauth(
             {CONF_TENANT_ID: TENANT_ID, CONF_RESOURCE_ID: RESOURCE_ID},
         )
         result = await _authorize(hass, result)
+        assert result["step_id"] == "discovery_confirm"
+        assert result["description_placeholders"]["service_count"] == "6"
+        conversation = _form_fields(result)["conversation"]["selector"]["select"]
+        assert [item["value"] for item in conversation["options"]] == ["daily-chat"]
         result = await hass.config_entries.flow.async_configure(result["flow_id"], {})
         await hass.async_block_till_done()
 
@@ -331,12 +378,91 @@ async def test_oauth_reauth_preserves_resource_and_subentries(
         assert result["step_id"] == "reauth_oauth_confirm"
         result = await hass.config_entries.flow.async_configure(result["flow_id"], {})
         result = await _authorize(hass, result)
+        assert result["step_id"] == "discovery_confirm"
+        assert result["description_placeholders"]["service_count"] == "1"
+        assert {
+            service: field["selector"]["select"]["options"]
+            for service, field in _form_fields(result).items()
+        } == {"tts": [{"value": "speak", "label": "speak (tts-1)"}]}
+        _assert_description_placeholders(result)
         result = await hass.config_entries.flow.async_configure(result["flow_id"], {})
         await hass.async_block_till_done()
     assert result["reason"] == "reauth_successful"
     assert entry.data[CONF_RESOURCE_ID] == RESOURCE_ID
     assert entry.data[CONF_TENANT_ID] == TENANT_ID
     assert set(entry.subentries) == original_ids
+
+
+async def test_reconfigure_reports_when_every_model_is_already_added(
+    hass: HomeAssistant,
+    oauth_data: dict,
+    oauth_implementation: EntraOAuth2Implementation,
+    deployment_inventory: list[DeploymentData],
+) -> None:
+    """Explain that nothing is missing, then refresh only the stored inventory."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={**oauth_data, CONF_DEPLOYMENTS: deployment_inventory},
+        version=2,
+        subentries_data=deployment_subentries(deployment_inventory),
+    )
+    entry.add_to_hass(hass)
+    original = {
+        key: (item.title, dict(item.data)) for key, item in entry.subentries.items()
+    }
+    refreshed = sorted(
+        [
+            *deployment_inventory,
+            DeploymentData(
+                id=f"{RESOURCE_ID}/deployments/bulk",
+                name="bulk",
+                model_name="gpt-4.1-mini",
+                services=[],
+                unsupported_reason="batch-only deployment",
+            ),
+        ],
+        key=lambda item: item["name"],
+    )
+    with (
+        patch.object(
+            EntraOAuth2Implementation,
+            "_token_request",
+            return_value=MANAGEMENT_TOKEN_RESPONSE,
+        ),
+        patch(
+            f"{CONFIG_FLOW}.async_discover_deployments",
+            return_value=DeploymentDiscovery(ENDPOINT, refreshed),
+        ),
+        patch(f"{CONFIG_FLOW}.validate_input", return_value=None),
+        patch.object(hass.config_entries, "async_reload", return_value=True),
+    ):
+        result = await hass.config_entries.flow.async_init(
+            DOMAIN, context={"source": "reconfigure", "entry_id": entry.entry_id}
+        )
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"], {"next_step_id": "entra_id"}
+        )
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {CONF_TENANT_ID: TENANT_ID, CONF_RESOURCE_ID: RESOURCE_ID},
+        )
+        assert result["type"] is FlowResultType.FORM
+        assert result["step_id"] == "discovery_all_added"
+        assert result["last_step"] is True
+        assert _form_fields(result) == {}
+        assert result["description_placeholders"] == {
+            "service_count": "0",
+            "unsupported": "- bulk (gpt-4.1-mini)\n- search (text-embedding-3-large)",
+        }
+        _assert_description_placeholders(result)
+        result = await hass.config_entries.flow.async_configure(result["flow_id"], {})
+        await hass.async_block_till_done()
+    assert result["type"] is FlowResultType.ABORT
+    assert result["reason"] == "reconfigure_successful"
+    assert entry.data[CONF_DEPLOYMENTS] == refreshed
+    assert {
+        key: (item.title, dict(item.data)) for key, item in entry.subentries.items()
+    } == original
 
 
 @pytest.mark.parametrize(
@@ -384,6 +510,7 @@ async def test_failed_reconfigure_changes_nothing(
         )
     assert result["step_id"] == "discovery"
     assert result["errors"] == {"base": error}
+    _assert_description_placeholders(result)
     assert entry.data == oauth_data
     assert not entry.subentries
 
@@ -943,7 +1070,10 @@ async def test_native_application_credentials_create_only_selected_services(
         result = await _authorize(hass, result)
         assert result["step_id"] == "discovery_confirm"
         assert result["description_placeholders"]["service_count"] == "7"
-        assert "search" in result["description_placeholders"]["unsupported"]
+        assert result["description_placeholders"]["unsupported"] == (
+            "- search (text-embedding-3-large)"
+        )
+        _assert_description_placeholders(result)
         assert "inference-token" not in str(result)
         assert "management-token" not in str(result)
         fields = _form_fields(result)
@@ -1240,48 +1370,36 @@ async def test_speech_instruction_edit_does_not_change_the_deployment(
     assert subentry.unique_id == "known-deployment-service"
 
 
-@pytest.mark.parametrize(
-    "language", ["en", "de", "es", "fr", "nl", "pl", "pt", "sk", "zh"]
-)
-async def test_oauth_labels_fall_back_to_english_without_replacing_api_key_labels(
+@pytest.mark.parametrize("language", LANGUAGES)
+async def test_oauth_labels_are_localized_without_replacing_api_key_labels(
     hass: HomeAssistant, language: str
 ) -> None:
-    """Every existing locale retains manual setup text and readable Microsoft linking."""
+    """Every locale has its own Microsoft linking text and retains manual setup text."""
     translations = await async_get_translations(hass, language, "config", {DOMAIN})
+    localized = _strings(language)
     prefix = f"component.{DOMAIN}.config"
-    assert (
-        translations[f"{prefix}.step.pick_implementation.data.implementation"]
-        == "Application credentials"
-    )
-    assert (
-        translations[f"{prefix}.step.pick_implementation.title"]
-        == "Select Microsoft application credentials"
-    )
-    assert translations[f"{prefix}.abort.missing_configuration"].startswith(
-        "Microsoft sign-in is not configured."
-    )
+    for key in (
+        "step.pick_implementation.data.implementation",
+        "step.pick_implementation.title",
+        "abort.missing_configuration",
+        "step.discovery_all_added.title",
+        "step.discovery_all_added.description",
+        *(f"step.discovery_confirm.data.{service}" for service in DISCOVERY_SERVICES),
+    ):
+        assert translations[f"{prefix}.{key}"] == localized[f"config.{key}"]
     assert f"{prefix}.step.api_key.data.api_key" in translations
     assert f"{prefix}.step.user.data.api_key" not in translations
-    for service, label in {
-        "conversation": "Conversation models",
-        "ai_task_data": "Data AI task models",
-        "ai_task_image": "Image AI task models",
-        "stt": "Speech-to-text models",
-        "tts": "Text-to-speech models",
-    }.items():
-        assert translations[f"{prefix}.step.discovery_confirm.data.{service}"] == label
 
 
-@pytest.mark.parametrize(
-    "language", ["en", "de", "es", "fr", "nl", "pl", "pt", "sk", "zh"]
-)
+@pytest.mark.parametrize("language", LANGUAGES)
 async def test_initial_settings_labels_and_effort_errors_exist_in_every_locale(
     hass: HomeAssistant, language: str
 ) -> None:
-    """Moved sampling labels remain translated and new effort text falls back to English."""
+    """Moved sampling labels and effort text are translated in every locale."""
     translations = await async_get_translations(
         hass, language, "config_subentries", {DOMAIN}
     )
+    localized = _strings(language)
     for service in ("conversation", "ai_task_data"):
         prefix = f"component.{DOMAIN}.config_subentries.{service}"
         for field in (
@@ -1294,6 +1412,49 @@ async def test_initial_settings_labels_and_effort_errors_exist_in_every_locale(
             assert f"{prefix}.step.additional.data.{field}" not in translations
         assert (
             translations[f"{prefix}.step.init.data.{CONF_REASONING_EFFORT}"]
-            == "Reasoning effort"
+            == localized[
+                f"config_subentries.{service}.step.init.data.{CONF_REASONING_EFFORT}"
+            ]
         )
         assert f"{prefix}.error.reasoning_effort_not_supported" in translations
+
+
+def test_english_translation_mirrors_strings() -> None:
+    """Custom integrations need resolved English text for every strings.json key."""
+    source = _strings("strings")
+    english = _strings("en")
+    assert english.keys() == source.keys()
+    for key, value in english.items():
+        assert value.strip(), key
+        assert "[%key:" not in value, key
+        if "[%key:" not in source[key]:
+            assert value == source[key], key
+
+
+@pytest.mark.parametrize("language", LANGUAGES[1:])
+def test_locale_matches_english_keys_and_placeholders(language: str) -> None:
+    """Mismatched placeholders are dropped by Home Assistant or break the frontend."""
+    english = _strings("en")
+    localized = _strings(language)
+    assert localized.keys() == english.keys()
+    for key, value in localized.items():
+        assert value.strip(), key
+        assert "[%key:" not in value, key
+        assert _placeholders(value) == _placeholders(english[key]), key
+        # The frontend's ICU formatter treats an apostrophe before a brace as quoting.
+        assert "'{" not in value, key
+        assert "'}" not in value, key
+
+
+@pytest.mark.parametrize("language", LANGUAGES)
+async def test_translations_load_without_english_fallback(
+    hass: HomeAssistant, language: str
+) -> None:
+    """Home Assistant serves every shipped string in the requested language."""
+    localized = _strings(language)
+    for category in {key.split(".", 1)[0] for key in localized}:
+        assert await async_get_translations(hass, language, category, {DOMAIN}) == {
+            f"component.{DOMAIN}.{key}": value
+            for key, value in localized.items()
+            if key.startswith(f"{category}.")
+        }
