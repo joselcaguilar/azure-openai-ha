@@ -9,7 +9,7 @@
       "unknown": "Unerwarteter Fehler"
     },
     "step": {
-      "user": {
+      "api_key": {
         "data": {
           "api_key": "API Schlüssel",
           "api_base": "API Basis in Azure",
@@ -21,24 +21,24 @@
   "config_subentries": {
     "conversation": {
       "step": {
-        "additional": {
+        "init": {
           "data": {
             "send_sampling_parameters": "Sampling-Parameter senden (temperature/top_p)"
           },
           "data_description": {
-            "send_sampling_parameters": "Für Modelle deaktivieren, die temperature oder top_p ablehnen. Die gespeicherten Werte werden ignoriert, solange diese Option deaktiviert ist."
+            "send_sampling_parameters": "Standardmäßig deaktiviert. Temperature und Top P werden nur bei aktivierter Option angezeigt. Gespeicherte Werte bleiben bei deaktivierter Option erhalten."
           }
         }
       }
     },
     "ai_task_data": {
       "step": {
-        "additional": {
+        "init": {
           "data": {
             "send_sampling_parameters": "Sampling-Parameter senden (temperature/top_p)"
           },
           "data_description": {
-            "send_sampling_parameters": "Für Modelle deaktivieren, die temperature oder top_p ablehnen. Die gespeicherten Werte werden ignoriert, solange diese Option deaktiviert ist."
+            "send_sampling_parameters": "Standardmäßig deaktiviert. Temperature und Top P werden nur bei aktivierter Option angezeigt. Gespeicherte Werte bleiben bei deaktivierter Option erhalten."
           }
         }
       }

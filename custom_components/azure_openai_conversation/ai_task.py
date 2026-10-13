@@ -6,7 +6,7 @@ import base64
 from json import JSONDecodeError
 import logging
 import re
-from typing import TYPE_CHECKING, override
+from typing import TYPE_CHECKING, Any, override
 
 import openai
 
@@ -16,10 +16,18 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.util.json import json_loads
 
-from .const import CONF_IMAGE_MODEL, RECOMMENDED_IMAGE_MODEL
+from .const import (
+    CONF_AUTO_DISCOVERED,
+    CONF_DEPLOYMENTS,
+    CONF_IMAGE_MODEL,
+    CONF_MODEL_NAME,
+    RECOMMENDED_IMAGE_MODEL,
+)
 from .entity import AzureOpenAIBaseLLMEntity
 
 if TYPE_CHECKING:
+    from homeassistant.config_entries import ConfigSubentry
+
     from . import OpenAIConfigEntry
 
 _LOGGER = logging.getLogger(__name__)
@@ -34,7 +42,7 @@ async def async_setup_entry(
 ) -> None:
     """Set up AI Task entities."""
     for subentry in config_entry.subentries.values():
-        if subentry.subentry_type != "ai_task_data":
+        if subentry.subentry_type not in ("ai_task_data", "ai_task_image"):
             continue
 
         async_add_entities(
@@ -49,11 +57,25 @@ class AzureOpenAITaskEntity(
 ):
     """Azure OpenAI AI Task entity."""
 
-    _attr_supported_features = (
-        ai_task.AITaskEntityFeature.GENERATE_DATA
-        | ai_task.AITaskEntityFeature.GENERATE_IMAGE
-        | ai_task.AITaskEntityFeature.SUPPORT_ATTACHMENTS
-    )
+    def __init__(self, entry: OpenAIConfigEntry, subentry: ConfigSubentry) -> None:
+        """Advertise only the APIs configured for this task."""
+        super().__init__(entry, subentry)
+        self._attr_supported_features = ai_task.AITaskEntityFeature.SUPPORT_ATTACHMENTS
+        if subentry.subentry_type == "ai_task_image":
+            self._attr_supported_features |= ai_task.AITaskEntityFeature.GENERATE_IMAGE
+            if subentry.data.get(CONF_MODEL_NAME, "").startswith("dall-e-3"):
+                self._attr_supported_features &= (
+                    ~ai_task.AITaskEntityFeature.SUPPORT_ATTACHMENTS
+                )
+        else:
+            self._attr_supported_features |= ai_task.AITaskEntityFeature.GENERATE_DATA
+            if subentry.data.get(CONF_IMAGE_MODEL) or (
+                CONF_DEPLOYMENTS not in entry.data
+                and not subentry.data.get(CONF_AUTO_DISCOVERED)
+            ):
+                self._attr_supported_features |= (
+                    ai_task.AITaskEntityFeature.GENERATE_IMAGE
+                )
 
     @override
     async def _async_generate_data(
@@ -107,6 +129,16 @@ class AzureOpenAITaskEntity(
         Responses API, so the Images API is used with the image deployment.
         """
         model = self.subentry.data.get(CONF_IMAGE_MODEL, RECOMMENDED_IMAGE_MODEL)
+        model_name = next(
+            (
+                deployment["model_name"]
+                for deployment in self.entry.data.get(CONF_DEPLOYMENTS, [])
+                if deployment["name"] == model
+            ),
+            self.subentry.data.get(CONF_MODEL_NAME, model)
+            if self.subentry.subentry_type == "ai_task_image"
+            else model,
+        )
         client = self.entry.runtime_data
         attachments = task.attachments or []
 
@@ -114,6 +146,13 @@ class AzureOpenAITaskEntity(
             raise HomeAssistantError(
                 "Only image attachments are supported when generating images"
             )
+        if attachments and model_name.startswith("dall-e-3"):
+            raise HomeAssistantError("DALL-E 3 does not support image editing")
+        if len(attachments) > 1 and model_name.startswith("dall-e-2"):
+            raise HomeAssistantError("DALL-E 2 supports only one image attachment")
+        extra_args: dict[str, Any] = {}
+        if model_name.startswith("dall-e-"):
+            extra_args["response_format"] = "b64_json"
 
         try:
             if attachments:
@@ -124,11 +163,14 @@ class AzureOpenAITaskEntity(
                     ]
                 )
                 response = await client.images.edit(
-                    model=model, image=images, prompt=task.instructions
+                    model=model,
+                    image=images[0] if model_name.startswith("dall-e-2") else images,
+                    prompt=task.instructions,
+                    **extra_args,
                 )
             else:
                 response = await client.images.generate(
-                    model=model, prompt=task.instructions
+                    model=model, prompt=task.instructions, **extra_args
                 )
         except openai.OpenAIError as err:
             _LOGGER.error("Error generating image with Azure OpenAI: %s", err)

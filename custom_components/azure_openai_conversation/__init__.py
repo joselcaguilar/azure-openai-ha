@@ -2,23 +2,35 @@
 
 from __future__ import annotations
 
+import asyncio
+from collections.abc import Awaitable, Callable
 from types import MappingProxyType
+from typing import Any
 
 import openai
 
 from homeassistant.config_entries import ConfigEntry, ConfigSubentry
 from homeassistant.const import CONF_API_KEY, Platform
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
+from homeassistant.exceptions import (
+    ConfigEntryAuthFailed,
+    ConfigEntryError,
+    ConfigEntryNotReady,
+)
 from homeassistant.helpers import (
+    config_entry_oauth2_flow,
     config_validation as cv,
     device_registry as dr,
     entity_registry as er,
 )
 from homeassistant.helpers.httpx_client import get_async_client
 
+from .auth import async_get_oauth_implementation
 from .const import (
+    AUTH_API_KEY,
+    AUTH_ENTRA_ID,
     CONF_API_BASE,
+    CONF_AUTH_TYPE,
     CONF_CHAT_MODEL,
     CONF_MAX_TOKENS,
     CONF_REASONING_EFFORT,
@@ -31,6 +43,10 @@ from .const import (
     DOMAIN,
     LOGGER,
     RECOMMENDED_AI_TASK_OPTIONS,
+)
+from .deployments import (
+    sync_deployment_subentries,
+    validate_inference_endpoint,
 )
 
 PLATFORMS = (Platform.AI_TASK, Platform.CONVERSATION, Platform.STT, Platform.TTS)
@@ -54,7 +70,9 @@ def normalize_azure_endpoint(uri: str) -> str:
 
 
 def create_client(
-    hass: HomeAssistant, api_base: str, api_key: str
+    hass: HomeAssistant,
+    api_base: str,
+    api_key: str | Callable[[], Awaitable[str]],
 ) -> openai.AsyncOpenAI:
     """Create a client for the Azure OpenAI v1 API."""
     return openai.AsyncOpenAI(
@@ -65,9 +83,39 @@ def create_client(
     )
 
 
+async def async_create_entry_client(
+    hass: HomeAssistant, entry: OpenAIConfigEntry
+) -> openai.AsyncOpenAI:
+    """Use a renewable OAuth token provider or the entry's existing API key."""
+    auth_type = entry.data.get(CONF_AUTH_TYPE, AUTH_API_KEY)
+    if auth_type == AUTH_API_KEY:
+        return create_client(hass, entry.data[CONF_API_BASE], entry.data[CONF_API_KEY])
+    if auth_type != AUTH_ENTRA_ID:
+        raise ConfigEntryError("Unsupported Azure OpenAI authentication method")
+    try:
+        api_base = validate_inference_endpoint(entry.data[CONF_API_BASE])
+        implementation = await async_get_oauth_implementation(hass, entry)
+    except ValueError as err:
+        raise ConfigEntryError(
+            "Invalid Entra tenant or Azure inference endpoint"
+        ) from err
+    except config_entry_oauth2_flow.UnknownImplementationError as err:
+        raise ConfigEntryAuthFailed(
+            "Microsoft OAuth application credentials are missing"
+        ) from err
+    session = config_entry_oauth2_flow.OAuth2Session(hass, entry, implementation)
+    await session.async_ensure_token_valid()
+
+    async def token_provider() -> str:
+        await session.async_ensure_token_valid()
+        return session.token["access_token"]
+
+    return create_client(hass, api_base, token_provider)
+
+
 async def async_setup_entry(hass: HomeAssistant, entry: OpenAIConfigEntry) -> bool:
     """Set up Azure OpenAI Conversation from a config entry."""
-    client = create_client(hass, entry.data[CONF_API_BASE], entry.data[CONF_API_KEY])
+    client = await async_create_entry_client(hass, entry)
 
     # Cache current platform data which gets added to each request
     # (caching done by library)
@@ -84,8 +132,24 @@ async def async_setup_entry(hass: HomeAssistant, entry: OpenAIConfigEntry) -> bo
         raise ConfigEntryNotReady(err) from err
 
     entry.runtime_data = client
+    sync_deployment_subentries(hass, entry)
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+
+    settings = _entry_settings(entry)
+
+    async def async_update_options(
+        hass: HomeAssistant, entry: OpenAIConfigEntry
+    ) -> None:
+        """Reload configuration changes, but not OAuth token rotation."""
+        nonlocal settings
+        # Coalesce synchronous parent/subentry updates before deciding to reload.
+        await asyncio.sleep(0)
+        updated = _entry_settings(entry)
+        if settings == updated:
+            return
+        settings = updated
+        await hass.config_entries.async_reload(entry.entry_id)
 
     entry.async_on_unload(entry.add_update_listener(async_update_options))
 
@@ -97,9 +161,19 @@ async def async_unload_entry(hass: HomeAssistant, entry: OpenAIConfigEntry) -> b
     return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 
 
-async def async_update_options(hass: HomeAssistant, entry: OpenAIConfigEntry) -> None:
-    """Update options."""
-    await hass.config_entries.async_reload(entry.entry_id)
+def _entry_settings(entry: OpenAIConfigEntry) -> dict[str, Any]:
+    """Snapshot mutable subentries separately from the renewable OAuth token."""
+    return {
+        "data": {key: value for key, value in entry.data.items() if key != "token"},
+        "options": entry.options,
+        "title": entry.title,
+        "pref_disable_new_entities": entry.pref_disable_new_entities,
+        "pref_disable_polling": entry.pref_disable_polling,
+        "subentries": {
+            subentry_id: (subentry.data, subentry.title, subentry.unique_id)
+            for subentry_id, subentry in entry.subentries.items()
+        },
+    }
 
 
 async def async_migrate_entry(hass: HomeAssistant, entry: OpenAIConfigEntry) -> bool:
@@ -112,6 +186,13 @@ async def async_migrate_entry(hass: HomeAssistant, entry: OpenAIConfigEntry) -> 
 
     if entry.version == 1:
         _migrate_options_to_subentries(hass, entry)
+
+    if entry.minor_version < 2:
+        hass.config_entries.async_update_entry(
+            entry,
+            data={CONF_AUTH_TYPE: AUTH_API_KEY, **entry.data},
+            minor_version=2,
+        )
 
     LOGGER.debug(
         "Migration to version %s:%s successful", entry.version, entry.minor_version
@@ -165,7 +246,9 @@ def _migrate_options_to_subentries(
 
     # Azure needs a deployment name, so reuse the one the agent already uses
     ai_task_options = dict(RECOMMENDED_AI_TASK_OPTIONS)
-    if not options.get(CONF_RECOMMENDED) and CONF_CHAT_MODEL in options:
+    if CONF_CHAT_MODEL in options:
+        ai_task_options[CONF_CHAT_MODEL] = options[CONF_CHAT_MODEL]
+    if not options.get(CONF_RECOMMENDED):
         ai_task_options = {
             CONF_RECOMMENDED: False,
             **{

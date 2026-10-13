@@ -1,0 +1,8 @@
+-r requirements.txt
+pytest-homeassistant-custom-component>=0.13.0
+gazetteer-matcher==1.1.0
+hassil==3.12.1
+home-assistant-intents==2026.9.30
+PyTurboJPEG==1.8.3
+mutagen==1.48.1
+ha-ffmpeg==3.2.2

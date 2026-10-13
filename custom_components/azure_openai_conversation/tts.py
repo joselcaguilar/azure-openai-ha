@@ -24,6 +24,7 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .const import (
     CONF_CHAT_MODEL,
+    CONF_MODEL_NAME,
     CONF_TTS_SPEED,
     RECOMMENDED_TTS_MODEL,
     RECOMMENDED_TTS_SPEED,
@@ -189,9 +190,11 @@ class AzureOpenAITTSEntity(TextToSpeechEntity, AzureOpenAIBaseLLMEntity):
             codec = response_format
 
         model = options.get(CONF_CHAT_MODEL, RECOMMENDED_TTS_MODEL)
+        model_name = options.get(CONF_MODEL_NAME, model)
         extra_args: dict[str, Any] = {}
-        # tts-1 and tts-1-hd don't support instructions
-        if (prompt := options.get(CONF_PROMPT)) and not model.startswith("tts-1"):
+        if (prompt := options.get(CONF_PROMPT)) and not (
+            model_name == "tts" or model_name.startswith("tts-")
+        ):
             extra_args["instructions"] = str(prompt)
 
         try:

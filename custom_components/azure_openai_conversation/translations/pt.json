@@ -9,7 +9,7 @@
       "unknown": "Erro desconhecido"
     },
     "step": {
-      "user": {
+      "api_key": {
         "data": {
           "api_key": "Chave da API",
           "api_base": "Base da API no Azure",
@@ -21,24 +21,24 @@
   "config_subentries": {
     "conversation": {
       "step": {
-        "additional": {
+        "init": {
           "data": {
             "send_sampling_parameters": "Enviar parâmetros de amostragem (temperature/top_p)"
           },
           "data_description": {
-            "send_sampling_parameters": "Desative esta opção para modelos que rejeitam temperature ou top_p. Os valores guardados são ignorados enquanto a opção estiver desativada."
+            "send_sampling_parameters": "Desativado por predefinição. Temperature e Top P aparecem apenas quando esta opção está ativada. Os valores guardados mantêm-se quando está desativada."
           }
         }
       }
     },
     "ai_task_data": {
       "step": {
-        "additional": {
+        "init": {
           "data": {
             "send_sampling_parameters": "Enviar parâmetros de amostragem (temperature/top_p)"
           },
           "data_description": {
-            "send_sampling_parameters": "Desative esta opção para modelos que rejeitam temperature ou top_p. Os valores guardados são ignorados enquanto a opção estiver desativada."
+            "send_sampling_parameters": "Desativado por predefinição. Temperature e Top P aparecem apenas quando esta opção está ativada. Os valores guardados mantêm-se quando está desativada."
           }
         }
       }

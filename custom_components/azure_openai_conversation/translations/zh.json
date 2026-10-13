@@ -9,7 +9,7 @@
       "unknown": "非預期的錯誤"
     },
     "step": {
-      "user": {
+      "api_key": {
         "data": {
           "api_key": "API 金鑰",
           "api_base": "API 端點",
@@ -21,24 +21,24 @@
   "config_subentries": {
     "conversation": {
       "step": {
-        "additional": {
+        "init": {
           "data": {
             "send_sampling_parameters": "傳送取樣參數 (temperature/top_p)"
           },
           "data_description": {
-            "send_sampling_parameters": "若模型不支援 temperature 或 top_p，請停用此選項。停用時會忽略已儲存的值。"
+            "send_sampling_parameters": "預設停用。啟用此選項時才會顯示 Temperature 和 Top P。停用時仍會保留已儲存的值。"
           }
         }
       }
     },
     "ai_task_data": {
       "step": {
-        "additional": {
+        "init": {
           "data": {
             "send_sampling_parameters": "傳送取樣參數 (temperature/top_p)"
           },
           "data_description": {
-            "send_sampling_parameters": "若模型不支援 temperature 或 top_p，請停用此選項。停用時會忽略已儲存的值。"
+            "send_sampling_parameters": "預設停用。啟用此選項時才會顯示 Temperature 和 Top P。停用時仍會保留已儲存的值。"
           }
         }
       }

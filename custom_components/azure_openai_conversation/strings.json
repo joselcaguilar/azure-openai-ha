@@ -1,17 +1,36 @@
 {
+  "application_credentials": {
+    "description": "Register a Web application in [Microsoft Entra ID]({console_url}) with this redirect URI: {redirect_url}. Add the delegated user_impersonation permissions for Microsoft Cognitive Services and Azure Service Management. Enter the application's client ID and client secret, not an Azure resource API key. See the integration documentation for permissions and redirect setup."
+  },
   "config": {
     "abort": {
       "already_configured": "[%key:common::config_flow::abort::already_configured_service%]",
+      "missing_configuration": "Microsoft sign-in is not configured. Add the Entra application client ID and secret in Home Assistant's Application Credentials, then retry.",
       "reauth_successful": "[%key:common::config_flow::abort::reauth_successful%]",
       "reconfigure_successful": "[%key:common::config_flow::abort::reconfigure_successful%]"
     },
     "error": {
       "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]",
       "invalid_auth": "[%key:common::config_flow::error::invalid_auth%]",
+      "deployment_access_denied": "The signed-in user cannot read this resource's deployments. Make sure the app registration has the consented Azure Service Management permission, and grant the user resource-scoped Cognitive Services OpenAI User access.",
+      "inference_access_denied": "The signed-in user can discover models but cannot call Azure OpenAI. Grant resource-scoped Cognitive Services OpenAI User access, or equivalent inference permissions.",
+      "resource_not_found": "The resource was not found in the selected tenant. Check the account resource ID and tenant ID.",
+      "invalid_resource_id": "Enter the ARM resource ID of a Microsoft.CognitiveServices/accounts resource, not a project ID or URL.",
+      "invalid_tenant_id": "Enter the directory's tenant ID as a UUID.",
+      "invalid_discovery_response": "Azure returned invalid deployment metadata or an unsupported endpoint. Check the resource and retry.",
+      "no_openai_deployments": "No OpenAI deployments were found on this resource. Catalog models that have not been deployed are not added.",
+      "no_supported_deployments": "OpenAI deployments were found, but none expose an API supported by this integration. See the unsupported deployment list.",
       "unknown": "[%key:common::config_flow::error::unknown%]"
     },
     "step": {
       "user": {
+        "description": "Microsoft sign-in discovers deployed OpenAI models and lets you choose which services to add. API-key authentication remains available for manual configuration and API gateways.",
+        "menu_options": {
+          "entra_id": "Microsoft Entra ID sign-in and model discovery",
+          "api_key": "API key (manual model configuration)"
+        }
+      },
+      "api_key": {
         "description": "Get the endpoint and an API key from the Keys and Endpoint section of your resource in Azure AI Foundry or in the Azure portal.",
         "data": {
           "api_key": "[%key:common::config_flow::data::api_key%]",
@@ -21,6 +40,45 @@
           "api_key": "One of the keys of your Azure OpenAI or Azure AI Foundry resource.",
           "api_base": "Example: {example_url}"
         }
+      },
+      "entra_id": {
+        "title": "Discover deployed OpenAI models",
+        "description": "Choose the Foundry or Azure OpenAI resource to discover. You will sign in with Microsoft through Home Assistant's Application Credentials. Your user needs inference access and permission to read the account, deployments, and model metadata.",
+        "data": {
+          "tenant_id": "Directory (tenant) ID",
+          "resource_id": "Azure resource ID"
+        },
+        "data_description": {
+          "tenant_id": "The tenant UUID from Microsoft Entra ID > Overview.",
+          "resource_id": "The account ARM ID from the resource's Azure portal Properties or JSON view, for example /subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/my-group/providers/Microsoft.CognitiveServices/accounts/my-account. Do not enter a Foundry project ID."
+        }
+      },
+      "pick_implementation": {
+        "title": "Select Microsoft application credentials",
+        "data": {
+          "implementation": "Application credentials"
+        },
+        "data_description": {
+          "implementation": "Select the Entra application registered for this Home Assistant instance."
+        }
+      },
+      "discovery": {
+        "title": "Retry deployment discovery",
+        "description": "Discovery did not complete. Check the error and retry after correcting Azure permissions or connectivity.\n\nDeployments without a supported API:\n{unsupported}"
+      },
+      "discovery_confirm": {
+        "title": "Choose OpenAI services",
+        "description": "Available services: {service_count}. Select the deployed models to add for each service type. Nothing is selected by default. Existing services, IDs, names, instructions, and customized settings are preserved; leave all fields empty to refresh discovery without adding services. Deleted services stay removed unless explicitly selected again.\n\nDeployments without a supported API:\n{unsupported}\n\nNo Azure models are deployed or modified.",
+        "data": {
+          "conversation": "Conversation models",
+          "ai_task_data": "Data AI task models",
+          "ai_task_image": "Image AI task models",
+          "stt": "Speech-to-text models",
+          "tts": "Text-to-speech models"
+        }
+      },
+      "reauth_oauth_confirm": {
+        "description": "Sign in with Microsoft again to renew access to the configured Azure resource. Existing services and their options will be preserved."
       },
       "reauth_confirm": {
         "description": "Reauthentication required. Please enter your updated API key.",
@@ -32,14 +90,10 @@
         }
       },
       "reconfigure": {
-        "description": "Update the endpoint or the API key of your Azure OpenAI resource.",
-        "data": {
-          "api_key": "[%key:common::config_flow::data::api_key%]",
-          "api_base": "API Base URL"
-        },
-        "data_description": {
-          "api_key": "One of the keys of your Azure OpenAI or Azure AI Foundry resource.",
-          "api_base": "Example: {example_url}"
+        "description": "Microsoft sign-in refreshes the deployed-model inventory and lets you choose additional services. It reuses a valid linked account or lets you migrate from an API key. Choose API key to keep manual configuration.",
+        "menu_options": {
+          "entra_id": "Microsoft Entra ID and rediscover models",
+          "api_key": "Update API key or endpoint"
         }
       }
     }
@@ -53,6 +107,7 @@
       "error": {
         "code_interpreter_minimal_reasoning": "Code interpreter is not supported with minimal reasoning effort",
         "model_not_supported": "This model is not supported, please select a different model",
+        "reasoning_effort_not_supported": "Select a reasoning effort supported by the chosen deployment's underlying model",
         "web_search_minimal_reasoning": "Web search is currently not supported with minimal reasoning effort"
       },
       "initiate_flow": {
@@ -62,28 +117,31 @@
       "step": {
         "additional": {
           "data": {
-            "chat_model": "Model deployment",
             "max_tokens": "Maximum tokens to return in response",
-            "send_sampling_parameters": "Send sampling parameters (temperature/top_p)",
-            "store_responses": "Store requests and responses in Azure OpenAI",
-            "temperature": "Temperature",
-            "top_p": "Top P"
+            "store_responses": "Store requests and responses in Azure OpenAI"
           },
           "data_description": {
-            "chat_model": "The name of your model deployment. Model specific options are shown when the deployment is named after the model, for example `gpt-5-mini`",
-            "send_sampling_parameters": "Disable for models that reject temperature or top_p. The saved values are ignored while disabled.",
             "store_responses": "If enabled, responses are stored by Azure OpenAI and can be retrieved later"
           },
           "title": "Additional settings"
         },
         "init": {
           "data": {
+            "chat_model": "Model deployment",
             "llm_hass_api": "[%key:common::config_flow::data::llm_hass_api%]",
             "name": "[%key:common::config_flow::data::name%]",
             "prompt": "Instructions",
-            "recommended": "Recommended model settings"
+            "recommended": "Recommended model settings",
+            "reasoning_effort": "Reasoning effort",
+            "send_sampling_parameters": "Send sampling parameters (temperature/top_p)",
+            "temperature": "Temperature",
+            "top_p": "Top P"
           },
           "data_description": {
+            "chat_model": "The exact Azure deployment name. With Microsoft sign-in, choices show deployed OpenAI models and their underlying model names.",
+            "recommended": "Use recommended advanced settings without changing the selected deployment, sampling, or reasoning effort.",
+            "reasoning_effort": "How much reasoning the model performs before responding. Available levels depend on the underlying model; this also applies with recommended settings.",
+            "send_sampling_parameters": "Off by default. Temperature and Top P appear only when enabled, and their saved values are kept while disabled. Reasoning models send these parameters only with reasoning effort set to None.",
             "prompt": "Instruct how the LLM should respond. This can be a template."
           }
         },
@@ -92,7 +150,6 @@
             "code_interpreter": "Enable code interpreter tool",
             "inline_citations": "Include links in web search results",
             "pro_mode": "Pro mode",
-            "reasoning_effort": "Reasoning effort",
             "reasoning_summary": "Reasoning summary",
             "search_context_size": "Search context size",
             "user_location": "Include home location",
@@ -103,7 +160,6 @@
             "code_interpreter": "This tool, also known as the python tool to the model, allows it to run code to answer questions",
             "inline_citations": "If disabled, additional prompt is added to ask the model to not include source citations",
             "pro_mode": "Perform more model work to improve reliability on difficult tasks and return a single final answer",
-            "reasoning_effort": "How many reasoning tokens the model should generate before creating a response to the prompt",
             "reasoning_summary": "Controls the length and detail of reasoning summaries provided by the model",
             "search_context_size": "High level guidance for the amount of context window space to use for the search",
             "user_location": "Refine search results based on geography",
@@ -122,6 +178,7 @@
       "error": {
         "code_interpreter_minimal_reasoning": "Code interpreter is not supported with minimal reasoning effort",
         "model_not_supported": "This model is not supported, please select a different model",
+        "reasoning_effort_not_supported": "Select a reasoning effort supported by the chosen deployment's underlying model",
         "web_search_minimal_reasoning": "Web search is currently not supported with minimal reasoning effort"
       },
       "initiate_flow": {
@@ -131,24 +188,29 @@
       "step": {
         "additional": {
           "data": {
-            "chat_model": "Model deployment",
             "max_tokens": "Maximum tokens to return in response",
-            "send_sampling_parameters": "Send sampling parameters (temperature/top_p)",
-            "store_responses": "Store requests and responses in Azure OpenAI",
-            "temperature": "Temperature",
-            "top_p": "Top P"
+            "store_responses": "Store requests and responses in Azure OpenAI"
           },
           "data_description": {
-            "chat_model": "The name of your model deployment. Model specific options are shown when the deployment is named after the model, for example `gpt-5-mini`",
-            "send_sampling_parameters": "Disable for models that reject temperature or top_p. The saved values are ignored while disabled.",
             "store_responses": "If enabled, responses are stored by Azure OpenAI and can be retrieved later"
           },
           "title": "Additional settings"
         },
         "init": {
           "data": {
+            "chat_model": "Model deployment",
             "name": "[%key:common::config_flow::data::name%]",
-            "recommended": "Recommended model settings"
+            "recommended": "Recommended model settings",
+            "reasoning_effort": "Reasoning effort",
+            "send_sampling_parameters": "Send sampling parameters (temperature/top_p)",
+            "temperature": "Temperature",
+            "top_p": "Top P"
+          },
+          "data_description": {
+            "chat_model": "The exact Azure deployment name. With Microsoft sign-in, choices show deployed OpenAI models and their underlying model names.",
+            "recommended": "Use recommended advanced settings without changing the selected deployment, sampling, or reasoning effort.",
+            "reasoning_effort": "How much reasoning the model performs before responding. Available levels depend on the underlying model; this also applies with recommended settings.",
+            "send_sampling_parameters": "Off by default. Temperature and Top P appear only when enabled, and their saved values are kept while disabled. Reasoning models send these parameters only with reasoning effort set to None."
           }
         },
         "model": {
@@ -156,7 +218,6 @@
             "code_interpreter": "Enable code interpreter tool",
             "inline_citations": "Include links in web search results",
             "pro_mode": "Pro mode",
-            "reasoning_effort": "Reasoning effort",
             "reasoning_summary": "Reasoning summary",
             "search_context_size": "Search context size",
             "user_location": "Include home location",
@@ -168,15 +229,38 @@
             "code_interpreter": "This tool, also known as the python tool to the model, allows it to run code to answer questions",
             "inline_citations": "If disabled, additional prompt is added to ask the model to not include source citations",
             "pro_mode": "Perform more model work to improve reliability on difficult tasks and return a single final answer",
-            "reasoning_effort": "How many reasoning tokens the model should generate before creating a response to the prompt",
             "reasoning_summary": "Controls the length and detail of reasoning summaries provided by the model",
             "search_context_size": "High level guidance for the amount of context window space to use for the search",
             "user_location": "Refine search results based on geography",
             "verbosity": "How detailed the responses of the model should be",
             "web_search": "Allow the model to search the web with Grounding with Bing Search before generating a response. Additional costs apply",
-            "image_model": "The name of the image model deployment used to generate images, for example `gpt-image-1`"
+            "image_model": "Optional image deployment for this data task. Discovered chat tasks do not generate images unless one is selected; image deployments also have their own dedicated tasks."
           },
           "title": "Model-specific options"
+        }
+      }
+    },
+    "ai_task_image": {
+      "abort": {
+        "entry_not_loaded": "Cannot add things while the configuration is disabled."
+      },
+      "entry_type": "Image AI task",
+      "error": {
+        "model_not_supported": "Select a supported image deployment."
+      },
+      "initiate_flow": {
+        "reconfigure": "Reconfigure image AI task",
+        "user": "Add image AI task"
+      },
+      "step": {
+        "init": {
+          "data": {
+            "name": "[%key:common::config_flow::data::name%]",
+            "image_model": "Image model deployment"
+          },
+          "data_description": {
+            "image_model": "The exact deployment name of an OpenAI image model. This task supports image generation, not text or structured-data generation."
+          }
         }
       }
     },
@@ -185,6 +269,9 @@
         "entry_not_loaded": "Cannot add things while the configuration is disabled."
       },
       "entry_type": "Speech-to-text",
+      "error": {
+        "model_not_supported": "Select a supported speech-to-text deployment."
+      },
       "initiate_flow": {
         "reconfigure": "Reconfigure speech-to-text service",
         "user": "Add speech-to-text service"
@@ -208,6 +295,9 @@
         "entry_not_loaded": "Cannot add things while the configuration is disabled."
       },
       "entry_type": "Text-to-speech",
+      "error": {
+        "model_not_supported": "Select a supported text-to-speech deployment."
+      },
       "initiate_flow": {
         "reconfigure": "Reconfigure text-to-speech service",
         "user": "Add text-to-speech service"
