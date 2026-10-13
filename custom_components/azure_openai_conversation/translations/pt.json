@@ -64,11 +64,11 @@
       },
       "discovery": {
         "title": "Repetir a descoberta de implementações",
-        "description": "A descoberta não foi concluída. Verifique o erro e tente novamente depois de corrigir as permissões do Azure ou a conectividade.\n\nImplementações que não podem ser adicionadas (sem API suportada, apenas em lote ou não aprovisionadas com êxito):\n{unsupported}"
+        "description": "A descoberta não foi concluída. Verifique o erro e tente novamente depois de corrigir as permissões do Azure ou a conectividade.\n\nImplementações que não podem ser adicionadas (sem API suportada, apenas em lote ou não aprovisionadas com êxito): {unsupported_count}.\n\n{unsupported}"
       },
       "discovery_confirm": {
         "title": "Escolher os serviços OpenAI",
-        "description": "Serviços disponíveis para adicionar: {service_count}. Selecione os modelos implementados a adicionar para cada tipo de serviço; os serviços já adicionados ao Home Assistant não são listados. Por predefinição, nada está selecionado. Os serviços existentes e os respetivos IDs, nomes, instruções e definições personalizadas são preservados; deixe todos os campos vazios para atualizar a descoberta sem adicionar serviços. Os serviços eliminados continuam removidos, a menos que sejam novamente selecionados de forma explícita.\n\nImplementações que não podem ser adicionadas (sem API suportada, apenas em lote ou não aprovisionadas com êxito):\n{unsupported}\n\nNenhum modelo do Azure é implementado ou modificado.",
+        "description": "Serviços disponíveis para adicionar: {service_count}.\n\n{services}\n\nImplementações que não podem ser adicionadas (sem API suportada, apenas em lote ou não aprovisionadas com êxito): {unsupported_count}.\n\n{unsupported}\n\nSelecione os modelos implementados a adicionar para cada tipo de serviço; os serviços já adicionados ao Home Assistant não são listados. Por predefinição, nada está selecionado. Os serviços existentes e os respetivos IDs, nomes, instruções e definições personalizadas são preservados. Os serviços eliminados continuam removidos, a menos que sejam novamente selecionados de forma explícita através da opção “Reconfigurar” da integração.",
         "data": {
           "conversation": "Modelos de conversação",
           "ai_task_data": "Modelos de tarefa de IA de dados",
@@ -79,7 +79,7 @@
       },
       "discovery_all_added": {
         "title": "Todos os modelos já foram adicionados",
-        "description": "Todos os modelos suportados implementados neste recurso já foram adicionados ao Home Assistant para cada serviço compatível, pelo que não há nada de novo a adicionar. Os serviços existentes e as respetivas definições são preservados; continuar apenas guarda o início de sessão atualizado e a lista de implementações.\n\nImplementações que não podem ser adicionadas (sem API suportada, apenas em lote ou não aprovisionadas com êxito):\n{unsupported}\n\nNenhum modelo do Azure é implementado ou modificado."
+        "description": "Todos os modelos suportados implementados neste recurso já foram adicionados ao Home Assistant para cada serviço compatível, pelo que não há nada de novo a adicionar. Os serviços existentes e as respetivas definições são preservados; continuar apenas guarda o início de sessão atualizado e a lista de implementações.\n\nImplementações que não podem ser adicionadas (sem API suportada, apenas em lote ou não aprovisionadas com êxito): {unsupported_count}.\n\n{unsupported}"
       },
       "reauth_oauth_confirm": {
         "description": "Inicie sessão novamente com a Microsoft para renovar o acesso ao recurso do Azure configurado. Os serviços existentes e as respetivas opções serão preservados."

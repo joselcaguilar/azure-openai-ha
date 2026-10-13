@@ -64,11 +64,11 @@
       },
       "discovery": {
         "title": "Réessayer la découverte des déploiements",
-        "description": "La découverte n'a pas abouti. Vérifiez l'erreur et réessayez après avoir corrigé les autorisations Azure ou la connectivité.\n\nDéploiements impossibles à ajouter (aucune API prise en charge, traitement par lots uniquement ou provisionnement non abouti) :\n{unsupported}"
+        "description": "La découverte n'a pas abouti. Vérifiez l'erreur et réessayez après avoir corrigé les autorisations Azure ou la connectivité.\n\nDéploiements impossibles à ajouter (aucune API prise en charge, traitement par lots uniquement ou provisionnement non abouti) : {unsupported_count}.\n\n{unsupported}"
       },
       "discovery_confirm": {
         "title": "Choisir les services OpenAI",
-        "description": "Services disponibles à ajouter : {service_count}. Sélectionnez les modèles déployés à ajouter pour chaque type de service ; les services déjà ajoutés à Home Assistant n'apparaissent pas. Rien n'est sélectionné par défaut. Les services existants, ainsi que leurs ID, noms, instructions et paramètres personnalisés, sont conservés ; laissez tous les champs vides pour actualiser la découverte sans ajouter de services. Les services supprimés le restent, sauf s'ils sont de nouveau sélectionnés explicitement.\n\nDéploiements impossibles à ajouter (aucune API prise en charge, traitement par lots uniquement ou provisionnement non abouti) :\n{unsupported}\n\nAucun modèle Azure n'est déployé ni modifié par cette opération.",
+        "description": "Services disponibles à ajouter : {service_count}.\n\n{services}\n\nDéploiements impossibles à ajouter (aucune API prise en charge, traitement par lots uniquement ou provisionnement non abouti) : {unsupported_count}.\n\n{unsupported}\n\nSélectionnez les modèles déployés à ajouter pour chaque type de service ; les services déjà ajoutés à Home Assistant n'apparaissent pas. Rien n'est sélectionné par défaut. Les services existants, ainsi que leurs ID, noms, instructions et paramètres personnalisés, sont conservés. Les services supprimés le restent, sauf s'ils sont de nouveau sélectionnés explicitement via l'option « Reconfigurer » de l'intégration.",
         "data": {
           "conversation": "Modèles de conversation",
           "ai_task_data": "Modèles de tâche d'IA de données",
@@ -79,7 +79,7 @@
       },
       "discovery_all_added": {
         "title": "Tous les modèles ont déjà été ajoutés",
-        "description": "Tous les modèles pris en charge déployés sur cette ressource ont déjà été ajoutés à Home Assistant pour chaque service compatible. Il n'y a donc rien de nouveau à ajouter. Les services existants et leurs paramètres sont conservés ; en continuant, seules la connexion actualisée et la liste des déploiements sont enregistrées.\n\nDéploiements impossibles à ajouter (aucune API prise en charge, traitement par lots uniquement ou provisionnement non abouti) :\n{unsupported}\n\nAucun modèle Azure n'est déployé ni modifié par cette opération."
+        "description": "Tous les modèles pris en charge déployés sur cette ressource ont déjà été ajoutés à Home Assistant pour chaque service compatible. Il n'y a donc rien de nouveau à ajouter. Les services existants et leurs paramètres sont conservés ; en continuant, seules la connexion actualisée et la liste des déploiements sont enregistrées.\n\nDéploiements impossibles à ajouter (aucune API prise en charge, traitement par lots uniquement ou provisionnement non abouti) : {unsupported_count}.\n\n{unsupported}"
       },
       "reauth_oauth_confirm": {
         "description": "Reconnectez-vous avec Microsoft pour renouveler l'accès à la ressource Azure configurée. Les services existants et leurs options seront conservés."

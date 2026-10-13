@@ -64,11 +64,11 @@
       },
       "discovery": {
         "title": "重試部署探索",
-        "description": "探索未完成。請檢查錯誤訊息，並在修正 Azure 權限或連線問題後再試一次。\n\n無法新增的部署（沒有支援的 API、僅限批次或未成功佈建）：\n{unsupported}"
+        "description": "探索未完成。請檢查錯誤訊息，並在修正 Azure 權限或連線問題後再試一次。\n\n無法新增的部署（沒有支援的 API、僅限批次或未成功佈建）：{unsupported_count}。\n\n{unsupported}"
       },
       "discovery_confirm": {
         "title": "選擇 OpenAI 服務",
-        "description": "可新增的服務數量：{service_count}。請為每種服務類型選擇要新增的已部署模型；已新增至 Home Assistant 的服務不會列出。預設不會選取任何項目。現有服務及其識別碼、名稱、指示與自訂設定都會保留；若要重新整理探索結果而不新增服務，請將所有欄位留空。已刪除的服務除非再次明確選取，否則會維持移除狀態。\n\n無法新增的部署（沒有支援的 API、僅限批次或未成功佈建）：\n{unsupported}\n\n不會部署或修改任何 Azure 模型。",
+        "description": "可新增的服務數量：{service_count}。\n\n{services}\n\n無法新增的部署（沒有支援的 API、僅限批次或未成功佈建）：{unsupported_count}。\n\n{unsupported}\n\n請為每種服務類型選擇要新增的已部署模型；已新增至 Home Assistant 的服務不會列出。預設不會選取任何項目。現有服務及其識別碼、名稱、指示與自訂設定都會保留。已刪除的服務除非透過整合的「重新設定」選項再次明確選取，否則會維持移除狀態。",
         "data": {
           "conversation": "對話模型",
           "ai_task_data": "資料 AI 任務模型",
@@ -79,7 +79,7 @@
       },
       "discovery_all_added": {
         "title": "所有模型皆已新增",
-        "description": "此資源上部署的每個支援模型，皆已針對各項相容服務新增至 Home Assistant，因此沒有新的項目可新增。現有服務及其設定都會保留；繼續操作只會儲存重新整理後的登入資訊與部署清單。\n\n無法新增的部署（沒有支援的 API、僅限批次或未成功佈建）：\n{unsupported}\n\n不會部署或修改任何 Azure 模型。"
+        "description": "此資源上部署的每個支援模型，皆已針對各項相容服務新增至 Home Assistant，因此沒有新的項目可新增。現有服務及其設定都會保留；繼續操作只會儲存重新整理後的登入資訊與部署清單。\n\n無法新增的部署（沒有支援的 API、僅限批次或未成功佈建）：{unsupported_count}。\n\n{unsupported}"
       },
       "reauth_oauth_confirm": {
         "description": "請再次使用 Microsoft 登入，以更新對已設定 Azure 資源的存取權。現有服務及其選項都會保留。"

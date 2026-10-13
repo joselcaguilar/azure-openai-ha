@@ -64,11 +64,11 @@
       },
       "discovery": {
         "title": "Detectie van implementaties opnieuw proberen",
-        "description": "De detectie is niet voltooid. Controleer de fout en probeer het opnieuw nadat je de Azure-machtigingen of de verbinding hebt hersteld.\n\nImplementaties die niet kunnen worden toegevoegd (geen ondersteunde API, alleen batch of niet succesvol ingericht):\n{unsupported}"
+        "description": "De detectie is niet voltooid. Controleer de fout en probeer het opnieuw nadat je de Azure-machtigingen of de verbinding hebt hersteld.\n\nImplementaties die niet kunnen worden toegevoegd (geen ondersteunde API, alleen batch of niet succesvol ingericht): {unsupported_count}.\n\n{unsupported}"
       },
       "discovery_confirm": {
         "title": "OpenAI-services kiezen",
-        "description": "Services die kunnen worden toegevoegd: {service_count}. Selecteer per servicetype de geïmplementeerde modellen die je wilt toevoegen; services die al aan Home Assistant zijn toegevoegd, worden niet weergegeven. Standaard is niets geselecteerd. Bestaande services en hun ID's, namen, instructies en aangepaste instellingen blijven behouden; laat alle velden leeg om de detectie te vernieuwen zonder services toe te voegen. Verwijderde services blijven verwijderd, tenzij je ze expliciet opnieuw selecteert.\n\nImplementaties die niet kunnen worden toegevoegd (geen ondersteunde API, alleen batch of niet succesvol ingericht):\n{unsupported}\n\nEr worden geen Azure-modellen geïmplementeerd of gewijzigd.",
+        "description": "Services die kunnen worden toegevoegd: {service_count}.\n\n{services}\n\nImplementaties die niet kunnen worden toegevoegd (geen ondersteunde API, alleen batch of niet succesvol ingericht): {unsupported_count}.\n\n{unsupported}\n\nSelecteer per servicetype de geïmplementeerde modellen die je wilt toevoegen; services die al aan Home Assistant zijn toegevoegd, worden niet weergegeven. Standaard is niets geselecteerd. Bestaande services en hun ID's, namen, instructies en aangepaste instellingen blijven behouden. Verwijderde services blijven verwijderd, tenzij je ze expliciet opnieuw selecteert via de optie “Herconfigureer” van de integratie.",
         "data": {
           "conversation": "Gespreksmodellen",
           "ai_task_data": "Modellen voor AI-gegevenstaken",
@@ -79,7 +79,7 @@
       },
       "discovery_all_added": {
         "title": "Alle modellen zijn al toegevoegd",
-        "description": "Elk ondersteund model dat in deze resource is geïmplementeerd, is al aan Home Assistant toegevoegd voor elke compatibele service, dus er is niets nieuws om toe te voegen. Bestaande services en hun instellingen blijven behouden; doorgaan slaat alleen de vernieuwde aanmelding en de lijst met implementaties op.\n\nImplementaties die niet kunnen worden toegevoegd (geen ondersteunde API, alleen batch of niet succesvol ingericht):\n{unsupported}\n\nEr worden geen Azure-modellen geïmplementeerd of gewijzigd."
+        "description": "Elk ondersteund model dat in deze resource is geïmplementeerd, is al aan Home Assistant toegevoegd voor elke compatibele service, dus er is niets nieuws om toe te voegen. Bestaande services en hun instellingen blijven behouden; doorgaan slaat alleen de vernieuwde aanmelding en de lijst met implementaties op.\n\nImplementaties die niet kunnen worden toegevoegd (geen ondersteunde API, alleen batch of niet succesvol ingericht): {unsupported_count}.\n\n{unsupported}"
       },
       "reauth_oauth_confirm": {
         "description": "Meld je opnieuw aan bij Microsoft om de toegang tot de geconfigureerde Azure-resource te vernieuwen. Bestaande services en hun opties blijven behouden."

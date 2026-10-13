@@ -64,11 +64,11 @@
       },
       "discovery": {
         "title": "Erkennung der Bereitstellungen wiederholen",
-        "description": "Die Erkennung wurde nicht abgeschlossen. Überprüfe den Fehler und versuche es erneut, nachdem du die Azure-Berechtigungen oder die Verbindung korrigiert hast.\n\nBereitstellungen, die nicht hinzugefügt werden können (keine unterstützte API, nur für Batch oder nicht erfolgreich bereitgestellt):\n{unsupported}"
+        "description": "Die Erkennung wurde nicht abgeschlossen. Überprüfe den Fehler und versuche es erneut, nachdem du die Azure-Berechtigungen oder die Verbindung korrigiert hast.\n\nBereitstellungen, die nicht hinzugefügt werden können (keine unterstützte API, nur für Batch oder nicht erfolgreich bereitgestellt): {unsupported_count}.\n\n{unsupported}"
       },
       "discovery_confirm": {
         "title": "OpenAI-Dienste auswählen",
-        "description": "Dienste, die hinzugefügt werden können: {service_count}. Wähle für jeden Diensttyp die bereitgestellten Modelle aus, die hinzugefügt werden sollen; bereits zu Home Assistant hinzugefügte Dienste werden nicht aufgeführt. Standardmäßig ist nichts ausgewählt. Vorhandene Dienste, IDs, Namen, Anweisungen und angepasste Einstellungen bleiben erhalten; lass alle Felder leer, um die Erkennung zu aktualisieren, ohne Dienste hinzuzufügen. Gelöschte Dienste bleiben entfernt, sofern sie nicht ausdrücklich erneut ausgewählt werden.\n\nBereitstellungen, die nicht hinzugefügt werden können (keine unterstützte API, nur für Batch oder nicht erfolgreich bereitgestellt):\n{unsupported}\n\nEs werden keine Azure-Modelle bereitgestellt oder geändert.",
+        "description": "Dienste, die hinzugefügt werden können: {service_count}.\n\n{services}\n\nBereitstellungen, die nicht hinzugefügt werden können (keine unterstützte API, nur für Batch oder nicht erfolgreich bereitgestellt): {unsupported_count}.\n\n{unsupported}\n\nWähle für jeden Diensttyp die bereitgestellten Modelle aus, die hinzugefügt werden sollen; bereits zu Home Assistant hinzugefügte Dienste werden nicht aufgeführt. Standardmäßig ist nichts ausgewählt. Vorhandene Dienste, IDs, Namen, Anweisungen und angepasste Einstellungen bleiben erhalten. Gelöschte Dienste bleiben entfernt, sofern sie nicht über die Option „Neu konfigurieren“ der Integration ausdrücklich erneut ausgewählt werden.",
         "data": {
           "conversation": "Konversationsmodelle",
           "ai_task_data": "Modelle für Daten-KI-Tasks",
@@ -79,7 +79,7 @@
       },
       "discovery_all_added": {
         "title": "Alle Modelle wurden bereits hinzugefügt",
-        "description": "Alle unterstützten Modelle, die in dieser Ressource bereitgestellt sind, wurden bereits für jeden kompatiblen Dienst zu Home Assistant hinzugefügt; es gibt also nichts Neues hinzuzufügen. Vorhandene Dienste und ihre Einstellungen bleiben erhalten; beim Fortfahren werden nur die aktualisierte Anmeldung und Bereitstellungsliste gespeichert.\n\nBereitstellungen, die nicht hinzugefügt werden können (keine unterstützte API, nur für Batch oder nicht erfolgreich bereitgestellt):\n{unsupported}\n\nEs werden keine Azure-Modelle bereitgestellt oder geändert."
+        "description": "Alle unterstützten Modelle, die in dieser Ressource bereitgestellt sind, wurden bereits für jeden kompatiblen Dienst zu Home Assistant hinzugefügt; es gibt also nichts Neues hinzuzufügen. Vorhandene Dienste und ihre Einstellungen bleiben erhalten; beim Fortfahren werden nur die aktualisierte Anmeldung und Bereitstellungsliste gespeichert.\n\nBereitstellungen, die nicht hinzugefügt werden können (keine unterstützte API, nur für Batch oder nicht erfolgreich bereitgestellt): {unsupported_count}.\n\n{unsupported}"
       },
       "reauth_oauth_confirm": {
         "description": "Melde dich erneut mit Microsoft an, um den Zugriff auf die konfigurierte Azure-Ressource zu erneuern. Vorhandene Dienste und ihre Optionen bleiben erhalten."

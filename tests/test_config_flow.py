@@ -160,6 +160,9 @@ async def test_api_key_setup(hass: HomeAssistant, mock_setup_entry: AsyncMock) -
             result["flow_id"], {"next_step_id": "api_key"}
         )
         assert result["step_id"] == "api_key"
+        assert _form_fields(result)["api_key"]["selector"]["text"]["type"] == (
+            "password"
+        )
         result = await hass.config_entries.flow.async_configure(
             result["flow_id"], {CONF_API_BASE: ENDPOINT, "api_key": "test-api-key"}
         )
@@ -176,6 +179,45 @@ async def test_api_key_setup(hass: HomeAssistant, mock_setup_entry: AsyncMock) -
         "ai_task_data",
     }
     mock_setup_entry.assert_awaited_once()
+
+
+async def test_api_key_reauth_masks_the_replacement_key(hass: HomeAssistant) -> None:
+    """A replacement API key is a password field and keeps the configured endpoint."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={
+            CONF_AUTH_TYPE: AUTH_API_KEY,
+            CONF_API_BASE: ENDPOINT,
+            "api_key": "old-api-key",
+        },
+        version=2,
+    )
+    entry.add_to_hass(hass)
+    with (
+        patch(f"{CONFIG_FLOW}.validate_input", return_value=None),
+        patch.object(hass.config_entries, "async_reload", return_value=True),
+    ):
+        result = await hass.config_entries.flow.async_init(
+            DOMAIN,
+            context={"source": "reauth", "entry_id": entry.entry_id},
+            data=entry.data,
+        )
+        assert result["step_id"] == "reauth_confirm"
+        assert {
+            name: field["selector"]["text"]["type"]
+            for name, field in _form_fields(result).items()
+        } == {"api_key": "password"}
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"], {"api_key": "new-api-key"}
+        )
+        await hass.async_block_till_done()
+    assert result["type"] is FlowResultType.ABORT
+    assert result["reason"] == "reauth_successful"
+    assert entry.data == {
+        CONF_AUTH_TYPE: AUTH_API_KEY,
+        CONF_API_BASE: ENDPOINT,
+        "api_key": "new-api-key",
+    }
 
 
 async def test_oauth_flow_uses_arm_not_inference_catalog(
@@ -323,7 +365,15 @@ async def test_api_key_migrates_to_browser_oauth(
         )
         result = await _authorize(hass, result)
         assert result["step_id"] == "discovery_confirm"
-        assert result["description_placeholders"]["service_count"] == "6"
+        # ha-chat keeps its conversation agent but can still add an AI task.
+        assert result["description_placeholders"]["service_count"] == "5"
+        assert result["description_placeholders"]["services"] == (
+            "- ha-chat (gpt-6.1-sol)\n"
+            "- daily-chat (gpt-4.1-mini)\n"
+            "- art (gpt-image-1)\n"
+            "- listen (gpt-4o-mini-transcribe)\n"
+            "- speak (tts-1)"
+        )
         conversation = _form_fields(result)["conversation"]["selector"]["select"]
         assert [item["value"] for item in conversation["options"]] == ["daily-chat"]
         result = await hass.config_entries.flow.async_configure(result["flow_id"], {})
@@ -380,6 +430,7 @@ async def test_oauth_reauth_preserves_resource_and_subentries(
         result = await _authorize(hass, result)
         assert result["step_id"] == "discovery_confirm"
         assert result["description_placeholders"]["service_count"] == "1"
+        assert result["description_placeholders"]["services"] == "- speak (tts-1)"
         assert {
             service: field["selector"]["select"]["options"]
             for service, field in _form_fields(result).items()
@@ -452,6 +503,8 @@ async def test_reconfigure_reports_when_every_model_is_already_added(
         assert _form_fields(result) == {}
         assert result["description_placeholders"] == {
             "service_count": "0",
+            "services": "",
+            "unsupported_count": "2",
             "unsupported": "- bulk (gpt-4.1-mini)\n- search (text-embedding-3-large)",
         }
         _assert_description_placeholders(result)
@@ -1069,10 +1122,19 @@ async def test_native_application_credentials_create_only_selected_services(
         assert parse_qs(urlsplit(result["url"]).query)["client_id"] == ["native-client"]
         result = await _authorize(hass, result)
         assert result["step_id"] == "discovery_confirm"
-        assert result["description_placeholders"]["service_count"] == "7"
-        assert result["description_placeholders"]["unsupported"] == (
-            "- search (text-embedding-3-large)"
-        )
+        # Seven services from five deployments; the count matches the listed lines.
+        assert result["description_placeholders"] == {
+            "service_count": "5",
+            "services": (
+                "- ha-chat (gpt-6.1-sol)\n"
+                "- daily-chat (gpt-4.1-mini)\n"
+                "- art (gpt-image-1)\n"
+                "- listen (gpt-4o-mini-transcribe)\n"
+                "- speak (tts-1)"
+            ),
+            "unsupported_count": "1",
+            "unsupported": "- search (text-embedding-3-large)",
+        }
         _assert_description_placeholders(result)
         assert "inference-token" not in str(result)
         assert "management-token" not in str(result)

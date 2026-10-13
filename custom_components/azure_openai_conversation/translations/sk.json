@@ -64,11 +64,11 @@
       },
       "discovery": {
         "title": "Opakovať zisťovanie nasadení",
-        "description": "Zisťovanie sa nedokončilo. Skontrolujte chybu a po oprave povolení alebo pripojenia k Azure to skúste znova.\n\nNasadenia, ktoré nemožno pridať (bez podporovaného API, iba dávkové alebo bez úspešného zriadenia):\n{unsupported}"
+        "description": "Zisťovanie sa nedokončilo. Skontrolujte chybu a po oprave povolení alebo pripojenia k Azure to skúste znova.\n\nNasadenia, ktoré nemožno pridať (bez podporovaného API, iba dávkové alebo bez úspešného zriadenia): {unsupported_count}.\n\n{unsupported}"
       },
       "discovery_confirm": {
         "title": "Vyberte služby OpenAI",
-        "description": "Služby dostupné na pridanie: {service_count}. Pre každý typ služby vyberte nasadené modely, ktoré sa majú pridať; služby, ktoré už boli pridané do Home Assistant, sa nezobrazujú. Predvolene nie je vybraté nič. Existujúce služby, ID, názvy, inštrukcie a prispôsobené nastavenia sa zachovajú; ak chcete obnoviť zisťovanie bez pridania služieb, nechajte všetky polia prázdne. Odstránené služby zostanú odstránené, pokiaľ ich znova výslovne nevyberiete.\n\nNasadenia, ktoré nemožno pridať (bez podporovaného API, iba dávkové alebo bez úspešného zriadenia):\n{unsupported}\n\nŽiadne modely v Azure sa nenasadzujú ani neupravujú.",
+        "description": "Služby dostupné na pridanie: {service_count}.\n\n{services}\n\nNasadenia, ktoré nemožno pridať (bez podporovaného API, iba dávkové alebo bez úspešného zriadenia): {unsupported_count}.\n\n{unsupported}\n\nPre každý typ služby vyberte nasadené modely, ktoré sa majú pridať; služby, ktoré už boli pridané do Home Assistant, sa nezobrazujú. Predvolene nie je vybraté nič. Existujúce služby, ID, názvy, inštrukcie a prispôsobené nastavenia sa zachovajú. Odstránené služby zostanú odstránené, pokiaľ ich znova výslovne nevyberiete pomocou možnosti „Rekonfigurácia“ integrácie.",
         "data": {
           "conversation": "Modely pre konverzáciu",
           "ai_task_data": "Modely pre dátové úlohy AI",
@@ -79,7 +79,7 @@
       },
       "discovery_all_added": {
         "title": "Všetky modely už sú pridané",
-        "description": "Každý podporovaný model nasadený v tomto prostriedku už je pridaný do Home Assistant pre každú kompatibilnú službu, takže nie je čo nové pridať. Existujúce služby a ich nastavenia sa zachovajú; pokračovaním sa uloží iba obnovené prihlásenie a zoznam nasadení.\n\nNasadenia, ktoré nemožno pridať (bez podporovaného API, iba dávkové alebo bez úspešného zriadenia):\n{unsupported}\n\nŽiadne modely v Azure sa nenasadzujú ani neupravujú."
+        "description": "Každý podporovaný model nasadený v tomto prostriedku už je pridaný do Home Assistant pre každú kompatibilnú službu, takže nie je čo nové pridať. Existujúce služby a ich nastavenia sa zachovajú; pokračovaním sa uloží iba obnovené prihlásenie a zoznam nasadení.\n\nNasadenia, ktoré nemožno pridať (bez podporovaného API, iba dávkové alebo bez úspešného zriadenia): {unsupported_count}.\n\n{unsupported}"
       },
       "reauth_oauth_confirm": {
         "description": "Znova sa prihláste cez Microsoft, aby ste obnovili prístup k nakonfigurovanému prostriedku Azure. Existujúce služby a ich možnosti sa zachovajú."

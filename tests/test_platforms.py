@@ -599,7 +599,12 @@ async def test_loaded_reconfigure_adds_services_with_one_reload(
         )
         assert result["step_id"] == "discovery_confirm"
         # Only new-chat, new-speech, and the deleted listen service remain to add.
-        assert result["description_placeholders"]["service_count"] == "4"
+        assert result["description_placeholders"]["service_count"] == "3"
+        assert result["description_placeholders"]["services"] == (
+            "- listen (gpt-4o-mini-transcribe)\n"
+            "- new-chat (gpt-4.1-mini)\n"
+            "- new-speech (gpt-4o-mini-tts)"
+        )
         result = await hass.config_entries.flow.async_configure(
             result["flow_id"],
             {

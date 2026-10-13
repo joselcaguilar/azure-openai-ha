@@ -140,13 +140,17 @@ _LOGGER = logging.getLogger(__name__)
 
 STEP_USER_DATA_SCHEMA = probatio.Schema(
     {
-        probatio.Required(CONF_API_KEY): str,
+        probatio.Required(CONF_API_KEY): TextSelector(
+            TextSelectorConfig(type=TextSelectorType.PASSWORD)
+        ),
         probatio.Required(CONF_API_BASE): str,
     }
 )
 STEP_REAUTH_DATA_SCHEMA = probatio.Schema(
     {
-        probatio.Required(CONF_API_KEY): str,
+        probatio.Required(CONF_API_KEY): TextSelector(
+            TextSelectorConfig(type=TextSelectorType.PASSWORD)
+        ),
     }
 )
 
@@ -179,6 +183,14 @@ def _deployment_choices(
         for deployment in deployments
         if service in deployment["services"]
     ]
+
+
+def _deployment_list(deployments: Iterable[DeploymentData]) -> str:
+    """Render one Markdown list item per deployment, named like the selector options."""
+    return "\n".join(
+        f"- {deployment['name']} ({deployment['model_name']})"
+        for deployment in deployments
+    )
 
 
 def _default_deployment(entry: ConfigEntry, service: str, fallback: str) -> str:
@@ -545,18 +557,17 @@ class AzureOpenAIConfigFlow(
         )
 
     def _discovery_summary(self) -> dict[str, str]:
-        """Count services left to add and name unsupported models without tokens."""
+        """List deployments with services left to add and unsupported models."""
         deployments = self._discovery.deployments if self._discovery else []
         missing = missing_deployment_services(self._existing_entry(), deployments)
+        available = [item for item in missing if item["services"]]
+        unsupported = [item for item in deployments if item["unsupported_reason"]]
         # Reasons stay in debug logs; translated descriptions explain the categories.
         return {
-            "unsupported": "\n".join(
-                f"- {item['name']} ({item['model_name']})"
-                for item in deployments
-                if item["unsupported_reason"]
-            )
-            or "—",
-            "service_count": str(len(deployment_subentries(missing))),
+            "service_count": str(len(available)),
+            "services": _deployment_list(available),
+            "unsupported_count": str(len(unsupported)),
+            "unsupported": _deployment_list(unsupported),
         }
 
     async def async_step_discovery_confirm(

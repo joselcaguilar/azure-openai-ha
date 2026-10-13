@@ -64,11 +64,11 @@
       },
       "discovery": {
         "title": "Ponów wykrywanie wdrożeń",
-        "description": "Wykrywanie nie zostało ukończone. Sprawdź błąd i spróbuj ponownie po poprawieniu uprawnień Azure lub łączności.\n\nWdrożenia, których nie można dodać (brak obsługiwanego API, tylko przetwarzanie wsadowe lub aprowizacja niezakończona powodzeniem):\n{unsupported}"
+        "description": "Wykrywanie nie zostało ukończone. Sprawdź błąd i spróbuj ponownie po poprawieniu uprawnień Azure lub łączności.\n\nWdrożenia, których nie można dodać (brak obsługiwanego API, tylko przetwarzanie wsadowe lub aprowizacja niezakończona powodzeniem): {unsupported_count}.\n\n{unsupported}"
       },
       "discovery_confirm": {
         "title": "Wybierz usługi OpenAI",
-        "description": "Usługi dostępne do dodania: {service_count}. Wybierz wdrożone modele do dodania dla każdego typu usługi; usługi już dodane do Home Assistanta nie są wyświetlane. Domyślnie nic nie jest zaznaczone. Istniejące usługi, identyfikatory, nazwy, instrukcje i dostosowane ustawienia zostaną zachowane; pozostaw wszystkie pola puste, aby odświeżyć wykrywanie bez dodawania usług. Usunięte usługi nie zostaną przywrócone, chyba że wyraźnie wybierzesz je ponownie.\n\nWdrożenia, których nie można dodać (brak obsługiwanego API, tylko przetwarzanie wsadowe lub aprowizacja niezakończona powodzeniem):\n{unsupported}\n\nŻadne modele Azure nie są wdrażane ani modyfikowane.",
+        "description": "Usługi dostępne do dodania: {service_count}.\n\n{services}\n\nWdrożenia, których nie można dodać (brak obsługiwanego API, tylko przetwarzanie wsadowe lub aprowizacja niezakończona powodzeniem): {unsupported_count}.\n\n{unsupported}\n\nWybierz wdrożone modele do dodania dla każdego typu usługi; usługi już dodane do Home Assistanta nie są wyświetlane. Domyślnie nic nie jest zaznaczone. Istniejące usługi, identyfikatory, nazwy, instrukcje i dostosowane ustawienia zostaną zachowane. Usunięte usługi nie zostaną przywrócone, chyba że wyraźnie wybierzesz je ponownie za pomocą opcji „Rekonfiguracja” integracji.",
         "data": {
           "conversation": "Modele konwersacji",
           "ai_task_data": "Modele zadań AI generujących dane",
@@ -79,7 +79,7 @@
       },
       "discovery_all_added": {
         "title": "Wszystkie modele zostały już dodane",
-        "description": "Każdy obsługiwany model wdrożony w tym zasobie został już dodany do Home Assistanta dla każdej zgodnej usługi, więc nie ma nic nowego do dodania. Istniejące usługi i ich ustawienia zostaną zachowane; kontynuowanie spowoduje jedynie zapisanie odświeżonych danych logowania i listy wdrożeń.\n\nWdrożenia, których nie można dodać (brak obsługiwanego API, tylko przetwarzanie wsadowe lub aprowizacja niezakończona powodzeniem):\n{unsupported}\n\nŻadne modele Azure nie są wdrażane ani modyfikowane."
+        "description": "Każdy obsługiwany model wdrożony w tym zasobie został już dodany do Home Assistanta dla każdej zgodnej usługi, więc nie ma nic nowego do dodania. Istniejące usługi i ich ustawienia zostaną zachowane; kontynuowanie spowoduje jedynie zapisanie odświeżonych danych logowania i listy wdrożeń.\n\nWdrożenia, których nie można dodać (brak obsługiwanego API, tylko przetwarzanie wsadowe lub aprowizacja niezakończona powodzeniem): {unsupported_count}.\n\n{unsupported}"
       },
       "reauth_oauth_confirm": {
         "description": "Zaloguj się ponownie przez Microsoft, aby odnowić dostęp do skonfigurowanego zasobu Azure. Istniejące usługi i ich opcje zostaną zachowane."
