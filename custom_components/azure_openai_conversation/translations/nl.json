@@ -9,7 +9,7 @@
       "unknown": "Onverwachte fout"
     },
     "step": {
-      "user": {
+      "api_key": {
         "data": {
           "api_key": "API sleutel",
           "api_base": "API Basis in Azure",
@@ -21,24 +21,24 @@
   "config_subentries": {
     "conversation": {
       "step": {
-        "additional": {
+        "init": {
           "data": {
             "send_sampling_parameters": "Samplingparameters verzenden (temperature/top_p)"
           },
           "data_description": {
-            "send_sampling_parameters": "Schakel deze optie uit voor modellen die temperature of top_p niet ondersteunen. De opgeslagen waarden worden genegeerd zolang deze optie is uitgeschakeld."
+            "send_sampling_parameters": "Standaard uitgeschakeld. Temperature en Top P verschijnen alleen als deze optie is ingeschakeld. Opgeslagen waarden blijven bewaard wanneer de optie is uitgeschakeld."
           }
         }
       }
     },
     "ai_task_data": {
       "step": {
-        "additional": {
+        "init": {
           "data": {
             "send_sampling_parameters": "Samplingparameters verzenden (temperature/top_p)"
           },
           "data_description": {
-            "send_sampling_parameters": "Schakel deze optie uit voor modellen die temperature of top_p niet ondersteunen. De opgeslagen waarden worden genegeerd zolang deze optie is uitgeschakeld."
+            "send_sampling_parameters": "Standaard uitgeschakeld. Temperature en Top P verschijnen alleen als deze optie is ingeschakeld. Opgeslagen waarden blijven bewaard wanneer de optie is uitgeschakeld."
           }
         }
       }

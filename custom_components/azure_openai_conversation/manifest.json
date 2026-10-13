@@ -4,7 +4,7 @@
   "after_dependencies": ["assist_pipeline", "intent"],
   "codeowners": ["@joselcaguilar"],
   "config_flow": true,
-  "dependencies": ["conversation"],
+  "dependencies": ["application_credentials", "conversation"],
   "documentation": "https://github.com/joselcaguilar/azure-openai-ha",
   "integration_type": "service",
   "iot_class": "cloud_polling",

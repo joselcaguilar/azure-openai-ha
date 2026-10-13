@@ -9,7 +9,7 @@
       "unknown": "Niespodziewany błąd"
     },
     "step": {
-      "user": {
+      "api_key": {
         "data": {
           "api_key": "Klucz API",
           "api_base": "Baza API w Azure",
@@ -21,24 +21,24 @@
   "config_subentries": {
     "conversation": {
       "step": {
-        "additional": {
+        "init": {
           "data": {
             "send_sampling_parameters": "Wysyłaj parametry próbkowania (temperature/top_p)"
           },
           "data_description": {
-            "send_sampling_parameters": "Wyłącz tę opcję dla modeli, które odrzucają temperature lub top_p. Zapisane wartości są ignorowane, gdy opcja jest wyłączona."
+            "send_sampling_parameters": "Domyślnie wyłączone. Temperature i Top P są widoczne tylko po włączeniu tej opcji. Zapisane wartości zostają zachowane po jej wyłączeniu."
           }
         }
       }
     },
     "ai_task_data": {
       "step": {
-        "additional": {
+        "init": {
           "data": {
             "send_sampling_parameters": "Wysyłaj parametry próbkowania (temperature/top_p)"
           },
           "data_description": {
-            "send_sampling_parameters": "Wyłącz tę opcję dla modeli, które odrzucają temperature lub top_p. Zapisane wartości są ignorowane, gdy opcja jest wyłączona."
+            "send_sampling_parameters": "Domyślnie wyłączone. Temperature i Top P są widoczne tylko po włączeniu tej opcji. Zapisane wartości zostają zachowane po jej wyłączeniu."
           }
         }
       }

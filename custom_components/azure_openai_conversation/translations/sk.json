@@ -9,7 +9,7 @@
       "unknown": "Neočakávaná chyba"
     },
     "step": {
-      "user": {
+      "api_key": {
         "data": {
           "api_key": "API kľúč",
           "api_base": "API základňa v Azure",
@@ -21,24 +21,24 @@
   "config_subentries": {
     "conversation": {
       "step": {
-        "additional": {
+        "init": {
           "data": {
             "send_sampling_parameters": "Odosielať parametre vzorkovania (temperature/top_p)"
           },
           "data_description": {
-            "send_sampling_parameters": "Vypnite túto možnosť pre modely, ktoré odmietajú temperature alebo top_p. Uložené hodnoty sa ignorujú, kým je táto možnosť vypnutá."
+            "send_sampling_parameters": "Predvolene vypnuté. Temperature a Top P sa zobrazia iba po zapnutí tejto možnosti. Uložené hodnoty sa zachovajú aj pri jej vypnutí."
           }
         }
       }
     },
     "ai_task_data": {
       "step": {
-        "additional": {
+        "init": {
           "data": {
             "send_sampling_parameters": "Odosielať parametre vzorkovania (temperature/top_p)"
           },
           "data_description": {
-            "send_sampling_parameters": "Vypnite túto možnosť pre modely, ktoré odmietajú temperature alebo top_p. Uložené hodnoty sa ignorujú, kým je táto možnosť vypnutá."
+            "send_sampling_parameters": "Predvolene vypnuté. Temperature a Top P sa zobrazia iba po zapnutí tejto možnosti. Uložené hodnoty sa zachovajú aj pri jej vypnutí."
           }
         }
       }

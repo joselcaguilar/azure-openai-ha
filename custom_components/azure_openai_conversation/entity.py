@@ -72,6 +72,8 @@ from .const import (
     CONF_CHAT_MODEL,
     CONF_CODE_INTERPRETER,
     CONF_MAX_TOKENS,
+    CONF_IMAGE_MODEL,
+    CONF_MODEL_NAME,
     CONF_PRO_MODE,
     CONF_REASONING_EFFORT,
     CONF_REASONING_SUMMARY,
@@ -93,7 +95,6 @@ from .const import (
     RECOMMENDED_CHAT_MODEL,
     RECOMMENDED_MAX_TOKENS,
     RECOMMENDED_PRO_MODE,
-    RECOMMENDED_REASONING_EFFORT,
     RECOMMENDED_REASONING_SUMMARY,
     RECOMMENDED_SEND_SAMPLING_PARAMETERS,
     RECOMMENDED_STORE_RESPONSES,
@@ -103,6 +104,7 @@ from .const import (
     RECOMMENDED_VERBOSITY,
     RECOMMENDED_WEB_SEARCH_CONTEXT_SIZE,
     RECOMMENDED_WEB_SEARCH_INLINE_CITATIONS,
+    get_recommended_reasoning_effort,
 )
 from .schema import adjust_schema
 
@@ -575,7 +577,9 @@ class AzureOpenAIBaseLLMEntity(Entity):
             name=subentry.title,
             manufacturer="Azure OpenAI",
             model=subentry.data.get(
-                CONF_CHAT_MODEL,
+                CONF_IMAGE_MODEL
+                if subentry.subentry_type == "ai_task_image"
+                else CONF_CHAT_MODEL,
                 RECOMMENDED_CHAT_MODEL
                 if subentry.subentry_type != "stt"
                 else RECOMMENDED_STT_MODEL,
@@ -627,14 +631,16 @@ class AzureOpenAIBaseLLMEntity(Entity):
             store=options.get(CONF_STORE_RESPONSES, RECOMMENDED_STORE_RESPONSES),
             stream=True,
         )
+        model_name = options.get(CONF_MODEL_NAME, model_args["model"])
 
         reasoning: Reasoning | None = None
-        if model_args["model"].startswith(("o", "gpt-5", "gpt-6")):
+        if model_name.startswith(("o", "gpt-5", "gpt-6")):
             reasoning = {
                 "effort": options.get(
-                    CONF_REASONING_EFFORT, RECOMMENDED_REASONING_EFFORT
+                    CONF_REASONING_EFFORT,
+                    get_recommended_reasoning_effort(model_name),
                 )
-                if not model_args["model"].startswith("gpt-5-pro")
+                if not model_name.startswith("gpt-5-pro")
                 else "high",  # GPT-5 pro only supports reasoning.effort: high
             }
 
@@ -659,7 +665,7 @@ class AzureOpenAIBaseLLMEntity(Entity):
                 CONF_TEMPERATURE, RECOMMENDED_TEMPERATURE
             )
 
-        if model_args["model"].startswith(("gpt-5", "gpt-6")):
+        if model_name.startswith(("gpt-5", "gpt-6")):
             model_args["text"] = {
                 "verbosity": options.get(CONF_VERBOSITY, RECOMMENDED_VERBOSITY)
             }
@@ -704,7 +710,7 @@ class AzureOpenAIBaseLLMEntity(Entity):
                     )
                 )
 
-                if not model_args["model"].startswith("o"):
+                if not model_name.startswith("o"):
                     # o-series models handle this correctly with just a prompt
                     remove_citations = True
 

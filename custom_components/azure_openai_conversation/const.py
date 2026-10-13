@@ -11,14 +11,21 @@ LOGGER: logging.Logger = logging.getLogger(__package__)
 
 DEFAULT_CONVERSATION_NAME = "Azure OpenAI Conversation"
 DEFAULT_AI_TASK_NAME = "Azure OpenAI AI Task"
+DEFAULT_IMAGE_TASK_NAME = "Azure OpenAI Image Task"
 DEFAULT_STT_NAME = "Azure OpenAI STT"
 DEFAULT_TTS_NAME = "Azure OpenAI TTS"
 DEFAULT_NAME = "Azure OpenAI Conversation"
 
 CONF_API_BASE = "api_base"
+CONF_AUTH_TYPE = "auth_type"
+CONF_AUTO_DISCOVERED = "auto_discovered"
 CONF_CHAT_MODEL = "chat_model"
 CONF_CODE_INTERPRETER = "code_interpreter"
 CONF_IMAGE_MODEL = "image_model"
+CONF_DEPLOYMENTS = "deployments"
+CONF_MODEL_NAME = "model_name"
+CONF_RESOURCE_ID = "resource_id"
+CONF_TENANT_ID = "tenant_id"
 CONF_MAX_TOKENS = "max_tokens"
 CONF_PRO_MODE = "pro_mode"
 CONF_REASONING_EFFORT = "reasoning_effort"
@@ -38,6 +45,10 @@ CONF_WEB_SEARCH_REGION = "region"
 CONF_WEB_SEARCH_COUNTRY = "country"
 CONF_WEB_SEARCH_TIMEZONE = "timezone"
 CONF_WEB_SEARCH_INLINE_CITATIONS = "inline_citations"
+AUTH_API_KEY = "api_key"
+AUTH_ENTRA_ID = "entra_id"
+INFERENCE_SCOPE = "https://cognitiveservices.azure.com/.default"
+MANAGEMENT_SCOPE = "https://management.azure.com//.default"
 RECOMMENDED_CODE_INTERPRETER = False
 RECOMMENDED_CHAT_MODEL = "gpt-4o-mini"
 RECOMMENDED_IMAGE_MODEL = "gpt-image-2.5-flare"
@@ -45,7 +56,7 @@ RECOMMENDED_MAX_TOKENS = 3000
 RECOMMENDED_PRO_MODE = False
 RECOMMENDED_REASONING_EFFORT = "low"
 RECOMMENDED_REASONING_SUMMARY = "auto"
-RECOMMENDED_SEND_SAMPLING_PARAMETERS = True
+RECOMMENDED_SEND_SAMPLING_PARAMETERS = False
 RECOMMENDED_STORE_RESPONSES = False
 RECOMMENDED_STT_MODEL = "gpt-4o-mini-transcribe"
 RECOMMENDED_TEMPERATURE = 1.0
@@ -70,8 +81,13 @@ IMAGE_MODELS: list[str] = [
     "gpt-image-1",
     "gpt-image-1-mini",
 ]
-STT_MODELS: list[str] = ["gpt-4o-transcribe", "gpt-4o-mini-transcribe", "whisper"]
-TTS_MODELS: list[str] = ["gpt-4o-mini-tts", "tts-1", "tts-1-hd"]
+STT_MODELS: list[str] = [
+    "gpt-transcribe",
+    "gpt-4o-transcribe",
+    "gpt-4o-mini-transcribe",
+    "whisper",
+]
+TTS_MODELS: list[str] = ["gpt-4o-mini-tts", "tts", "tts-hd", "tts-1", "tts-1-hd"]
 
 UNSUPPORTED_MODELS: list[str] = [
     "o1-mini",
@@ -114,3 +130,40 @@ RECOMMENDED_TTS_OPTIONS = {
     CONF_PROMPT: "",
     CONF_CHAT_MODEL: RECOMMENDED_TTS_MODEL,
 }
+
+
+def get_reasoning_options(model: str) -> list[str]:
+    """Return adjustable reasoning efforts supported by the underlying model."""
+    if not model.startswith(("o", "gpt-5", "gpt-6")) or model.startswith("gpt-5-pro"):
+        return []
+
+    models_reasoning_map: dict[str | tuple[str, ...], list[str]] = {
+        "gpt-6-luna": ["none", "low", "medium", "high", "xhigh", "max"],
+        "gpt-6": ["low", "medium", "high", "xhigh", "max"],
+        "gpt-5.6": ["none", "low", "medium", "high", "xhigh", "max"],
+        ("gpt-5.2-pro", "gpt-5.4-pro", "gpt-5.5-pro"): ["medium", "high", "xhigh"],
+        ("gpt-5.2", "gpt-5.3", "gpt-5.4", "gpt-5.5"): [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+        ],
+        "gpt-5.1": ["none", "low", "medium", "high"],
+        "gpt-5": ["minimal", "low", "medium", "high"],
+        "": ["low", "medium", "high"],
+    }
+    for prefix, options in models_reasoning_map.items():
+        if model.startswith(prefix):
+            return options
+    return []  # pragma: no cover
+
+
+def get_recommended_reasoning_effort(model: str) -> str:
+    """Use the preferred effort only where the model supports it."""
+    if model.startswith("gpt-5-pro"):
+        return "high"
+    options = get_reasoning_options(model)
+    if options and RECOMMENDED_REASONING_EFFORT not in options:
+        return options[0]
+    return RECOMMENDED_REASONING_EFFORT
