@@ -33,6 +33,7 @@ from custom_components.azure_openai_conversation.const import (
     CONF_CHAT_MODEL,
     CONF_DEPLOYMENTS,
     CONF_IMAGE_MODEL,
+    CONF_IMAGE_QUALITY,
     CONF_MODEL_NAME,
     CONF_REASONING_EFFORT,
     CONF_RESOURCE_ID,
@@ -41,6 +42,7 @@ from custom_components.azure_openai_conversation.const import (
     CONF_TENANT_ID,
     CONF_TOP_P,
     DOMAIN,
+    get_image_quality_options,
 )
 from custom_components.azure_openai_conversation.deployments import (
     DeploymentData,
@@ -664,6 +666,13 @@ async def test_manual_subentry_suggests_deployed_image(
         (entry.entry_id, "ai_task_image"), context={"source": "user"}
     )
     assert result["step_id"] == "init"
+    fields = _form_fields(result)
+    assert fields[CONF_IMAGE_QUALITY]["selector"]["select"]["options"] == [
+        "low",
+        "medium",
+        "high",
+    ]
+    assert fields[CONF_IMAGE_QUALITY]["description"]["suggested_value"] == "high"
     result = await hass.config_entries.subentries.async_configure(
         result["flow_id"], {"name": "Images", CONF_IMAGE_MODEL: "art"}
     )
@@ -672,8 +681,120 @@ async def test_manual_subentry_suggests_deployed_image(
     assert subentry.subentry_type == "ai_task_image"
     assert subentry.data == {
         CONF_IMAGE_MODEL: "art",
+        CONF_IMAGE_QUALITY: "high",
         CONF_MODEL_NAME: "gpt-image-1",
     }
+
+
+@pytest.mark.parametrize(
+    ("model_name", "choices", "quality"),
+    [
+        (
+            "gpt-image-2.5-flare",
+            ["low", "medium", "high", "xhigh", "max", "auto"],
+            "max",
+        ),
+        ("gpt-image-1", ["low", "medium", "high"], "high"),
+        ("dall-e-3", [], None),
+    ],
+)
+async def test_image_task_offers_only_qualities_its_model_accepts(
+    hass: HomeAssistant,
+    oauth_data: dict,
+    deployment_inventory: list[DeploymentData],
+    model_name: str,
+    choices: list[str],
+    quality: str | None,
+) -> None:
+    """A saved quality the deployed model rejects is neither suggested nor kept."""
+    deployment_inventory[2]["model_name"] = model_name
+    subentries = deployment_subentries(deployment_inventory, {"ai_task_image": ["art"]})
+    subentries[0]["data"][CONF_IMAGE_QUALITY] = "max"
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={**oauth_data, CONF_DEPLOYMENTS: deployment_inventory},
+        state=ConfigEntryState.LOADED,
+        version=2,
+        minor_version=2,
+        subentries_data=subentries,
+    )
+    entry.add_to_hass(hass)
+    subentry = next(iter(entry.subentries.values()))
+    result = await hass.config_entries.subentries.async_init(
+        (entry.entry_id, "ai_task_image"),
+        context={"source": "reconfigure", "subentry_id": subentry.subentry_id},
+    )
+    fields = _form_fields(result)
+    if choices:
+        assert fields[CONF_IMAGE_QUALITY]["selector"]["select"]["options"] == choices
+        assert fields[CONF_IMAGE_QUALITY]["description"]["suggested_value"] == quality
+    else:
+        assert CONF_IMAGE_QUALITY not in fields
+    result = await hass.config_entries.subentries.async_configure(
+        result["flow_id"], {CONF_IMAGE_MODEL: "art"}
+    )
+    assert result["reason"] == "reconfigure_successful"
+    assert subentry.data[CONF_MODEL_NAME] == model_name
+    assert subentry.data.get(CONF_IMAGE_QUALITY) == quality
+
+
+async def test_changed_image_model_rejects_unsupported_quality(
+    hass: HomeAssistant,
+    oauth_data: dict,
+    deployment_inventory: list[DeploymentData],
+) -> None:
+    """A quality accepted by the old image model must still be valid for the new one."""
+    deployment_inventory.append(
+        DeploymentData(
+            id=f"{RESOURCE_ID}/deployments/flare",
+            name="flare",
+            model_name="gpt-image-2.5-flare",
+            services=["ai_task_image"],
+            unsupported_reason="",
+        )
+    )
+    subentries = deployment_subentries(
+        deployment_inventory, {"ai_task_image": ["flare"]}
+    )
+    subentries[0]["data"][CONF_IMAGE_QUALITY] = "xhigh"
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={**oauth_data, CONF_DEPLOYMENTS: deployment_inventory},
+        state=ConfigEntryState.LOADED,
+        version=2,
+        minor_version=2,
+        subentries_data=subentries,
+    )
+    entry.add_to_hass(hass)
+    subentry = next(iter(entry.subentries.values()))
+    original_data = dict(subentry.data)
+    result = await hass.config_entries.subentries.async_init(
+        (entry.entry_id, "ai_task_image"),
+        context={"source": "reconfigure", "subentry_id": subentry.subentry_id},
+    )
+    fields = _form_fields(result)
+    assert fields[CONF_IMAGE_QUALITY]["description"]["suggested_value"] == "xhigh"
+    result = await hass.config_entries.subentries.async_configure(
+        result["flow_id"], {CONF_IMAGE_MODEL: "art", CONF_IMAGE_QUALITY: "xhigh"}
+    )
+    assert result["step_id"] == "init"
+    assert result["errors"] == {CONF_IMAGE_QUALITY: "image_quality_not_supported"}
+    fields = _form_fields(result)
+    assert fields[CONF_IMAGE_MODEL]["description"]["suggested_value"] == "art"
+    assert fields[CONF_IMAGE_QUALITY]["selector"]["select"]["options"] == [
+        "low",
+        "medium",
+        "high",
+    ]
+    assert fields[CONF_IMAGE_QUALITY]["description"]["suggested_value"] == "high"
+    assert subentry.data == original_data
+    result = await hass.config_entries.subentries.async_configure(
+        result["flow_id"], {CONF_IMAGE_MODEL: "art", CONF_IMAGE_QUALITY: "low"}
+    )
+    assert result["reason"] == "reconfigure_successful"
+    assert subentry.data[CONF_IMAGE_MODEL] == "art"
+    assert subentry.data[CONF_MODEL_NAME] == "gpt-image-1"
+    assert subentry.data[CONF_IMAGE_QUALITY] == "low"
 
 
 @pytest.mark.parametrize("service", ["conversation", "ai_task_data"])
@@ -835,13 +956,14 @@ async def test_recommended_sampling_preserves_explicit_choices_and_hidden_values
     ("model_name", "choices", "default"),
     [
         ("gpt-4.1-mini", [], None),
-        ("gpt-5", ["minimal", "low", "medium", "high"], "low"),
-        ("gpt-5.1", ["none", "low", "medium", "high"], "low"),
+        ("gpt-5", ["minimal", "low", "medium", "high"], "medium"),
+        ("gpt-5.1", ["none", "low", "medium", "high"], "medium"),
         ("gpt-5.2-pro", ["medium", "high", "xhigh"], "medium"),
-        ("gpt-5.4", ["none", "low", "medium", "high", "xhigh"], "low"),
-        ("gpt-5.6", ["none", "low", "medium", "high", "xhigh", "max"], "low"),
-        ("gpt-6.1-sol", ["low", "medium", "high", "xhigh", "max"], "low"),
-        ("gpt-6-luna", ["none", "low", "medium", "high", "xhigh", "max"], "low"),
+        ("gpt-5.4", ["none", "low", "medium", "high", "xhigh"], "medium"),
+        ("gpt-5.6", ["none", "low", "medium", "high", "xhigh", "max"], "medium"),
+        ("gpt-6.1-sol", ["low", "medium", "high", "xhigh", "max"], "medium"),
+        ("gpt-6-luna", ["none", "low", "medium", "high", "xhigh", "max"], "medium"),
+        ("o4-mini", ["low", "medium", "high"], "medium"),
         ("gpt-5-pro", [], None),
     ],
 )
@@ -1003,6 +1125,118 @@ async def test_initial_minimal_effort_still_rejects_incompatible_advanced_tools(
     assert result["reason"] == "reconfigure_successful"
     assert subentry.data[CONF_REASONING_EFFORT] == "minimal"
     assert subentry.data[tool] is False
+
+
+async def test_data_task_image_quality_follows_its_image_deployment(
+    hass: HomeAssistant,
+    oauth_data: dict,
+    deployment_inventory: list[DeploymentData],
+) -> None:
+    """A data task offers quality for its saved image deployment, not its chat model."""
+    deployment_inventory.append(
+        DeploymentData(
+            id=f"{RESOURCE_ID}/deployments/flare",
+            name="flare",
+            model_name="gpt-image-2.5-flare",
+            services=["ai_task_image"],
+            unsupported_reason="",
+        )
+    )
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={**oauth_data, CONF_DEPLOYMENTS: deployment_inventory},
+        state=ConfigEntryState.LOADED,
+        version=2,
+        minor_version=2,
+        subentries_data=deployment_subentries(
+            deployment_inventory, {"ai_task_data": ["ha-chat"]}
+        ),
+    )
+    entry.add_to_hass(hass)
+    subentry = next(iter(entry.subentries.values()))
+    context = {"source": "reconfigure", "subentry_id": subentry.subentry_id}
+
+    async def reconfigure(recommended: bool) -> dict:
+        """Open the task settings, continuing to the model step when customized."""
+        result = await hass.config_entries.subentries.async_init(
+            (entry.entry_id, "ai_task_data"), context=context
+        )
+        result = await hass.config_entries.subentries.async_configure(
+            result["flow_id"], {CONF_CHAT_MODEL: "ha-chat", "recommended": recommended}
+        )
+        if not recommended:
+            result = await hass.config_entries.subentries.async_configure(
+                result["flow_id"], {}
+            )
+            assert result["step_id"] == "model"
+        return result
+
+    result = await reconfigure(recommended=False)
+    assert CONF_IMAGE_QUALITY not in _form_fields(result)
+    result = await hass.config_entries.subentries.async_configure(
+        result["flow_id"], {CONF_IMAGE_MODEL: "art"}
+    )
+    assert result["reason"] == "reconfigure_successful"
+    assert subentry.data[CONF_IMAGE_MODEL] == "art"
+    assert subentry.data[CONF_IMAGE_QUALITY] == "high"
+
+    result = await reconfigure(recommended=False)
+    fields = _form_fields(result)
+    assert fields[CONF_IMAGE_QUALITY]["selector"]["select"]["options"] == [
+        "low",
+        "medium",
+        "high",
+    ]
+    assert fields[CONF_IMAGE_QUALITY]["description"]["suggested_value"] == "high"
+    result = await hass.config_entries.subentries.async_configure(
+        result["flow_id"], {CONF_IMAGE_MODEL: "flare", CONF_IMAGE_QUALITY: "high"}
+    )
+    assert result["reason"] == "reconfigure_successful"
+
+    result = await reconfigure(recommended=False)
+    fields = _form_fields(result)
+    assert fields[CONF_IMAGE_QUALITY]["selector"]["select"][
+        "options"
+    ] == get_image_quality_options("gpt-image-2.5-flare")
+    result = await hass.config_entries.subentries.async_configure(
+        result["flow_id"], {CONF_IMAGE_MODEL: "flare", CONF_IMAGE_QUALITY: "xhigh"}
+    )
+    assert result["reason"] == "reconfigure_successful"
+    assert subentry.data[CONF_IMAGE_QUALITY] == "xhigh"
+
+    result = await reconfigure(recommended=False)
+    result = await hass.config_entries.subentries.async_configure(
+        result["flow_id"], {CONF_IMAGE_MODEL: "art", CONF_IMAGE_QUALITY: "xhigh"}
+    )
+    assert result["step_id"] == "model"
+    assert result["errors"] == {CONF_IMAGE_QUALITY: "image_quality_not_supported"}
+    fields = _form_fields(result)
+    assert fields[CONF_IMAGE_MODEL]["description"]["suggested_value"] == "art"
+    assert fields[CONF_IMAGE_QUALITY]["selector"]["select"]["options"] == [
+        "low",
+        "medium",
+        "high",
+    ]
+    assert fields[CONF_IMAGE_QUALITY]["description"]["suggested_value"] == "high"
+    assert subentry.data[CONF_IMAGE_MODEL] == "flare"
+    assert subentry.data[CONF_IMAGE_QUALITY] == "xhigh"
+    result = await hass.config_entries.subentries.async_configure(
+        result["flow_id"], {CONF_IMAGE_MODEL: "art", CONF_IMAGE_QUALITY: "medium"}
+    )
+    assert result["reason"] == "reconfigure_successful"
+    assert subentry.data[CONF_IMAGE_MODEL] == "art"
+    assert subentry.data[CONF_IMAGE_QUALITY] == "medium"
+
+    result = await reconfigure(recommended=True)
+    assert result["reason"] == "reconfigure_successful"
+    assert subentry.data[CONF_IMAGE_MODEL] == "art"
+    assert subentry.data[CONF_IMAGE_QUALITY] == "medium"
+
+    result = await reconfigure(recommended=False)
+    result = await hass.config_entries.subentries.async_configure(result["flow_id"], {})
+    assert result["reason"] == "reconfigure_successful"
+    assert CONF_IMAGE_MODEL not in subentry.data
+    assert CONF_IMAGE_QUALITY not in subentry.data
 
 
 @pytest.mark.parametrize(
@@ -1480,6 +1714,33 @@ async def test_initial_settings_labels_and_effort_errors_exist_in_every_locale(
             ]
         )
         assert f"{prefix}.error.reasoning_effort_not_supported" in translations
+
+
+@pytest.mark.parametrize("language", LANGUAGES)
+async def test_image_quality_labels_levels_and_errors_exist_in_every_locale(
+    hass: HomeAssistant, language: str
+) -> None:
+    """Both image settings forms and every offered quality level are translated."""
+    translations = await async_get_translations(
+        hass, language, "config_subentries", {DOMAIN}
+    )
+    for service, step in (("ai_task_image", "init"), ("ai_task_data", "model")):
+        prefix = f"component.{DOMAIN}.config_subentries.{service}"
+        assert f"{prefix}.step.{step}.data.{CONF_IMAGE_QUALITY}" in translations
+        assert (
+            f"{prefix}.step.{step}.data_description.{CONF_IMAGE_QUALITY}"
+            in translations
+        )
+        assert f"{prefix}.error.image_quality_not_supported" in translations
+    selectors = await async_get_translations(hass, language, "selector", {DOMAIN})
+    for level in {
+        *get_image_quality_options("gpt-image-2.5-flare"),
+        *get_image_quality_options("gpt-image-1"),
+    }:
+        assert (
+            f"component.{DOMAIN}.selector.{CONF_IMAGE_QUALITY}.options.{level}"
+            in selectors
+        )
 
 
 def test_english_translation_mirrors_strings() -> None:

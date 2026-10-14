@@ -20,8 +20,11 @@ from .const import (
     CONF_AUTO_DISCOVERED,
     CONF_DEPLOYMENTS,
     CONF_IMAGE_MODEL,
+    CONF_IMAGE_QUALITY,
     CONF_MODEL_NAME,
     RECOMMENDED_IMAGE_MODEL,
+    RECOMMENDED_IMAGE_QUALITY,
+    get_image_quality_options,
 )
 from .entity import AzureOpenAIBaseLLMEntity
 
@@ -153,6 +156,14 @@ class AzureOpenAITaskEntity(
         extra_args: dict[str, Any] = {}
         if model_name.startswith("dall-e-"):
             extra_args["response_format"] = "b64_json"
+        if quality_options := get_image_quality_options(model_name):
+            quality = self.subentry.data.get(
+                CONF_IMAGE_QUALITY, RECOMMENDED_IMAGE_QUALITY
+            )
+            # A re-pointed deployment can leave a level its new model rejects
+            extra_args["quality"] = (
+                quality if quality in quality_options else RECOMMENDED_IMAGE_QUALITY
+            )
 
         try:
             if attachments:

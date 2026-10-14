@@ -3,6 +3,7 @@
 from collections.abc import AsyncGenerator
 import base64
 import json
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -21,6 +22,7 @@ from custom_components.azure_openai_conversation.const import (
     CONF_CODE_INTERPRETER,
     CONF_DEPLOYMENTS,
     CONF_IMAGE_MODEL,
+    CONF_IMAGE_QUALITY,
     CONF_MODEL_NAME,
     CONF_REASONING_EFFORT,
     CONF_SEND_SAMPLING_PARAMETERS,
@@ -496,6 +498,110 @@ async def test_image_task_uses_its_image_deployment(
     assert body["model"] == "art"
     assert "temperature" not in body
     assert "top_p" not in body
+
+
+@pytest.mark.parametrize(
+    ("model_name", "stored", "expected"),
+    [
+        ("gpt-image-1", None, "high"),
+        ("gpt-image-1", "low", "low"),
+        ("gpt-image-1", "xhigh", "high"),
+        ("gpt-image-2.5-flare", "xhigh", "xhigh"),
+        ("dall-e-3", "high", None),
+    ],
+)
+async def test_image_task_sends_only_a_quality_its_model_accepts(
+    hass: HomeAssistant,
+    loaded_oauth_entry: MockConfigEntry,
+    respx_mock: MockRouter,
+    model_name: str,
+    stored: str | None,
+    expected: str | None,
+) -> None:
+    """A re-pointed deployment falls back to high instead of failing on a stale level."""
+    inventory = [
+        {**item, "model_name": model_name} if item["name"] == "art" else item
+        for item in loaded_oauth_entry.data[CONF_DEPLOYMENTS]
+    ]
+    subentry = next(
+        item
+        for item in loaded_oauth_entry.subentries.values()
+        if item.subentry_type == "ai_task_image"
+    )
+    data = {**subentry.data, CONF_MODEL_NAME: model_name}
+    if stored is not None:
+        data[CONF_IMAGE_QUALITY] = stored
+    hass.config_entries.async_update_entry(
+        loaded_oauth_entry,
+        data={**loaded_oauth_entry.data, CONF_DEPLOYMENTS: inventory},
+    )
+    hass.config_entries.async_update_subentry(loaded_oauth_entry, subentry, data=data)
+    await hass.async_block_till_done()
+    route = respx_mock.post(f"{ENDPOINT}openai/v1/images/generations").respond(
+        json={"created": 1, "data": [{"b64_json": base64.b64encode(b"art").decode()}]}
+    )
+    entity_id = _entity_id(hass, loaded_oauth_entry, "ai_task_image", "art")
+    entity = hass.data[ai_task.DATA_COMPONENT].get_entity(entity_id)
+    assert isinstance(entity, AzureOpenAITaskEntity)
+    with async_get_chat_session(hass) as session:
+        result = await entity.internal_async_generate_image(
+            session, ai_task.GenImageTask(name="Art", instructions="Draw an example")
+        )
+    assert result.image_data == b"art"
+    body = json.loads(route.calls[0].request.content)
+    assert body["model"] == "art"
+    assert body.get("quality") == expected
+
+
+async def test_data_task_edits_images_with_its_image_quality(
+    hass: HomeAssistant,
+    loaded_oauth_entry: MockConfigEntry,
+    respx_mock: MockRouter,
+    tmp_path: Path,
+) -> None:
+    """Edits use the image deployment's model to pick a quality, not the chat model's."""
+    subentry = next(
+        item
+        for item in loaded_oauth_entry.subentries.values()
+        if item.subentry_type == "ai_task_data"
+        and item.data[CONF_CHAT_MODEL] == "ha-chat"
+    )
+    hass.config_entries.async_update_subentry(
+        loaded_oauth_entry,
+        subentry,
+        data={**subentry.data, CONF_IMAGE_MODEL: "art", CONF_IMAGE_QUALITY: "medium"},
+    )
+    await hass.async_block_till_done()
+    route = respx_mock.post(f"{ENDPOINT}openai/v1/images/edits").respond(
+        json={
+            "created": 1,
+            "data": [{"b64_json": base64.b64encode(b"edited").decode()}],
+        }
+    )
+    photo = tmp_path / "photo.png"
+    photo.write_bytes(b"original-image")
+    entity_id = _entity_id(hass, loaded_oauth_entry, "ai_task_data", "ha-chat")
+    entity = hass.data[ai_task.DATA_COMPONENT].get_entity(entity_id)
+    assert isinstance(entity, AzureOpenAITaskEntity)
+    with async_get_chat_session(hass) as session:
+        result = await entity.internal_async_generate_image(
+            session,
+            ai_task.GenImageTask(
+                name="Edit",
+                instructions="Brighten this photo",
+                attachments=[
+                    conversation.Attachment(
+                        media_content_id="media-source://media_source/local/photo.png",
+                        mime_type="image/png",
+                        path=photo,
+                    )
+                ],
+            ),
+        )
+    assert result.image_data == b"edited"
+    content = route.calls[0].request.content
+    assert b'name="model"\r\n\r\nart' in content
+    assert b'name="quality"\r\n\r\nmedium' in content
 
 
 async def test_stt_uses_its_transcription_deployment(

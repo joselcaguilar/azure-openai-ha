@@ -181,6 +181,7 @@
       "entry_type": "Tarea de IA",
       "error": {
         "code_interpreter_minimal_reasoning": "El intérprete de código no es compatible con un esfuerzo de razonamiento mínimo",
+        "image_quality_not_supported": "Selecciona una calidad de imagen compatible con el modelo subyacente de la implementación de imágenes elegida",
         "model_not_supported": "Este modelo no es compatible, por favor, selecciona un modelo diferente",
         "reasoning_effort_not_supported": "Selecciona un esfuerzo de razonamiento compatible con el modelo subyacente de la implementación elegida",
         "web_search_minimal_reasoning": "Actualmente, la búsqueda web no es compatible con un esfuerzo de razonamiento mínimo"
@@ -227,7 +228,8 @@
             "user_location": "Incluir ubicación de la casa",
             "verbosity": "Nivel de detalle",
             "web_search": "Habilitar la búsqueda web",
-            "image_model": "Implementación del modelo de imágenes"
+            "image_model": "Implementación del modelo de imágenes",
+            "image_quality": "Calidad de imagen"
           },
           "data_description": {
             "code_interpreter": "Esta herramienta, también conocida como la herramienta Python para el modelo, le permite ejecutar código para responder preguntas",
@@ -238,7 +240,8 @@
             "user_location": "Refinar los resultados de búsqueda según la geografía",
             "verbosity": "Cuán detalladas deben ser las respuestas del modelo",
             "web_search": "Permite que el modelo busque en la web con Grounding with Bing Search antes de generar una respuesta. Se aplican costes adicionales",
-            "image_model": "Implementación de imágenes opcional para esta tarea de datos. Las tareas de chat detectadas no generan imágenes a menos que se seleccione una; las implementaciones de imágenes también tienen sus propias tareas dedicadas."
+            "image_model": "Implementación de imágenes opcional para esta tarea de datos. Las tareas de chat detectadas no generan imágenes a menos que se seleccione una; las implementaciones de imágenes también tienen sus propias tareas dedicadas.",
+            "image_quality": "Calidad de las imágenes generadas con la implementación de imágenes seleccionada. Una calidad más alta tarda más y cuesta más; los niveles disponibles dependen del modelo de imágenes subyacente."
           },
           "title": "Opciones específicas del modelo"
         }
@@ -250,6 +253,7 @@
       },
       "entry_type": "Tarea de IA de imágenes",
       "error": {
+        "image_quality_not_supported": "Selecciona una calidad de imagen compatible con el modelo subyacente de la implementación elegida.",
         "model_not_supported": "Selecciona una implementación de imágenes compatible."
       },
       "initiate_flow": {
@@ -260,10 +264,12 @@
         "init": {
           "data": {
             "name": "Nombre",
-            "image_model": "Implementación del modelo de imágenes"
+            "image_model": "Implementación del modelo de imágenes",
+            "image_quality": "Calidad de imagen"
           },
           "data_description": {
-            "image_model": "El nombre exacto de la implementación de un modelo de imágenes de OpenAI. Esta tarea admite la generación de imágenes, no la generación de texto ni de datos estructurados."
+            "image_model": "El nombre exacto de la implementación de un modelo de imágenes de OpenAI. Esta tarea admite la generación de imágenes, no la generación de texto ni de datos estructurados.",
+            "image_quality": "Una calidad más alta genera imágenes más detalladas, pero tarda más y cuesta más. Los niveles disponibles dependen del modelo de imágenes subyacente."
           }
         }
       }
@@ -324,6 +330,16 @@
     }
   },
   "selector": {
+    "image_quality": {
+      "options": {
+        "auto": "Auto",
+        "high": "Alta",
+        "low": "Baja",
+        "max": "Máxima",
+        "medium": "Media",
+        "xhigh": "Muy alta"
+      }
+    },
     "reasoning_effort": {
       "options": {
         "high": "Alto",

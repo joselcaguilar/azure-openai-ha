@@ -181,6 +181,7 @@
       "entry_type": "AI 任務",
       "error": {
         "code_interpreter_minimal_reasoning": "推理等級為「最小」時不支援程式碼解譯器",
+        "image_quality_not_supported": "請選擇所選影像部署之底層模型支援的影像品質",
         "model_not_supported": "不支援此模型，請選擇其他模型",
         "reasoning_effort_not_supported": "請選擇所選部署之底層模型支援的推理等級",
         "web_search_minimal_reasoning": "推理等級為「最小」時目前不支援網頁搜尋"
@@ -227,7 +228,8 @@
             "user_location": "包含家庭所在位置",
             "verbosity": "詳細程度",
             "web_search": "啟用網頁搜尋",
-            "image_model": "影像模型部署"
+            "image_model": "影像模型部署",
+            "image_quality": "影像品質"
           },
           "data_description": {
             "code_interpreter": "此工具對模型而言又稱為 python 工具，可讓模型執行程式碼來回答問題",
@@ -238,7 +240,8 @@
             "user_location": "根據地理位置最佳化搜尋結果",
             "verbosity": "模型回應應有的詳細程度",
             "web_search": "允許模型在生成回應前透過 Grounding with Bing Search 搜尋網頁。會產生額外費用",
-            "image_model": "此資料任務可選用的影像部署。除非選擇影像部署，否則透過探索新增的聊天模型任務不會生成影像；影像部署也另有專屬任務。"
+            "image_model": "此資料任務可選用的影像部署。除非選擇影像部署，否則透過探索新增的聊天模型任務不會生成影像；影像部署也另有專屬任務。",
+            "image_quality": "使用所選影像部署生成影像時的品質。品質越高，所需時間越長、費用也越高；可用等級取決於底層影像模型。"
           },
           "title": "模型特定選項"
         }
@@ -250,6 +253,7 @@
       },
       "entry_type": "影像 AI 任務",
       "error": {
+        "image_quality_not_supported": "請選擇所選部署之底層模型支援的影像品質。",
         "model_not_supported": "請選擇支援的影像部署。"
       },
       "initiate_flow": {
@@ -260,10 +264,12 @@
         "init": {
           "data": {
             "name": "名稱",
-            "image_model": "影像模型部署"
+            "image_model": "影像模型部署",
+            "image_quality": "影像品質"
           },
           "data_description": {
-            "image_model": "OpenAI 影像模型的確切部署名稱。此任務支援影像生成，不支援文字或結構化資料生成。"
+            "image_model": "OpenAI 影像模型的確切部署名稱。此任務支援影像生成，不支援文字或結構化資料生成。",
+            "image_quality": "較高品質會產生更精細的影像，但需要更長時間且費用更高。可用等級取決於底層影像模型。"
           }
         }
       }
@@ -324,6 +330,16 @@
     }
   },
   "selector": {
+    "image_quality": {
+      "options": {
+        "auto": "自動",
+        "high": "高",
+        "low": "低",
+        "max": "最高",
+        "medium": "中",
+        "xhigh": "超高"
+      }
+    },
     "reasoning_effort": {
       "options": {
         "high": "高",

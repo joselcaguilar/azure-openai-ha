@@ -22,6 +22,7 @@ CONF_AUTO_DISCOVERED = "auto_discovered"
 CONF_CHAT_MODEL = "chat_model"
 CONF_CODE_INTERPRETER = "code_interpreter"
 CONF_IMAGE_MODEL = "image_model"
+CONF_IMAGE_QUALITY = "image_quality"
 CONF_DEPLOYMENTS = "deployments"
 CONF_MODEL_NAME = "model_name"
 CONF_RESOURCE_ID = "resource_id"
@@ -52,9 +53,10 @@ MANAGEMENT_SCOPE = "https://management.azure.com//.default"
 RECOMMENDED_CODE_INTERPRETER = False
 RECOMMENDED_CHAT_MODEL = "gpt-4o-mini"
 RECOMMENDED_IMAGE_MODEL = "gpt-image-2.5-flare"
+RECOMMENDED_IMAGE_QUALITY = "high"
 RECOMMENDED_MAX_TOKENS = 3000
 RECOMMENDED_PRO_MODE = False
-RECOMMENDED_REASONING_EFFORT = "low"
+RECOMMENDED_REASONING_EFFORT = "medium"
 RECOMMENDED_REASONING_SUMMARY = "auto"
 RECOMMENDED_SEND_SAMPLING_PARAMETERS = False
 RECOMMENDED_STORE_RESPONSES = False
@@ -164,6 +166,16 @@ def get_recommended_reasoning_effort(model: str) -> str:
     if model.startswith("gpt-5-pro"):
         return "high"
     options = get_reasoning_options(model)
-    if options and RECOMMENDED_REASONING_EFFORT not in options:
+    if options and RECOMMENDED_REASONING_EFFORT not in options:  # pragma: no cover
         return options[0]
     return RECOMMENDED_REASONING_EFFORT
+
+
+def get_image_quality_options(model: str) -> list[str]:
+    """Return image quality levels supported by the underlying image model."""
+    if model.startswith("gpt-image-2.5"):
+        return ["low", "medium", "high", "xhigh", "max", "auto"]
+    if model.startswith("gpt-image"):
+        return ["low", "medium", "high"]
+    # DALL-E 3 has been retired and DALL-E 2 accepts only its standard quality
+    return []
