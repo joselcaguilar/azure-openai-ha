@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
-- Speech-to-text failed with `DeploymentNotFound`, so Assist showed **speech-to-text failed**, because Azure's v1 API can't route audio transcriptions to a deployment. Transcriptions now use the deployment's `/openai/deployments/{deployment}/audio/transcriptions` endpoint with API version `2025-04-01-preview`. If you use a gateway, it must forward this route too. Text-to-speech, conversation agents and AI tasks still use the v1 API.
+- Speech-to-text failed with `DeploymentNotFound`, so Assist showed **speech-to-text failed**, because Azure's v1 API can't route audio transcriptions to a deployment. Transcriptions now use the deployment's `/openai/deployments/{deployment}/audio/transcriptions` endpoint with API version `2025-04-01-preview`. If you use a gateway, it must forward this route too. Text-to-speech, conversation agents and AI tasks still use the v1 API. ([#183])
 
 ## [5.0.0] — 2026-10-14
 
@@ -88,3 +88,4 @@ Thanks to [@rac146](https://github.com/rac146) and [@SchmidSP](https://github.co
 [#180]: https://github.com/joselcaguilar/azure-openai-ha/pull/180
 [#181]: https://github.com/joselcaguilar/azure-openai-ha/pull/181
 [#182]: https://github.com/joselcaguilar/azure-openai-ha/pull/182
+[#183]: https://github.com/joselcaguilar/azure-openai-ha/pull/183
