@@ -53,7 +53,7 @@ This is equivalent to the built-in [OpenAI Conversation integration](https://www
    *Deployment names can be different from model names. Microsoft sign-in discovers both automatically; API-key users enter the exact deployment name in the service's first configuration screen. **Recommended model settings** never changes the selected deployment.*
 3. Optionally deploy more models:
    - An image model such as `gpt-image-2.5-flare`, `gpt-image-2` or `gpt-image-1` to generate images with AI tasks.
-   - `gpt-4o-mini-transcribe`, `gpt-4o-transcribe`, `gpt-transcribe` or `whisper` for speech-to-text.
+   - `gpt-transcribe`, `gpt-4o-mini-transcribe`, `gpt-4o-transcribe` or `whisper` for speech-to-text.
    - `gpt-4o-mini-tts`, `tts` or `tts-hd` for text-to-speech. Legacy `tts-1` and `tts-1-hd` model names remain supported.
 
 ## Setting Up the Integration
@@ -109,7 +109,7 @@ API keys authorize inference, not ARM deployment discovery. The manual API-key p
 
 ### Speech models and realtime audio
 
-For an Assist pipeline, a practical OpenAI pairing is **`gpt-4o-mini-transcribe` for STT** and **`gpt-4o-mini-tts` for TTS**, where those models are available in your Foundry account's region. TTS uses the REST `/openai/v1/audio/speech` endpoint. STT uses the deployment's REST `/openai/deployments/{deployment}/audio/transcriptions` endpoint with API version `2025-04-01-preview`, because Azure's v1 transcription endpoint returns `DeploymentNotFound`; if you use a gateway, make sure it forwards this route too.
+For an Assist pipeline, a practical OpenAI pairing is **`gpt-transcribe` for STT** and **`gpt-4o-mini-tts` for TTS**, where those models are available in your Foundry account's region. Microsoft recommends `gpt-transcribe` for file transcription, and the integration passes it your pipeline's language as a hint. TTS uses the REST `/openai/v1/audio/speech` endpoint. STT uses the deployment's REST `/openai/deployments/{deployment}/audio/transcriptions` endpoint with API version `2025-04-01-preview`, because Azure's v1 transcription endpoint returns `DeploymentNotFound`; if you use a gateway, make sure it forwards this route too.
 
 **`gpt-realtime-2.1` is not a drop-in STT or TTS model for these endpoints.** Realtime speech-to-speech models use a separate streaming API with WebRTC, WebSocket, or SIP sessions; supporting them requires a dedicated realtime implementation. Discovery therefore reports realtime models as unsupported rather than creating incompatible STT/TTS entities. The realtime-only `gpt-live-transcribe` and `gpt-realtime-whisper` models are also excluded. See Microsoft's [audio model catalog](https://learn.microsoft.com/azure/foundry/foundry-models/concepts/models-sold-directly-by-azure#audio-models) for current model versions and availability.
 
