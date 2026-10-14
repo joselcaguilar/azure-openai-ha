@@ -4,8 +4,6 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Releases before 5.0.0 are documented in the [GitHub release history](https://github.com/joselcaguilar/azure-openai-ha/releases).
 
-## [Unreleased]
-
 ## [5.0.0] — 2026-10-14
 
 This major release rebuilds the integration on the architecture of Home Assistant 2026.10's OpenAI integration, and adds AI tasks, speech-to-text, text-to-speech, and Microsoft Entra ID sign-in with deployment discovery. It includes every change from the 5.0.0-pre.1 to 5.0.0-pre.5 pre-releases, plus the `medium` default reasoning effort and the image quality setting from [#182].
@@ -69,7 +67,6 @@ Thanks to [@rac146](https://github.com/rac146) and [@SchmidSP](https://github.co
 - Updated GitHub Actions: `actions/checkout` v7, `actions/setup-python` v7, `dependabot/fetch-metadata` v3 and `softprops/action-gh-release` v3.0.3. ([#164], [#178])
 - Updated development requirements: `homeassistant>=2026.10.0`, `colorlog>=6.12.0`, `pip>=26.2.1` and `ruff>=0.17.0`. ([#164], [#178], [#180])
 
-[Unreleased]: https://github.com/joselcaguilar/azure-openai-ha/compare/v5.0.0...HEAD
 [5.0.0]: https://github.com/joselcaguilar/azure-openai-ha/compare/v4.5.0...v5.0.0
 [#160]: https://github.com/joselcaguilar/azure-openai-ha/pull/160
 [#161]: https://github.com/joselcaguilar/azure-openai-ha/issues/161
