@@ -13,6 +13,11 @@ updates:
     ignore:
       # Dependabot should not update Home Assistant as that should match the homeassistant key in hacs.json
       - dependency-name: "homeassistant"
+      # The openai floor must not exceed the version pinned in Home Assistant core's homeassistant/package_constraints.txt
+      # for the homeassistant key in hacs.json, or Home Assistant cannot install the integration, so bump it together
+      # with Home Assistant. update-types do not apply to version ranges, hence the bare ignore; security updates are
+      # still raised
+      - dependency-name: "openai"
       # Test dependencies must match Home Assistant core's homeassistant/package_constraints.txt for the targeted
       # Home Assistant release, so bump them together with Home Assistant; security updates are still raised
       - dependency-name: "gazetteer-matcher"

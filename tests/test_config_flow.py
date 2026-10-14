@@ -160,9 +160,10 @@ async def test_api_key_setup(hass: HomeAssistant, mock_setup_entry: AsyncMock) -
             result["flow_id"], {"next_step_id": "api_key"}
         )
         assert result["step_id"] == "api_key"
-        assert _form_fields(result)["api_key"]["selector"]["text"]["type"] == (
-            "password"
-        )
+        fields = _form_fields(result)
+        assert fields["api_key"]["selector"]["text"]["type"] == "password"
+        assert fields["api_key"]["secret"] is True
+        assert "secret" not in fields[CONF_API_BASE]
         result = await hass.config_entries.flow.async_configure(
             result["flow_id"], {CONF_API_BASE: ENDPOINT, "api_key": "test-api-key"}
         )
@@ -182,7 +183,7 @@ async def test_api_key_setup(hass: HomeAssistant, mock_setup_entry: AsyncMock) -
 
 
 async def test_api_key_reauth_masks_the_replacement_key(hass: HomeAssistant) -> None:
-    """A replacement API key is a password field and keeps the configured endpoint."""
+    """A replacement API key is a secret password field and keeps the endpoint."""
     entry = MockConfigEntry(
         domain=DOMAIN,
         data={
@@ -204,9 +205,9 @@ async def test_api_key_reauth_masks_the_replacement_key(hass: HomeAssistant) -> 
         )
         assert result["step_id"] == "reauth_confirm"
         assert {
-            name: field["selector"]["text"]["type"]
+            name: (field["selector"]["text"]["type"], field.get("secret"))
             for name, field in _form_fields(result).items()
-        } == {"api_key": "password"}
+        } == {"api_key": ("password", True)}
         result = await hass.config_entries.flow.async_configure(
             result["flow_id"], {"api_key": "new-api-key"}
         )

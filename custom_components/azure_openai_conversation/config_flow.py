@@ -140,7 +140,7 @@ _LOGGER = logging.getLogger(__name__)
 
 STEP_USER_DATA_SCHEMA = probatio.Schema(
     {
-        probatio.Required(CONF_API_KEY): TextSelector(
+        probatio.Required(probatio.Secret(CONF_API_KEY)): TextSelector(
             TextSelectorConfig(type=TextSelectorType.PASSWORD)
         ),
         probatio.Required(CONF_API_BASE): str,
@@ -148,7 +148,7 @@ STEP_USER_DATA_SCHEMA = probatio.Schema(
 )
 STEP_REAUTH_DATA_SCHEMA = probatio.Schema(
     {
-        probatio.Required(CONF_API_KEY): TextSelector(
+        probatio.Required(probatio.Secret(CONF_API_KEY)): TextSelector(
             TextSelectorConfig(type=TextSelectorType.PASSWORD)
         ),
     }

@@ -3,7 +3,7 @@
 from collections.abc import AsyncGenerator
 import base64
 import json
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -18,6 +18,7 @@ from custom_components.azure_openai_conversation.ai_task import AzureOpenAITaskE
 from custom_components.azure_openai_conversation.auth import EntraOAuth2Implementation
 from custom_components.azure_openai_conversation.const import (
     CONF_CHAT_MODEL,
+    CONF_CODE_INTERPRETER,
     CONF_DEPLOYMENTS,
     CONF_IMAGE_MODEL,
     CONF_MODEL_NAME,
@@ -25,6 +26,7 @@ from custom_components.azure_openai_conversation.const import (
     CONF_SEND_SAMPLING_PARAMETERS,
     CONF_TEMPERATURE,
     CONF_TOP_P,
+    CONF_WEB_SEARCH,
     DOMAIN,
     RECOMMENDED_REASONING_EFFORT,
 )
@@ -34,6 +36,7 @@ from custom_components.azure_openai_conversation.deployments import (
     deployment_subentries,
     sync_deployment_subentries,
 )
+from custom_components.azure_openai_conversation.entity import _transform_stream
 from custom_components.azure_openai_conversation.tts import AzureOpenAITTSEntity
 
 from .const import ENDPOINT, RESOURCE_ID, TENANT_ID
@@ -130,33 +133,63 @@ async def test_deleted_services_are_not_recreated(
     } == {original_entities[subentry_id] for subentry_id in expected}
 
 
-def _text_stream(text: str) -> str:
-    """Build a minimal real Responses API stream consumed by the OpenAI SDK."""
+def _text_stream(*deltas: str) -> str:
+    """Build a real Responses API stream consumed by the OpenAI SDK."""
+    message = {
+        "type": "message",
+        "id": "message-1",
+        "role": "assistant",
+        "status": "completed",
+        "content": [
+            {"type": "output_text", "text": "".join(deltas), "annotations": []}
+        ],
+    }
     events = [
         {
             "type": "response.output_item.added",
-            "sequence_number": 1,
             "output_index": 0,
-            "item": {
-                "type": "message",
-                "id": "message-1",
-                "role": "assistant",
-                "status": "in_progress",
-                "content": [],
+            "item": {**message, "status": "in_progress", "content": []},
+        },
+        *(
+            {
+                "type": "response.output_text.delta",
+                "item_id": "message-1",
+                "output_index": 0,
+                "content_index": 0,
+                "delta": delta,
+                "logprobs": [],
+            }
+            for delta in deltas
+        ),
+        {"type": "response.output_item.done", "output_index": 0, "item": message},
+        {
+            "type": "response.completed",
+            "response": {
+                "id": "response-1",
+                "object": "response",
+                "created_at": 1,
+                "status": "completed",
+                "model": "ha-chat",
+                "output": [message],
+                "parallel_tool_calls": True,
+                "tool_choice": "auto",
+                "tools": [],
+                "usage": {
+                    "input_tokens": 3,
+                    "input_tokens_details": {"cached_tokens": 0},
+                    "output_tokens": 2,
+                    "output_tokens_details": {"reasoning_tokens": 0},
+                    "total_tokens": 5,
+                },
             },
         },
-        {
-            "type": "response.output_text.delta",
-            "sequence_number": 2,
-            "item_id": "message-1",
-            "output_index": 0,
-            "content_index": 0,
-            "delta": text,
-            "logprobs": [],
-        },
     ]
-    return "".join(f"data: {json.dumps(event)}\n\n" for event in events) + (
-        "data: [DONE]\n\n"
+    # Responses streams end at EOF. A Chat Completions [DONE] marker makes the SDK
+    # leave its event generator to garbage collection, which fails as a lingering task.
+    return "".join(
+        f"event: {event['type']}\n"
+        f"data: {json.dumps({**event, 'sequence_number': number})}\n\n"
+        for number, event in enumerate(events, start=1)
     )
 
 
@@ -196,6 +229,38 @@ async def test_conversation_alias_and_model_specific_parameters(
         assert body["reasoning"]["effort"] == RECOMMENDED_REASONING_EFFORT
         assert "verbosity" in body["text"]
         assert body["include"] == ["reasoning.encrypted_content"]
+
+
+@pytest.mark.parametrize(
+    ("deltas", "content"),
+    [
+        pytest.param(("",), [""], id="empty-delta"),
+        pytest.param((), [""], id="no-text-deltas"),
+        pytest.param(("Lights", " are off"), ["Lights", " are off"], id="text"),
+    ],
+)
+async def test_completed_empty_message_is_an_explicit_reply(
+    loaded_oauth_entry: MockConfigEntry,
+    respx_mock: MockRouter,
+    deltas: tuple[str, ...],
+    content: list[str],
+) -> None:
+    """A completed empty reply is explicit so Home Assistant can treat it as silent."""
+    respx_mock.post(f"{ENDPOINT}openai/v1/responses").respond(
+        text=_text_stream(*deltas),
+        headers={"Content-Type": "text/event-stream"},
+    )
+    stream = await loaded_oauth_entry.runtime_data.responses.create(
+        model="ha-chat", input="Turn off the lights quietly", stream=True
+    )
+    chat_log = MagicMock()
+    assert [delta async for delta in _transform_stream(chat_log, stream)] == [
+        {"role": "assistant"},
+        *({"content": text} for text in content),
+    ]
+    chat_log.async_trace.assert_called_once_with(
+        {"stats": {"input_tokens": 3, "output_tokens": 2}}
+    )
 
 
 @pytest.mark.parametrize("service", ["conversation", "ai_task_data"])
@@ -274,6 +339,43 @@ async def test_data_task_uses_its_chat_deployment(
     assert body["model"] == "daily-chat"
     assert "temperature" not in body
     assert "top_p" not in body
+
+
+async def test_data_task_sends_enabled_builtin_tools(
+    hass: HomeAssistant,
+    loaded_oauth_entry: MockConfigEntry,
+    respx_mock: MockRouter,
+) -> None:
+    """A data task can search the web and run code like a conversation agent."""
+    subentry = next(
+        item
+        for item in loaded_oauth_entry.subentries.values()
+        if item.subentry_type == "ai_task_data"
+        and item.data[CONF_CHAT_MODEL] == "ha-chat"
+    )
+    hass.config_entries.async_update_subentry(
+        loaded_oauth_entry,
+        subentry,
+        data={**subentry.data, CONF_WEB_SEARCH: True, CONF_CODE_INTERPRETER: True},
+    )
+    await hass.async_block_till_done()
+    route = respx_mock.post(f"{ENDPOINT}openai/v1/responses").respond(
+        text=_text_stream("Researched answer"),
+        headers={"Content-Type": "text/event-stream"},
+    )
+    result = await ai_task.async_generate_data(
+        hass,
+        task_name="Research",
+        entity_id=_entity_id(hass, loaded_oauth_entry, "ai_task_data", "ha-chat"),
+        instructions="Find the forecast and calculate the average",
+    )
+    assert result.data == "Researched answer"
+    body = json.loads(route.calls[0].request.content)
+    assert body["tools"] == [
+        {"type": "web_search", "search_context_size": "medium"},
+        {"type": "code_interpreter", "container": {"type": "auto"}},
+    ]
+    assert "code_interpreter_call.outputs" in body["include"]
 
 
 @pytest.mark.parametrize("service", ["conversation", "ai_task_data"])
