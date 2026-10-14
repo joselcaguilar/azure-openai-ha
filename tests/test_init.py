@@ -10,6 +10,8 @@ from homeassistant.exceptions import ConfigEntryError
 from custom_components.azure_openai_conversation import (
     async_create_entry_client,
     async_migrate_entry,
+    create_client,
+    create_deployment_client,
 )
 from custom_components.azure_openai_conversation.const import (
     AUTH_API_KEY,
@@ -37,6 +39,29 @@ async def test_legacy_client_keeps_api_key(
     await hass.async_add_executor_job(client.platform_headers)
     await client.models.list()
     assert route.calls[0].request.headers["Authorization"] == "Bearer legacy-key"
+
+
+async def test_deployment_client_targets_deployment_route(
+    hass: HomeAssistant, respx_mock: MockRouter
+) -> None:
+    """Deployment routes escape the name, keep the API key and leave v1 unchanged."""
+    client = create_client(hass, ENDPOINT, "api-key")
+    route = respx_mock.post(
+        f"{ENDPOINT}openai/deployments/team%2Fstt/audio/transcriptions"
+    ).respond(json={"text": "Hola"})
+    await hass.async_add_executor_job(client.platform_headers)
+    transcription = await create_deployment_client(
+        client, "team/stt"
+    ).audio.transcriptions.create(model="team/stt", file=("a.wav", b"RIFF"))
+    assert transcription.text == "Hola"
+    request = route.calls[0].request
+    assert request.url.raw_path == (
+        b"/openai/deployments/team%2Fstt/audio/transcriptions"
+        b"?api-version=2025-04-01-preview"
+    )
+    assert request.headers["Authorization"] == "Bearer api-key"
+    assert str(client.base_url) == f"{ENDPOINT}openai/v1/"
+    assert client.default_query == {"api-version": "preview"}
 
 
 async def test_unknown_authentication_is_not_an_api_key_fallback(
