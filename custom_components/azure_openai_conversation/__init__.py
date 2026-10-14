@@ -6,6 +6,7 @@ import asyncio
 from collections.abc import Awaitable, Callable
 from types import MappingProxyType
 from typing import Any
+from urllib.parse import quote
 
 import openai
 
@@ -56,6 +57,8 @@ type OpenAIConfigEntry = ConfigEntry[openai.AsyncClient]
 
 _LEGACY_CONF_STRIP_WEB_CITATIONS = "strip_web_citations"
 _LEGACY_REASONING_EFFORT_DISABLED = "disabled"
+# Latest dated API version; its reference lists every gpt-4o transcription model.
+_DEPLOYMENT_API_VERSION = "2025-04-01-preview"
 
 
 def normalize_azure_endpoint(uri: str) -> str:
@@ -80,6 +83,22 @@ def create_client(
         default_query={"api-version": "preview"},
         api_key=api_key,
         http_client=get_async_client(hass),
+    )
+
+
+def create_deployment_client(
+    client: openai.AsyncOpenAI, deployment: str
+) -> openai.AsyncOpenAI:
+    """Return a client for a deployment's routes from before the v1 API.
+
+    Azure's v1 API returns DeploymentNotFound for audio transcriptions, but
+    /openai/deployments/{deployment}/audio/transcriptions works.
+    """
+    # The base URL ends with /openai/v1/, so this resolves to /openai/deployments/.
+    path = f"../deployments/{quote(deployment, safe='')}/"
+    return client.with_options(
+        base_url=client.base_url.join(path),
+        default_query={"api-version": _DEPLOYMENT_API_VERSION},
     )
 
 

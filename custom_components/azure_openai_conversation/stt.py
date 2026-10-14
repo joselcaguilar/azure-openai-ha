@@ -15,6 +15,7 @@ from homeassistant.const import CONF_PROMPT
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
+from . import create_deployment_client
 from .const import CONF_CHAT_MODEL, DEFAULT_STT_PROMPT, RECOMMENDED_STT_MODEL
 from .entity import AzureOpenAIBaseLLMEntity
 
@@ -180,11 +181,13 @@ class AzureOpenAISTTEntity(stt.SpeechToTextEntity, AzureOpenAIBaseLLMEntity):
             audio_data = wav_buffer.getvalue()
 
         options = self.subentry.data
-        client = self.entry.runtime_data
+        deployment = options.get(CONF_CHAT_MODEL, RECOMMENDED_STT_MODEL)
+        # Azure's v1 API can't route audio transcriptions to a deployment.
+        client = create_deployment_client(self.entry.runtime_data, deployment)
 
         try:
             response = await client.audio.transcriptions.create(
-                model=options.get(CONF_CHAT_MODEL, RECOMMENDED_STT_MODEL),
+                model=deployment,
                 file=(f"a.{metadata.format.value}", audio_data),
                 response_format="json",
                 language=metadata.language.split("-")[0],

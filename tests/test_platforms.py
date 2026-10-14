@@ -609,10 +609,10 @@ async def test_stt_uses_its_transcription_deployment(
     loaded_oauth_entry: MockConfigEntry,
     respx_mock: MockRouter,
 ) -> None:
-    """STT sends the discovered alias and a WAV file with an inference bearer token."""
-    route = respx_mock.post(f"{ENDPOINT}openai/v1/audio/transcriptions").respond(
-        json={"text": "Turn on the lights"}
-    )
+    """STT posts a WAV file to its deployment's route with an inference bearer token."""
+    route = respx_mock.post(
+        f"{ENDPOINT}openai/deployments/listen/audio/transcriptions"
+    ).respond(json={"text": "Turn on the lights"})
     entity = stt.async_get_speech_to_text_entity(
         hass, _entity_id(hass, loaded_oauth_entry, "stt", "listen")
     )
@@ -634,6 +634,7 @@ async def test_stt_uses_its_transcription_deployment(
     assert result.result is stt.SpeechResultState.SUCCESS
     assert result.text == "Turn on the lights"
     request = route.calls[0].request
+    assert request.url.params["api-version"] == "2025-04-01-preview"
     assert request.headers["Authorization"] == "Bearer inference-token"
     assert b'name="model"\r\n\r\nlisten' in request.content
     assert b'name="language"\r\n\r\nen' in request.content
