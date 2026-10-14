@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-import logging
 from typing import TYPE_CHECKING, Any, Literal, override
 
 from openai import OpenAIError
@@ -33,8 +32,6 @@ from .entity import AzureOpenAIBaseLLMEntity
 
 if TYPE_CHECKING:
     from . import OpenAIConfigEntry
-
-_LOGGER = logging.getLogger(__name__)
 
 PARALLEL_UPDATES = 0
 
@@ -210,7 +207,6 @@ class AzureOpenAITTSEntity(TextToSpeechEntity, AzureOpenAIBaseLLMEntity):
                 async for chunk in response.iter_bytes():
                     response_data.extend(chunk)
         except OpenAIError as exc:
-            _LOGGER.exception("Error during TTS")
             raise HomeAssistantError(exc) from exc
 
         return response_format, bytes(response_data)
