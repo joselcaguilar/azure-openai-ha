@@ -181,6 +181,7 @@
       "entry_type": "AI-taak",
       "error": {
         "code_interpreter_minimal_reasoning": "De code-interpreter wordt niet ondersteund met minimale redeneerinspanning",
+        "image_quality_not_supported": "Selecteer een afbeeldingskwaliteit die wordt ondersteund door het onderliggende model van de gekozen afbeeldingsimplementatie",
         "model_not_supported": "Dit model wordt niet ondersteund, selecteer een ander model",
         "reasoning_effort_not_supported": "Selecteer een redeneerinspanning die wordt ondersteund door het onderliggende model van de gekozen implementatie",
         "web_search_minimal_reasoning": "Zoeken op het web wordt momenteel niet ondersteund met minimale redeneerinspanning"
@@ -227,7 +228,8 @@
             "user_location": "Thuislocatie opnemen",
             "verbosity": "Detailniveau",
             "web_search": "Zoeken op het web inschakelen",
-            "image_model": "Implementatie van afbeeldingsmodel"
+            "image_model": "Implementatie van afbeeldingsmodel",
+            "image_quality": "Afbeeldingskwaliteit"
           },
           "data_description": {
             "code_interpreter": "Met deze tool, voor het model ook bekend als de Python-tool, kan het code uitvoeren om vragen te beantwoorden",
@@ -238,7 +240,8 @@
             "user_location": "Verfijn zoekresultaten op basis van geografische locatie",
             "verbosity": "Hoe gedetailleerd de antwoorden van het model moeten zijn",
             "web_search": "Sta het model toe op het web te zoeken met Grounding with Bing Search voordat het een antwoord genereert. Er zijn extra kosten van toepassing",
-            "image_model": "Optionele afbeeldingsimplementatie voor deze gegevenstaak. Gedetecteerde chattaken genereren geen afbeeldingen, tenzij er een is geselecteerd; afbeeldingsimplementaties hebben ook hun eigen specifieke taken."
+            "image_model": "Optionele afbeeldingsimplementatie voor deze gegevenstaak. Gedetecteerde chattaken genereren geen afbeeldingen, tenzij er een is geselecteerd; afbeeldingsimplementaties hebben ook hun eigen specifieke taken.",
+            "image_quality": "Kwaliteit van afbeeldingen die met de geselecteerde afbeeldingsimplementatie worden gegenereerd. Een hogere kwaliteit duurt langer en kost meer; de beschikbare niveaus hangen af van het onderliggende afbeeldingsmodel."
           },
           "title": "Modelspecifieke opties"
         }
@@ -250,6 +253,7 @@
       },
       "entry_type": "AI-afbeeldingstaak",
       "error": {
+        "image_quality_not_supported": "Selecteer een afbeeldingskwaliteit die wordt ondersteund door het onderliggende model van de gekozen implementatie.",
         "model_not_supported": "Selecteer een ondersteunde afbeeldingsimplementatie."
       },
       "initiate_flow": {
@@ -260,10 +264,12 @@
         "init": {
           "data": {
             "name": "Naam",
-            "image_model": "Implementatie van afbeeldingsmodel"
+            "image_model": "Implementatie van afbeeldingsmodel",
+            "image_quality": "Afbeeldingskwaliteit"
           },
           "data_description": {
-            "image_model": "De exacte implementatienaam van een OpenAI-afbeeldingsmodel. Deze taak ondersteunt het genereren van afbeeldingen, niet van tekst of gestructureerde gegevens."
+            "image_model": "De exacte implementatienaam van een OpenAI-afbeeldingsmodel. Deze taak ondersteunt het genereren van afbeeldingen, niet van tekst of gestructureerde gegevens.",
+            "image_quality": "Een hogere kwaliteit levert gedetailleerdere afbeeldingen op, maar duurt langer en kost meer. De beschikbare niveaus hangen af van het onderliggende afbeeldingsmodel."
           }
         }
       }
@@ -324,6 +330,16 @@
     }
   },
   "selector": {
+    "image_quality": {
+      "options": {
+        "auto": "Automatisch",
+        "high": "Hoog",
+        "low": "Laag",
+        "max": "Maximaal",
+        "medium": "Gemiddeld",
+        "xhigh": "Zeer hoog"
+      }
+    },
     "reasoning_effort": {
       "options": {
         "high": "Hoog",

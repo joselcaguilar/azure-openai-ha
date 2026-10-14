@@ -181,6 +181,7 @@
       "entry_type": "Tarefa de IA",
       "error": {
         "code_interpreter_minimal_reasoning": "O interpretador de código não é suportado com um esforço de raciocínio mínimo",
+        "image_quality_not_supported": "Selecione uma qualidade de imagem suportada pelo modelo subjacente da implementação de imagem escolhida",
         "model_not_supported": "Este modelo não é suportado. Por favor, selecione um modelo diferente",
         "reasoning_effort_not_supported": "Selecione um esforço de raciocínio suportado pelo modelo subjacente da implementação escolhida",
         "web_search_minimal_reasoning": "A pesquisa na Web não é atualmente suportada com um esforço de raciocínio mínimo"
@@ -227,7 +228,8 @@
             "user_location": "Incluir a localização do domicílio",
             "verbosity": "Nível de detalhe",
             "web_search": "Ativar a pesquisa na Web",
-            "image_model": "Implementação do modelo de imagem"
+            "image_model": "Implementação do modelo de imagem",
+            "image_quality": "Qualidade da imagem"
           },
           "data_description": {
             "code_interpreter": "Esta ferramenta, também conhecida como a ferramenta Python para o modelo, permite executar código para responder a perguntas",
@@ -238,7 +240,8 @@
             "user_location": "Refinar os resultados da pesquisa com base na localização geográfica",
             "verbosity": "Quão detalhadas devem ser as respostas do modelo",
             "web_search": "Permitir que o modelo pesquise na Web com Grounding with Bing Search antes de gerar uma resposta. Aplicam-se custos adicionais",
-            "image_model": "Implementação de imagem opcional para esta tarefa de dados. As tarefas de chat descobertas não geram imagens, a menos que seja selecionada uma; as implementações de imagem também têm as suas próprias tarefas dedicadas."
+            "image_model": "Implementação de imagem opcional para esta tarefa de dados. As tarefas de chat descobertas não geram imagens, a menos que seja selecionada uma; as implementações de imagem também têm as suas próprias tarefas dedicadas.",
+            "image_quality": "Qualidade das imagens geradas com a implementação de imagem selecionada. Uma qualidade mais alta demora mais e custa mais; os níveis disponíveis dependem do modelo de imagem subjacente."
           },
           "title": "Opções específicas do modelo"
         }
@@ -250,6 +253,7 @@
       },
       "entry_type": "Tarefa de IA de imagem",
       "error": {
+        "image_quality_not_supported": "Selecione uma qualidade de imagem suportada pelo modelo subjacente da implementação escolhida.",
         "model_not_supported": "Selecione uma implementação de imagem suportada."
       },
       "initiate_flow": {
@@ -260,10 +264,12 @@
         "init": {
           "data": {
             "name": "Nome",
-            "image_model": "Implementação do modelo de imagem"
+            "image_model": "Implementação do modelo de imagem",
+            "image_quality": "Qualidade da imagem"
           },
           "data_description": {
-            "image_model": "O nome exato da implementação de um modelo de imagem OpenAI. Esta tarefa suporta a geração de imagens, não a geração de texto nem de dados estruturados."
+            "image_model": "O nome exato da implementação de um modelo de imagem OpenAI. Esta tarefa suporta a geração de imagens, não a geração de texto nem de dados estruturados.",
+            "image_quality": "Uma qualidade mais alta produz imagens mais detalhadas, mas demora mais e custa mais. Os níveis disponíveis dependem do modelo de imagem subjacente."
           }
         }
       }
@@ -324,6 +330,16 @@
     }
   },
   "selector": {
+    "image_quality": {
+      "options": {
+        "auto": "Auto",
+        "high": "Alta",
+        "low": "Baixa",
+        "max": "Máxima",
+        "medium": "Média",
+        "xhigh": "Muito alta"
+      }
+    },
     "reasoning_effort": {
       "options": {
         "high": "Alto",

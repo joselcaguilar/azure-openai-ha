@@ -181,6 +181,7 @@
       "entry_type": "KI-Task",
       "error": {
         "code_interpreter_minimal_reasoning": "Der Code-Interpreter wird mit minimalem Reasoning-Aufwand nicht unterstützt",
+        "image_quality_not_supported": "Wähle eine Bildqualität, die vom zugrunde liegenden Modell der gewählten Bildmodell-Bereitstellung unterstützt wird",
         "model_not_supported": "Dieses Modell wird nicht unterstützt, bitte wähle ein anderes Modell",
         "reasoning_effort_not_supported": "Wähle einen Reasoning-Aufwand, der vom zugrunde liegenden Modell der gewählten Bereitstellung unterstützt wird",
         "web_search_minimal_reasoning": "Die Websuche wird derzeit mit minimalem Reasoning-Aufwand nicht unterstützt"
@@ -227,7 +228,8 @@
             "user_location": "Standort des Zuhauses einbeziehen",
             "verbosity": "Ausführlichkeit",
             "web_search": "Websuche aktivieren",
-            "image_model": "Bildmodell-Bereitstellung"
+            "image_model": "Bildmodell-Bereitstellung",
+            "image_quality": "Bildqualität"
           },
           "data_description": {
             "code_interpreter": "Dieses Werkzeug, das auch als Python-Tool für das Modell bezeichnet wird, ermöglicht das Ausführen von Code zum Beantworten von Fragen",
@@ -238,7 +240,8 @@
             "user_location": "Suchergebnisse auf der Geografie basierend verfeinern",
             "verbosity": "Wie ausführlich die Antworten des Modells sein sollen",
             "web_search": "Dem Modell ermöglichen, vor dem Generieren einer Antwort mit Grounding with Bing Search im Web zu suchen. Es fallen zusätzliche Kosten an",
-            "image_model": "Optionale Bildmodell-Bereitstellung für diesen Daten-Task. Erkannte Chat-Tasks generieren keine Bilder, sofern keine ausgewählt ist; für Bildmodell-Bereitstellungen gibt es außerdem eigene, dafür vorgesehene Tasks."
+            "image_model": "Optionale Bildmodell-Bereitstellung für diesen Daten-Task. Erkannte Chat-Tasks generieren keine Bilder, sofern keine ausgewählt ist; für Bildmodell-Bereitstellungen gibt es außerdem eigene, dafür vorgesehene Tasks.",
+            "image_quality": "Qualität der mit der ausgewählten Bildmodell-Bereitstellung generierten Bilder. Eine höhere Qualität dauert länger und kostet mehr; die verfügbaren Stufen hängen vom zugrunde liegenden Bildmodell ab."
           },
           "title": "Modellspezifische Optionen"
         }
@@ -250,6 +253,7 @@
       },
       "entry_type": "Bild-KI-Task",
       "error": {
+        "image_quality_not_supported": "Wähle eine Bildqualität, die vom zugrunde liegenden Modell der gewählten Bereitstellung unterstützt wird.",
         "model_not_supported": "Wähle eine unterstützte Bildmodell-Bereitstellung aus."
       },
       "initiate_flow": {
@@ -260,10 +264,12 @@
         "init": {
           "data": {
             "name": "Name",
-            "image_model": "Bildmodell-Bereitstellung"
+            "image_model": "Bildmodell-Bereitstellung",
+            "image_quality": "Bildqualität"
           },
           "data_description": {
-            "image_model": "Der genaue Bereitstellungsname eines OpenAI-Bildmodells. Dieser Task unterstützt die Bildgenerierung, nicht die Generierung von Text oder strukturierten Daten."
+            "image_model": "Der genaue Bereitstellungsname eines OpenAI-Bildmodells. Dieser Task unterstützt die Bildgenerierung, nicht die Generierung von Text oder strukturierten Daten.",
+            "image_quality": "Eine höhere Qualität erzeugt detailliertere Bilder, dauert aber länger und kostet mehr. Die verfügbaren Stufen hängen vom zugrunde liegenden Bildmodell ab."
           }
         }
       }
@@ -324,6 +330,16 @@
     }
   },
   "selector": {
+    "image_quality": {
+      "options": {
+        "auto": "Auto",
+        "high": "Hoch",
+        "low": "Niedrig",
+        "max": "Max",
+        "medium": "Mittel",
+        "xhigh": "X-Hoch"
+      }
+    },
     "reasoning_effort": {
       "options": {
         "high": "Hoch",

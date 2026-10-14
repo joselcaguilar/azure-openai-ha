@@ -181,6 +181,7 @@
       "entry_type": "Úloha AI",
       "error": {
         "code_interpreter_minimal_reasoning": "Interpret kódu nie je podporovaný s minimálnym úsilím o uvažovanie",
+        "image_quality_not_supported": "Vyberte kvalitu obrázka podporovanú základným modelom zvoleného nasadenia obrázkového modelu",
         "model_not_supported": "Tento model nie je podporovaný, vyberte iný model",
         "reasoning_effort_not_supported": "Vyberte úsilie o uvažovanie podporované základným modelom zvoleného nasadenia",
         "web_search_minimal_reasoning": "Vyhľadávanie na webe v súčasnosti nie je podporované s minimálnym úsilím o uvažovanie"
@@ -227,7 +228,8 @@
             "user_location": "Zahrnúť domovskú polohu",
             "verbosity": "Podrobnosť odpovedí",
             "web_search": "Povoliť vyhľadávanie na webe",
-            "image_model": "Nasadenie obrázkového modelu"
+            "image_model": "Nasadenie obrázkového modelu",
+            "image_quality": "Kvalita obrázka"
           },
           "data_description": {
             "code_interpreter": "Tento nástroj, známy aj ako nástroj python pre model, umožňuje spustiť kód na zodpovedanie otázok",
@@ -238,7 +240,8 @@
             "user_location": "Spresnenie výsledkov vyhľadávania na základe geografického hľadiska",
             "verbosity": "Aké podrobné majú byť odpovede modelu",
             "web_search": "Umožniť modelu pred vygenerovaním odpovede vyhľadávať na webe pomocou Grounding with Bing Search. Účtujú sa ďalšie poplatky",
-            "image_model": "Voliteľné nasadenie obrázkového modelu pre túto dátovú úlohu. Úlohy s chatovými modelmi pridané zisťovaním negenerujú obrázky, pokiaľ nie je vybraté takéto nasadenie; nasadenia obrázkových modelov majú aj vlastné vyhradené úlohy."
+            "image_model": "Voliteľné nasadenie obrázkového modelu pre túto dátovú úlohu. Úlohy s chatovými modelmi pridané zisťovaním negenerujú obrázky, pokiaľ nie je vybraté takéto nasadenie; nasadenia obrázkových modelov majú aj vlastné vyhradené úlohy.",
+            "image_quality": "Kvalita obrázkov generovaných pomocou vybraného nasadenia obrázkového modelu. Vyššia kvalita trvá dlhšie a stojí viac; dostupné úrovne závisia od základného obrázkového modelu."
           },
           "title": "Možnosti špecifické pre model"
         }
@@ -250,6 +253,7 @@
       },
       "entry_type": "Obrázková úloha AI",
       "error": {
+        "image_quality_not_supported": "Vyberte kvalitu obrázka podporovanú základným modelom zvoleného nasadenia.",
         "model_not_supported": "Vyberte podporované nasadenie obrázkového modelu."
       },
       "initiate_flow": {
@@ -260,10 +264,12 @@
         "init": {
           "data": {
             "name": "Názov",
-            "image_model": "Nasadenie obrázkového modelu"
+            "image_model": "Nasadenie obrázkového modelu",
+            "image_quality": "Kvalita obrázka"
           },
           "data_description": {
-            "image_model": "Presný názov nasadenia obrázkového modelu OpenAI. Táto úloha podporuje generovanie obrázkov, nie generovanie textu ani štruktúrovaných údajov."
+            "image_model": "Presný názov nasadenia obrázkového modelu OpenAI. Táto úloha podporuje generovanie obrázkov, nie generovanie textu ani štruktúrovaných údajov.",
+            "image_quality": "Vyššia kvalita vytvára detailnejšie obrázky, ale trvá dlhšie a stojí viac. Dostupné úrovne závisia od základného obrázkového modelu."
           }
         }
       }
@@ -324,6 +330,16 @@
     }
   },
   "selector": {
+    "image_quality": {
+      "options": {
+        "auto": "Auto",
+        "high": "Vysoká",
+        "low": "Nízka",
+        "max": "Maximálna",
+        "medium": "Stredná",
+        "xhigh": "Veľmi vysoká"
+      }
+    },
     "reasoning_effort": {
       "options": {
         "high": "Vysoké",

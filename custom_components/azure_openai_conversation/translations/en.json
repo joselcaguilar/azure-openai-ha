@@ -181,6 +181,7 @@
       "entry_type": "AI task",
       "error": {
         "code_interpreter_minimal_reasoning": "Code interpreter is not supported with minimal reasoning effort",
+        "image_quality_not_supported": "Select an image quality supported by the chosen image deployment's underlying model",
         "model_not_supported": "This model is not supported, please select a different model",
         "reasoning_effort_not_supported": "Select a reasoning effort supported by the chosen deployment's underlying model",
         "web_search_minimal_reasoning": "Web search is currently not supported with minimal reasoning effort"
@@ -227,7 +228,8 @@
             "user_location": "Include home location",
             "verbosity": "Verbosity",
             "web_search": "Enable web search",
-            "image_model": "Image model deployment"
+            "image_model": "Image model deployment",
+            "image_quality": "Image quality"
           },
           "data_description": {
             "code_interpreter": "This tool, also known as the python tool to the model, allows it to run code to answer questions",
@@ -238,7 +240,8 @@
             "user_location": "Refine search results based on geography",
             "verbosity": "How detailed the responses of the model should be",
             "web_search": "Allow the model to search the web with Grounding with Bing Search before generating a response. Additional costs apply",
-            "image_model": "Optional image deployment for this data task. Discovered chat tasks do not generate images unless one is selected; image deployments also have their own dedicated tasks."
+            "image_model": "Optional image deployment for this data task. Discovered chat tasks do not generate images unless one is selected; image deployments also have their own dedicated tasks.",
+            "image_quality": "Quality of images generated with the selected image deployment. Higher quality takes longer and costs more; available levels depend on the underlying image model."
           },
           "title": "Model-specific options"
         }
@@ -250,6 +253,7 @@
       },
       "entry_type": "Image AI task",
       "error": {
+        "image_quality_not_supported": "Select an image quality supported by the chosen deployment's underlying model.",
         "model_not_supported": "Select a supported image deployment."
       },
       "initiate_flow": {
@@ -260,10 +264,12 @@
         "init": {
           "data": {
             "name": "Name",
-            "image_model": "Image model deployment"
+            "image_model": "Image model deployment",
+            "image_quality": "Image quality"
           },
           "data_description": {
-            "image_model": "The exact deployment name of an OpenAI image model. This task supports image generation, not text or structured-data generation."
+            "image_model": "The exact deployment name of an OpenAI image model. This task supports image generation, not text or structured-data generation.",
+            "image_quality": "Higher quality produces more detailed images but takes longer and costs more. Available levels depend on the underlying image model."
           }
         }
       }
@@ -324,6 +330,16 @@
     }
   },
   "selector": {
+    "image_quality": {
+      "options": {
+        "auto": "Auto",
+        "high": "High",
+        "low": "Low",
+        "max": "Max",
+        "medium": "Medium",
+        "xhigh": "X-High"
+      }
+    },
     "reasoning_effort": {
       "options": {
         "high": "High",

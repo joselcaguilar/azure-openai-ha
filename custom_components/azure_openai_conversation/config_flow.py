@@ -63,6 +63,7 @@ from .const import (
     CONF_CHAT_MODEL,
     CONF_CODE_INTERPRETER,
     CONF_IMAGE_MODEL,
+    CONF_IMAGE_QUALITY,
     CONF_DEPLOYMENTS,
     CONF_MAX_TOKENS,
     CONF_MODEL_NAME,
@@ -100,6 +101,7 @@ from .const import (
     RECOMMENDED_CODE_INTERPRETER,
     RECOMMENDED_CONVERSATION_OPTIONS,
     RECOMMENDED_IMAGE_MODEL,
+    RECOMMENDED_IMAGE_QUALITY,
     RECOMMENDED_MAX_TOKENS,
     RECOMMENDED_PRO_MODE,
     RECOMMENDED_REASONING_SUMMARY,
@@ -122,6 +124,7 @@ from .const import (
     UNSUPPORTED_CODE_INTERPRETER_MODELS,
     UNSUPPORTED_MODELS,
     UNSUPPORTED_WEB_SEARCH_MODELS,
+    get_image_quality_options,
     get_reasoning_options,
     get_recommended_reasoning_effort,
 )
@@ -268,6 +271,61 @@ def _model_supported(flow: ConfigSubentryFlow, model: str, service: str) -> bool
     return flow.source == SOURCE_RECONFIGURE and (
         flow._get_reconfigure_subentry().data.get(model_key) == model
     )
+
+
+def _add_image_quality_field(
+    flow: ConfigSubentryFlow,
+    schema: VolDictType,
+    image_model: str | None,
+    user_input: dict[str, Any] | None,
+    options: dict[str, Any],
+) -> tuple[list[str], str]:
+    """Offer the image model's quality levels, preferring a submitted or saved one."""
+    model_name = image_model or ""
+    if flow._subentry_type == "ai_task_image":
+        model_name = _known_model_name(flow, CONF_IMAGE_MODEL, model_name) or model_name
+    else:
+        # A data task's stored model name describes its chat deployment
+        model_name = next(
+            (
+                deployment["model_name"]
+                for deployment in flow._get_entry().data.get(CONF_DEPLOYMENTS, [])
+                if deployment["name"] == model_name
+            ),
+            model_name,
+        )
+    quality_options = get_image_quality_options(model_name)
+    if quality_options:
+        schema[probatio.Optional(CONF_IMAGE_QUALITY)] = SelectSelector(
+            SelectSelectorConfig(
+                options=quality_options,
+                translation_key=CONF_IMAGE_QUALITY,
+                mode=SelectSelectorMode.DROPDOWN,
+            )
+        )
+    for quality in (
+        (user_input or {}).get(CONF_IMAGE_QUALITY),
+        options.get(CONF_IMAGE_QUALITY),
+    ):
+        if quality in quality_options:
+            return quality_options, quality
+    return quality_options, RECOMMENDED_IMAGE_QUALITY
+
+
+def _image_quality_error(
+    user_input: dict[str, Any],
+    options: dict[str, Any],
+    quality_options: list[str],
+    quality: str,
+) -> str | None:
+    """Save a supported quality, suggesting one in place of an unsupported choice."""
+    if not quality_options:
+        options.pop(CONF_IMAGE_QUALITY, None)
+        user_input.pop(CONF_IMAGE_QUALITY, None)
+        return None
+    submitted = user_input.get(CONF_IMAGE_QUALITY, quality)
+    user_input[CONF_IMAGE_QUALITY] = quality
+    return None if submitted in quality_options else "image_quality_not_supported"
 
 
 async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> None:
@@ -902,6 +960,7 @@ class AzureOpenAISubentryFlowHandler(ConfigSubentryFlow):
                             for key in (
                                 CONF_AUTO_DISCOVERED,
                                 CONF_IMAGE_MODEL,
+                                CONF_IMAGE_QUALITY,
                                 CONF_TOP_P,
                                 CONF_TEMPERATURE,
                             )
@@ -1084,6 +1143,8 @@ class AzureOpenAISubentryFlowHandler(ConfigSubentryFlow):
                 )
             }
 
+        quality_options: list[str] = []
+        image_quality = RECOMMENDED_IMAGE_QUALITY
         if self._subentry_type == "ai_task_data":
             image_options = _deployment_choices(
                 self._get_entry().data.get(CONF_DEPLOYMENTS),
@@ -1097,14 +1158,28 @@ class AzureOpenAISubentryFlowHandler(ConfigSubentryFlow):
                     custom_value=True,
                 )
             )
+            image_model = (
+                options.get(CONF_IMAGE_MODEL)
+                if user_input is None
+                else user_input.get(CONF_IMAGE_MODEL)
+            )
+            quality_options, image_quality = _add_image_quality_field(
+                self, step_schema, image_model, user_input, options
+            )
 
         if user_input is not None:
             if self._subentry_type == "ai_task_data":
                 if image_model := user_input.get(CONF_IMAGE_MODEL):
                     if not _model_supported(self, image_model, "ai_task_image"):
                         errors[CONF_IMAGE_MODEL] = "model_not_supported"
+                    elif quality_error := _image_quality_error(
+                        user_input, options, quality_options, image_quality
+                    ):
+                        errors[CONF_IMAGE_QUALITY] = quality_error
                 else:
                     options.pop(CONF_IMAGE_MODEL, None)
+                    options.pop(CONF_IMAGE_QUALITY, None)
+                    user_input.pop(CONF_IMAGE_QUALITY, None)
             if user_input.get(CONF_WEB_SEARCH):
                 if options.get(CONF_REASONING_EFFORT) == "minimal":
                     errors[CONF_WEB_SEARCH] = "web_search_minimal_reasoning"
@@ -1128,7 +1203,8 @@ class AzureOpenAISubentryFlowHandler(ConfigSubentryFlow):
         return self.async_show_form(
             step_id="model",
             data_schema=self.add_suggested_values_to_schema(
-                probatio.Schema(step_schema), options
+                probatio.Schema(step_schema),
+                {**options, CONF_IMAGE_QUALITY: image_quality},
             ),
             errors=errors,
         )
@@ -1219,37 +1295,43 @@ class AzureOpenAISubentryImageFlowHandler(ConfigSubentryFlow):
         options = (
             {} if self.source == "user" else dict(self._get_reconfigure_subentry().data)
         )
+        default_model = options.get(
+            CONF_IMAGE_MODEL,
+            _default_deployment(entry, "ai_task_image", RECOMMENDED_IMAGE_MODEL),
+        )
+        image_model = (user_input or {}).get(CONF_IMAGE_MODEL, default_model)
         schema: VolDictType = {}
         if self.source == "user":
             schema[probatio.Required(CONF_NAME, default=DEFAULT_IMAGE_TASK_NAME)] = str
-        schema[
-            probatio.Required(
-                CONF_IMAGE_MODEL,
-                default=options.get(
-                    CONF_IMAGE_MODEL,
-                    _default_deployment(
-                        entry, "ai_task_image", RECOMMENDED_IMAGE_MODEL
+        schema[probatio.Required(CONF_IMAGE_MODEL, default=default_model)] = (
+            SelectSelector(
+                SelectSelectorConfig(
+                    options=_deployment_choices(
+                        entry.data.get(CONF_DEPLOYMENTS), "ai_task_image", IMAGE_MODELS
                     ),
-                ),
+                    mode=SelectSelectorMode.DROPDOWN,
+                    custom_value=True,
+                )
             )
-        ] = SelectSelector(
-            SelectSelectorConfig(
-                options=_deployment_choices(
-                    entry.data.get(CONF_DEPLOYMENTS), "ai_task_image", IMAGE_MODELS
-                ),
-                mode=SelectSelectorMode.DROPDOWN,
-                custom_value=True,
-            )
+        )
+        quality_options, quality = _add_image_quality_field(
+            self, schema, image_model, user_input, options
         )
         errors: dict[str, str] = {}
         if user_input is not None:
-            if _model_supported(self, user_input[CONF_IMAGE_MODEL], "ai_task_image"):
+            if not _model_supported(self, image_model, "ai_task_image"):
+                errors[CONF_IMAGE_MODEL] = "model_not_supported"
+            elif quality_error := _image_quality_error(
+                user_input, options, quality_options, quality
+            ):
+                errors[CONF_IMAGE_QUALITY] = quality_error
+            else:
                 return _save_subentry(self, {**options, **user_input})
-            errors[CONF_IMAGE_MODEL] = "model_not_supported"
         return self.async_show_form(
             step_id="init",
             data_schema=self.add_suggested_values_to_schema(
-                probatio.Schema(schema), options
+                probatio.Schema(schema),
+                {**options, **(user_input or {}), CONF_IMAGE_QUALITY: quality},
             ),
             errors=errors,
         )

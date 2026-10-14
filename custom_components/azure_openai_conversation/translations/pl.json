@@ -181,6 +181,7 @@
       "entry_type": "Zadanie AI",
       "error": {
         "code_interpreter_minimal_reasoning": "Narzędzie interpretujące kod nie jest obsługiwane przy minimalnym wysiłku rozumowania",
+        "image_quality_not_supported": "Wybierz jakość obrazu obsługiwaną przez model bazowy wybranego wdrożenia modelu generowania obrazów",
         "model_not_supported": "Ten model nie jest obsługiwany, wybierz inny model",
         "reasoning_effort_not_supported": "Wybierz poziom wysiłku rozumowania obsługiwany przez model bazowy wybranego wdrożenia",
         "web_search_minimal_reasoning": "Wyszukiwanie w internecie nie jest obecnie obsługiwane przy minimalnym wysiłku rozumowania"
@@ -227,7 +228,8 @@
             "user_location": "Uwzględnij lokalizację domu",
             "verbosity": "Szczegółowość",
             "web_search": "Włącz wyszukiwanie w internecie",
-            "image_model": "Wdrożenie modelu generowania obrazów"
+            "image_model": "Wdrożenie modelu generowania obrazów",
+            "image_quality": "Jakość obrazu"
           },
           "data_description": {
             "code_interpreter": "To narzędzie, znane również jako narzędzie Python dla modelu, umożliwia uruchamianie kodu w celu uzyskania odpowiedzi na pytania",
@@ -238,7 +240,8 @@
             "user_location": "Doprecyzuj wyniki wyszukiwania na podstawie lokalizacji geograficznej",
             "verbosity": "Jak szczegółowe powinny być odpowiedzi modelu",
             "web_search": "Zezwól modelowi na przeszukiwanie internetu za pomocą Grounding with Bing Search przed wygenerowaniem odpowiedzi. Obowiązują dodatkowe opłaty",
-            "image_model": "Opcjonalne wdrożenie modelu generowania obrazów dla tego zadania AI generującego dane. Wykryte zadania oparte na modelach czatu nie generują obrazów, jeśli nie wybrano takiego wdrożenia; wdrożenia modeli generowania obrazów mają też własne, dedykowane zadania."
+            "image_model": "Opcjonalne wdrożenie modelu generowania obrazów dla tego zadania AI generującego dane. Wykryte zadania oparte na modelach czatu nie generują obrazów, jeśli nie wybrano takiego wdrożenia; wdrożenia modeli generowania obrazów mają też własne, dedykowane zadania.",
+            "image_quality": "Jakość obrazów generowanych przy użyciu wybranego wdrożenia modelu generowania obrazów. Wyższa jakość wydłuża czas generowania i zwiększa koszt; dostępne poziomy zależą od bazowego modelu generowania obrazów."
           },
           "title": "Opcje specyficzne dla modelu"
         }
@@ -250,6 +253,7 @@
       },
       "entry_type": "Zadanie AI generujące obrazy",
       "error": {
+        "image_quality_not_supported": "Wybierz jakość obrazu obsługiwaną przez model bazowy wybranego wdrożenia.",
         "model_not_supported": "Wybierz obsługiwane wdrożenie modelu generowania obrazów."
       },
       "initiate_flow": {
@@ -260,10 +264,12 @@
         "init": {
           "data": {
             "name": "Nazwa",
-            "image_model": "Wdrożenie modelu generowania obrazów"
+            "image_model": "Wdrożenie modelu generowania obrazów",
+            "image_quality": "Jakość obrazu"
           },
           "data_description": {
-            "image_model": "Dokładna nazwa wdrożenia modelu OpenAI do generowania obrazów. To zadanie obsługuje generowanie obrazów, a nie generowanie tekstu ani danych strukturalnych."
+            "image_model": "Dokładna nazwa wdrożenia modelu OpenAI do generowania obrazów. To zadanie obsługuje generowanie obrazów, a nie generowanie tekstu ani danych strukturalnych.",
+            "image_quality": "Wyższa jakość daje bardziej szczegółowe obrazy, ale generowanie trwa dłużej i kosztuje więcej. Dostępne poziomy zależą od bazowego modelu generowania obrazów."
           }
         }
       }
@@ -324,6 +330,16 @@
     }
   },
   "selector": {
+    "image_quality": {
+      "options": {
+        "auto": "auto",
+        "high": "wysoka",
+        "low": "niska",
+        "max": "maksymalna",
+        "medium": "średnia",
+        "xhigh": "bardzo wysoka"
+      }
+    },
     "reasoning_effort": {
       "options": {
         "high": "wysoki",
