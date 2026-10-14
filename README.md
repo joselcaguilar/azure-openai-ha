@@ -165,7 +165,7 @@ To change authentication or the API-key endpoint, or refresh Microsoft sign-in d
 
 # Changelog
 
-Please reference the [release history](https://github.com/joselcaguilar/azure-openai-ha/releases).
+See the [changelog](https://github.com/joselcaguilar/azure-openai-ha/blob/main/CHANGELOG.md) for notable changes from 5.0.0 onward, including breaking changes and upgrade steps. Earlier versions are in the [release history](https://github.com/joselcaguilar/azure-openai-ha/releases).
 
 # How to Help
 
