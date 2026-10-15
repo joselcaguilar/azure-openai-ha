@@ -1,5 +1,5 @@
 -r requirements.txt
-pytest-homeassistant-custom-component>=0.13.371
+pytest-homeassistant-custom-component>=0.13.372
 gazetteer-matcher==1.1.0
 hassil==3.12.1
 home-assistant-intents==2026.10.6
