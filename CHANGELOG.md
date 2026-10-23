@@ -4,6 +4,13 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Releases before 5.0.0 are documented in the [GitHub release history](https://github.com/joselcaguilar/azure-openai-ha/releases).
 
+## [5.1.0] — TBD
+
+### Development
+
+- The Lint and Validate workflows grant `GITHUB_TOKEN` only `contents: read`, which resolves CodeQL's `actions/missing-workflow-permissions` alerts. ([#184])
+- Updated development requirements: `pytest-homeassistant-custom-component>=0.13.373` and `ruff>=0.17.1`. ([#185], [#186], [#187])
+
 ## [5.0.1] — 2026-10-15
 
 ### Fixed
@@ -73,6 +80,7 @@ Thanks to [@rac146](https://github.com/rac146) and [@SchmidSP](https://github.co
 - Updated GitHub Actions: `actions/checkout` v7, `actions/setup-python` v7, `dependabot/fetch-metadata` v3 and `softprops/action-gh-release` v3.0.3. ([#164], [#178])
 - Updated development requirements: `homeassistant>=2026.10.0`, `colorlog>=6.12.0`, `pip>=26.2.1` and `ruff>=0.17.0`. ([#164], [#178], [#180])
 
+[5.1.0]: https://github.com/joselcaguilar/azure-openai-ha/compare/v5.0.1...HEAD
 [5.0.1]: https://github.com/joselcaguilar/azure-openai-ha/compare/v5.0.0...v5.0.1
 [5.0.0]: https://github.com/joselcaguilar/azure-openai-ha/compare/v4.5.0...v5.0.0
 [#160]: https://github.com/joselcaguilar/azure-openai-ha/pull/160
@@ -89,3 +97,7 @@ Thanks to [@rac146](https://github.com/rac146) and [@SchmidSP](https://github.co
 [#181]: https://github.com/joselcaguilar/azure-openai-ha/pull/181
 [#182]: https://github.com/joselcaguilar/azure-openai-ha/pull/182
 [#183]: https://github.com/joselcaguilar/azure-openai-ha/pull/183
+[#184]: https://github.com/joselcaguilar/azure-openai-ha/pull/184
+[#185]: https://github.com/joselcaguilar/azure-openai-ha/pull/185
+[#186]: https://github.com/joselcaguilar/azure-openai-ha/pull/186
+[#187]: https://github.com/joselcaguilar/azure-openai-ha/pull/187
