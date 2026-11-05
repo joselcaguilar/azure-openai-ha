@@ -11,6 +11,7 @@ LOGGER: logging.Logger = logging.getLogger(__package__)
 
 DEFAULT_CONVERSATION_NAME = "Azure OpenAI Conversation"
 DEFAULT_AI_TASK_NAME = "Azure OpenAI AI Task"
+DEFAULT_EVALUATION_NAME = "Azure OpenAI Evaluation"
 DEFAULT_IMAGE_TASK_NAME = "Azure OpenAI Image Task"
 DEFAULT_STT_NAME = "Azure OpenAI STT"
 DEFAULT_TTS_NAME = "Azure OpenAI TTS"
@@ -52,6 +53,8 @@ INFERENCE_SCOPE = "https://cognitiveservices.azure.com/.default"
 MANAGEMENT_SCOPE = "https://management.azure.com//.default"
 RECOMMENDED_CODE_INTERPRETER = False
 RECOMMENDED_CHAT_MODEL = "gpt-4o-mini"
+# Azure's Decisions API supports only gpt-6-luna deployments
+RECOMMENDED_DECISION_MODEL = "gpt-6-luna"
 RECOMMENDED_IMAGE_MODEL = "gpt-image-2.5-flare"
 RECOMMENDED_IMAGE_QUALITY = "high"
 RECOMMENDED_MAX_TOKENS = 3000
@@ -127,6 +130,9 @@ RECOMMENDED_CONVERSATION_OPTIONS = {
 RECOMMENDED_AI_TASK_OPTIONS = {
     CONF_RECOMMENDED: True,
 }
+RECOMMENDED_EVALUATION_OPTIONS = {
+    CONF_CHAT_MODEL: RECOMMENDED_DECISION_MODEL,
+}
 RECOMMENDED_STT_OPTIONS: dict[str, Any] = {}
 RECOMMENDED_TTS_OPTIONS = {
     CONF_PROMPT: "",
@@ -140,7 +146,14 @@ def get_reasoning_options(model: str) -> list[str]:
         return []
 
     models_reasoning_map: dict[str | tuple[str, ...], list[str]] = {
-        "gpt-6-luna": ["none", "low", "medium", "high", "xhigh", "max"],
+        ("gpt-6-luna", "gpt-6.1-terra"): [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max",
+        ],
         "gpt-6": ["low", "medium", "high", "xhigh", "max"],
         "gpt-5.6": ["none", "low", "medium", "high", "xhigh", "max"],
         ("gpt-5.2-pro", "gpt-5.4-pro", "gpt-5.5-pro"): ["medium", "high", "xhigh"],
@@ -159,6 +172,11 @@ def get_reasoning_options(model: str) -> list[str]:
         if model.startswith(prefix):
             return options
     return []  # pragma: no cover
+
+
+def supports_decisions(model: str) -> bool:
+    """Return whether the underlying model supports the Decisions API."""
+    return model.lower().startswith(RECOMMENDED_DECISION_MODEL)
 
 
 def get_recommended_reasoning_effort(model: str) -> str:

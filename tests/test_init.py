@@ -1,7 +1,7 @@
 """Verify runtime setup, reload behavior, and preservation of legacy configuration."""
 
 import pytest
-from pytest_homeassistant_custom_component.common import MockConfigEntry
+from pytest_homeassistant.common import MockConfigEntry
 from respx import MockRouter
 
 from homeassistant.core import HomeAssistant
@@ -18,10 +18,12 @@ from custom_components.azure_openai_conversation.const import (
     CONF_API_BASE,
     CONF_AUTH_TYPE,
     CONF_CHAT_MODEL,
+    CONF_DEPLOYMENTS,
     DOMAIN,
 )
+from custom_components.azure_openai_conversation.deployments import DeploymentData
 
-from .const import ENDPOINT
+from .const import ENDPOINT, RESOURCE_ID
 
 
 async def test_legacy_client_keeps_api_key(
@@ -99,8 +101,8 @@ async def test_minor_migration_does_not_change_services(hass: HomeAssistant) -> 
     )
     entry.add_to_hass(hass)
     original = dict(entry.subentries)
-    assert await async_migrate_entry(hass, entry)
-    assert entry.minor_version == 2
+    await async_migrate_entry(hass, entry)
+    assert entry.minor_version == 3
     assert entry.data[CONF_AUTH_TYPE] == AUTH_API_KEY
     assert entry.subentries == original
 
@@ -116,11 +118,50 @@ async def test_v1_migration_keeps_explicit_recommended_deployment(
         options={CONF_CHAT_MODEL: "ha-chat", "recommended": True, "prompt": "Keep me"},
     )
     entry.add_to_hass(hass)
-    assert await async_migrate_entry(hass, entry)
+    await async_migrate_entry(hass, entry)
     assert entry.version == 2
-    assert entry.minor_version == 2
+    assert entry.minor_version == 3
     assert len(entry.subentries) == 2
     assert all(
         subentry.data[CONF_CHAT_MODEL] == "ha-chat"
         for subentry in entry.subentries.values()
     )
+
+
+async def test_discovered_decision_models_offer_evaluations_without_adding_them(
+    hass: HomeAssistant,
+    oauth_data: dict,
+    deployment_inventory: list[DeploymentData],
+) -> None:
+    """Inventories from before 5.1 offer evaluations, but no evaluation is created."""
+    inventory = [
+        *deployment_inventory,
+        DeploymentData(
+            id=f"{RESOURCE_ID}/deployments/decide",
+            name="decide",
+            model_name="gpt-6-luna",
+            services=["conversation", "ai_task_data"],
+            unsupported_reason="",
+        ),
+        DeploymentData(
+            id=f"{RESOURCE_ID}/deployments/failed-luna",
+            name="failed-luna",
+            model_name="gpt-6-luna",
+            services=[],
+            unsupported_reason="deployment state: Failed",
+        ),
+    ]
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={**oauth_data, CONF_DEPLOYMENTS: inventory},
+        version=2,
+        minor_version=2,
+    )
+    entry.add_to_hass(hass)
+    await async_migrate_entry(hass, entry)
+    assert entry.minor_version == 3
+    services = {item["name"]: item["services"] for item in entry.data[CONF_DEPLOYMENTS]}
+    assert services["decide"] == ["conversation", "ai_task_data", "ai_task_evaluate"]
+    assert services["failed-luna"] == []
+    assert services["ha-chat"] == ["conversation", "ai_task_data"]
+    assert not entry.subentries

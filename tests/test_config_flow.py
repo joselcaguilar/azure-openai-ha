@@ -12,13 +12,16 @@ import httpx
 import openai
 import probatio
 import pytest
-from pytest_homeassistant_custom_component.common import MockConfigEntry
+from pytest_homeassistant.common import MockConfigEntry
 from respx import MockRouter
 
 from homeassistant.components import application_credentials
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import HomeAssistant
-from homeassistant.data_entry_flow import FlowResultType
+from homeassistant.data_entry_flow import (
+    FlowResultType,
+    add_visible_conditions_to_serialized_schema,
+)
 from homeassistant.exceptions import OAuth2TokenRequestReauthError
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.translation import async_get_translations
@@ -34,10 +37,12 @@ from custom_components.azure_openai_conversation.const import (
     CONF_DEPLOYMENTS,
     CONF_IMAGE_MODEL,
     CONF_IMAGE_QUALITY,
+    CONF_MAX_TOKENS,
     CONF_MODEL_NAME,
     CONF_REASONING_EFFORT,
     CONF_RESOURCE_ID,
     CONF_SEND_SAMPLING_PARAMETERS,
+    CONF_STORE_RESPONSES,
     CONF_TEMPERATURE,
     CONF_TENANT_ID,
     CONF_TOP_P,
@@ -56,7 +61,14 @@ from .const import ENDPOINT, REDIRECT_URI, RESOURCE_ID, TENANT_ID
 CONFIG_FLOW = "custom_components.azure_openai_conversation.config_flow"
 INTEGRATION = Path(__file__).parents[1] / "custom_components" / DOMAIN
 LANGUAGES = ["en", "de", "es", "fr", "nl", "pl", "pt", "sk", "zh-Hant"]
-DISCOVERY_SERVICES = ("conversation", "ai_task_data", "ai_task_image", "stt", "tts")
+DISCOVERY_SERVICES = (
+    "conversation",
+    "ai_task_data",
+    "ai_task_image",
+    "ai_task_evaluate",
+    "stt",
+    "tts",
+)
 MANAGEMENT_TOKEN_RESPONSE = {"access_token": "management-token", "expires_in": 3600}
 MALFORMED_TOKEN = {"access_token": "do-not-log-this-token", "expires_in": "invalid"}
 pytestmark = pytest.mark.usefixtures("native_exposed_entities")
@@ -64,12 +76,11 @@ pytestmark = pytest.mark.usefixtures("native_exposed_entities")
 
 def _form_fields(result: dict) -> dict[str, dict]:
     """Serialize fields through the same native serializer used by config-flow HTTP."""
-    return {
-        field["name"]: field
-        for field in probatio.to_field_list(
-            result["data_schema"], custom_serializer=cv.custom_serializer
-        )
-    }
+    fields = probatio.to_field_list(
+        result["data_schema"], custom_serializer=cv.custom_serializer
+    )
+    add_visible_conditions_to_serialized_schema(result["data_schema"], fields)
+    return {field["name"]: field for field in fields}
 
 
 def _flatten(data: dict, prefix: str = "") -> dict[str, str]:
@@ -686,6 +697,52 @@ async def test_manual_subentry_suggests_deployed_image(
     }
 
 
+async def test_evaluation_accepts_only_decision_deployments(
+    hass: HomeAssistant,
+    oauth_data: dict,
+    deployment_inventory: list[DeploymentData],
+) -> None:
+    """Only gpt-6-luna serves the Decisions API, so other deployments are rejected."""
+    inventory = [
+        *deployment_inventory,
+        DeploymentData(
+            id=f"{RESOURCE_ID}/deployments/decide",
+            name="decide",
+            model_name="gpt-6-luna",
+            services=["conversation", "ai_task_data", "ai_task_evaluate"],
+            unsupported_reason="",
+        ),
+    ]
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={**oauth_data, CONF_DEPLOYMENTS: inventory},
+        state=ConfigEntryState.LOADED,
+        version=2,
+        minor_version=3,
+    )
+    entry.add_to_hass(hass)
+    result = await hass.config_entries.subentries.async_init(
+        (entry.entry_id, "ai_task_evaluate"), context={"source": "user"}
+    )
+    fields = _form_fields(result)
+    assert fields[CONF_CHAT_MODEL]["default"] == "decide"
+    assert fields[CONF_CHAT_MODEL]["selector"]["select"]["options"] == [
+        {"value": "decide", "label": "decide (gpt-6-luna)"}
+    ]
+    result = await hass.config_entries.subentries.async_configure(
+        result["flow_id"], {"name": "Decisions", CONF_CHAT_MODEL: "ha-chat"}
+    )
+    assert result["errors"] == {CONF_CHAT_MODEL: "model_not_supported"}
+    result = await hass.config_entries.subentries.async_configure(
+        result["flow_id"], {"name": "Decisions", CONF_CHAT_MODEL: "decide"}
+    )
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    subentry = next(iter(entry.subentries.values()))
+    assert subentry.subentry_type == "ai_task_evaluate"
+    assert subentry.title == "Decisions"
+    assert subentry.data == {CONF_CHAT_MODEL: "decide", CONF_MODEL_NAME: "gpt-6-luna"}
+
+
 @pytest.mark.parametrize(
     ("model_name", "choices", "quality"),
     [
@@ -829,6 +886,8 @@ async def test_new_chat_service_defaults_to_deployed_alias(
         }
         assert "visible" not in fields[field].get("description", {})
         assert "default" not in fields[field]
+    for field in (CONF_MAX_TOKENS, CONF_STORE_RESPONSES):
+        assert fields[field]["visible"] == {"field": "recommended", "value": False}
     user_input = result["data_schema"](
         {"name": "Additional assistant", "recommended": True}
     )
@@ -963,6 +1022,7 @@ async def test_recommended_sampling_preserves_explicit_choices_and_hidden_values
         ("gpt-5.6", ["none", "low", "medium", "high", "xhigh", "max"], "medium"),
         ("gpt-6.1-sol", ["low", "medium", "high", "xhigh", "max"], "medium"),
         ("gpt-6-luna", ["none", "low", "medium", "high", "xhigh", "max"], "medium"),
+        ("gpt-6.1-terra", ["none", "low", "medium", "high", "xhigh", "max"], "medium"),
         ("o4-mini", ["low", "medium", "high"], "medium"),
         ("gpt-5-pro", [], None),
     ],
@@ -1102,18 +1162,16 @@ async def test_initial_minimal_effort_still_rejects_incompatible_advanced_tools(
             CONF_CHAT_MODEL: "ha-chat",
             "recommended": False,
             CONF_REASONING_EFFORT: "minimal",
+            CONF_MAX_TOKENS: 1500,
         },
     )
-    assert result["step_id"] == "additional"
+    assert result["step_id"] == "model"
     assert {
         CONF_SEND_SAMPLING_PARAMETERS,
         CONF_TEMPERATURE,
         CONF_TOP_P,
         CONF_REASONING_EFFORT,
     }.isdisjoint(_form_fields(result))
-    result = await hass.config_entries.subentries.async_configure(result["flow_id"], {})
-    assert result["step_id"] == "model"
-    assert CONF_REASONING_EFFORT not in _form_fields(result)
     result = await hass.config_entries.subentries.async_configure(
         result["flow_id"], {tool: True}
     )
@@ -1124,6 +1182,7 @@ async def test_initial_minimal_effort_still_rejects_incompatible_advanced_tools(
     )
     assert result["reason"] == "reconfigure_successful"
     assert subentry.data[CONF_REASONING_EFFORT] == "minimal"
+    assert subentry.data[CONF_MAX_TOKENS] == 1500
     assert subentry.data[tool] is False
 
 
@@ -1529,8 +1588,6 @@ async def test_web_location_lookup_reuses_the_oauth_runtime_client(
     result = await hass.config_entries.subentries.async_configure(
         result["flow_id"], {CONF_CHAT_MODEL: "ha-chat", "recommended": False}
     )
-    assert result["step_id"] == "additional"
-    result = await hass.config_entries.subentries.async_configure(result["flow_id"], {})
     assert result["step_id"] == "model"
     result = await hass.config_entries.subentries.async_configure(
         result["flow_id"], {"web_search": True, "user_location": True}
@@ -1692,7 +1749,7 @@ async def test_oauth_labels_are_localized_without_replacing_api_key_labels(
 async def test_initial_settings_labels_and_effort_errors_exist_in_every_locale(
     hass: HomeAssistant, language: str
 ) -> None:
-    """Moved sampling labels and effort text are translated in every locale."""
+    """Initial settings labels and effort text are translated in every locale."""
     translations = await async_get_translations(
         hass, language, "config_subentries", {DOMAIN}
     )
@@ -1704,9 +1761,13 @@ async def test_initial_settings_labels_and_effort_errors_exist_in_every_locale(
             CONF_TOP_P,
             CONF_TEMPERATURE,
             CONF_REASONING_EFFORT,
+            CONF_MAX_TOKENS,
+            CONF_STORE_RESPONSES,
         ):
             assert f"{prefix}.step.init.data.{field}" in translations
-            assert f"{prefix}.step.additional.data.{field}" not in translations
+        assert not any(
+            key.startswith(f"{prefix}.step.additional.") for key in translations
+        )
         assert (
             translations[f"{prefix}.step.init.data.{CONF_REASONING_EFFORT}"]
             == localized[

@@ -73,6 +73,7 @@
           "conversation": "Conversation models",
           "ai_task_data": "Data AI task models",
           "ai_task_image": "Image AI task models",
+          "ai_task_evaluate": "AI task evaluation models",
           "stt": "Speech-to-text models",
           "tts": "Text-to-speech models"
         }
@@ -119,25 +120,17 @@
         "user": "Add conversation agent"
       },
       "step": {
-        "additional": {
-          "data": {
-            "max_tokens": "Maximum tokens to return in response",
-            "store_responses": "Store requests and responses in Azure OpenAI"
-          },
-          "data_description": {
-            "store_responses": "If enabled, responses are stored by Azure OpenAI and can be retrieved later"
-          },
-          "title": "Additional settings"
-        },
         "init": {
           "data": {
             "chat_model": "Model deployment",
             "llm_hass_api": "[%key:common::config_flow::data::llm_hass_api%]",
+            "max_tokens": "Maximum tokens to return in response",
             "name": "[%key:common::config_flow::data::name%]",
             "prompt": "Instructions",
             "recommended": "Recommended model settings",
             "reasoning_effort": "Reasoning effort",
             "send_sampling_parameters": "Send sampling parameters (temperature/top_p)",
+            "store_responses": "Store requests and responses in Azure OpenAI",
             "temperature": "Temperature",
             "top_p": "Top P"
           },
@@ -146,7 +139,9 @@
             "recommended": "Use recommended advanced settings without changing the selected deployment, sampling, or reasoning effort.",
             "reasoning_effort": "How much reasoning the model performs before responding. Available levels depend on the underlying model; this also applies with recommended settings.",
             "send_sampling_parameters": "Off by default. Temperature and Top P appear only when enabled, and their saved values are kept while disabled. Reasoning models send these parameters only with reasoning effort set to None.",
-            "prompt": "Instruct how the LLM should respond. This can be a template."
+            "prompt": "Instruct how the LLM should respond. This can be a template.",
+            "store_responses": "If enabled, responses are stored by Azure OpenAI and can be retrieved later",
+            "llm_hass_api": "[%key:common::config_flow::data_description::llm_hass_api%]"
           }
         },
         "model": {
@@ -191,23 +186,15 @@
         "user": "Add AI task"
       },
       "step": {
-        "additional": {
-          "data": {
-            "max_tokens": "Maximum tokens to return in response",
-            "store_responses": "Store requests and responses in Azure OpenAI"
-          },
-          "data_description": {
-            "store_responses": "If enabled, responses are stored by Azure OpenAI and can be retrieved later"
-          },
-          "title": "Additional settings"
-        },
         "init": {
           "data": {
             "chat_model": "Model deployment",
+            "max_tokens": "Maximum tokens to return in response",
             "name": "[%key:common::config_flow::data::name%]",
             "recommended": "Recommended model settings",
             "reasoning_effort": "Reasoning effort",
             "send_sampling_parameters": "Send sampling parameters (temperature/top_p)",
+            "store_responses": "Store requests and responses in Azure OpenAI",
             "temperature": "Temperature",
             "top_p": "Top P"
           },
@@ -215,7 +202,8 @@
             "chat_model": "The exact Azure deployment name. With Microsoft sign-in, choices show deployed OpenAI models and their underlying model names.",
             "recommended": "Use recommended advanced settings without changing the selected deployment, sampling, or reasoning effort.",
             "reasoning_effort": "How much reasoning the model performs before responding. Available levels depend on the underlying model; this also applies with recommended settings.",
-            "send_sampling_parameters": "Off by default. Temperature and Top P appear only when enabled, and their saved values are kept while disabled. Reasoning models send these parameters only with reasoning effort set to None."
+            "send_sampling_parameters": "Off by default. Temperature and Top P appear only when enabled, and their saved values are kept while disabled. Reasoning models send these parameters only with reasoning effort set to None.",
+            "store_responses": "If enabled, responses are stored by Azure OpenAI and can be retrieved later"
           }
         },
         "model": {
@@ -270,6 +258,30 @@
           "data_description": {
             "image_model": "The exact deployment name of an OpenAI image model. This task supports image generation, not text or structured-data generation.",
             "image_quality": "Higher quality produces more detailed images but takes longer and costs more. Available levels depend on the underlying image model."
+          }
+        }
+      }
+    },
+    "ai_task_evaluate": {
+      "abort": {
+        "entry_not_loaded": "Cannot add things while the configuration is disabled."
+      },
+      "entry_type": "AI task evaluation",
+      "error": {
+        "model_not_supported": "Select a gpt-6-luna deployment. Azure's Decisions API supports only gpt-6-luna."
+      },
+      "initiate_flow": {
+        "reconfigure": "Reconfigure AI task evaluation",
+        "user": "Add AI task evaluation"
+      },
+      "step": {
+        "init": {
+          "data": {
+            "chat_model": "Model deployment",
+            "name": "[%key:common::config_flow::data::name%]"
+          },
+          "data_description": {
+            "chat_model": "The exact name of a gpt-6-luna deployment. Evaluations use Azure's Decisions API, which supports only gpt-6-luna and isn't available in every region."
           }
         }
       }

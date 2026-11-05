@@ -73,6 +73,7 @@
           "conversation": "Modely pre konverzáciu",
           "ai_task_data": "Modely pre dátové úlohy AI",
           "ai_task_image": "Modely pre obrázkové úlohy AI",
+          "ai_task_evaluate": "Modely pre hodnotenia úloh AI",
           "stt": "Modely pre prevod reči na text",
           "tts": "Modely pre prevod textu na reč"
         }
@@ -119,25 +120,17 @@
         "user": "Pridať agenta na konverzáciu"
       },
       "step": {
-        "additional": {
-          "data": {
-            "max_tokens": "Maximálny počet tokenov, ktoré sa majú vrátiť v odpovedi",
-            "store_responses": "Ukladanie požiadaviek a odpovedí v Azure OpenAI"
-          },
-          "data_description": {
-            "store_responses": "Ak je povolené, odpovede ukladá Azure OpenAI a možno ich neskôr načítať"
-          },
-          "title": "Rozšírené nastavenia"
-        },
         "init": {
           "data": {
             "chat_model": "Nasadenie modelu",
-            "llm_hass_api": "Ovládanie Home Assistant",
+            "llm_hass_api": "Nástroje AI",
+            "max_tokens": "Maximálny počet tokenov, ktoré sa majú vrátiť v odpovedi",
             "name": "Názov",
             "prompt": "Inštrukcie",
             "recommended": "Odporúčané nastavenia modelu",
             "reasoning_effort": "Úsilie o uvažovanie",
             "send_sampling_parameters": "Odosielať parametre vzorkovania (temperature/top_p)",
+            "store_responses": "Ukladanie požiadaviek a odpovedí v Azure OpenAI",
             "temperature": "Teplota",
             "top_p": "Top P"
           },
@@ -146,7 +139,9 @@
             "recommended": "Použiť odporúčané rozšírené nastavenia bez zmeny vybraného nasadenia, vzorkovania alebo úsilia o uvažovanie.",
             "reasoning_effort": "Koľko model uvažuje pred odpoveďou. Dostupné úrovne závisia od základného modelu; platí to aj pri odporúčaných nastaveniach.",
             "send_sampling_parameters": "Predvolene vypnuté. Teplota a Top P sa zobrazia iba po zapnutí tejto možnosti a ich uložené hodnoty sa pri vypnutí zachovajú. Modely s uvažovaním odosielajú tieto parametre iba vtedy, keď je úsilie o uvažovanie nastavené na Žiadne.",
-            "prompt": "Pokyn, ako by mal LLM reagovať. Môže ísť o šablónu."
+            "prompt": "Pokyn, ako by mal LLM reagovať. Môže ísť o šablónu.",
+            "store_responses": "Ak je povolené, odpovede ukladá Azure OpenAI a možno ich neskôr načítať",
+            "llm_hass_api": "**Device control** pristupuje iba k entitám, ktoré sprístupníte hlasovým asistentom. **Home Assistant** pristupuje ku všetkému a funguje iba pre správcov, nie pre zariadenia hlasového asistenta."
           }
         },
         "model": {
@@ -191,23 +186,15 @@
         "user": "Pridať AI úlohu"
       },
       "step": {
-        "additional": {
-          "data": {
-            "max_tokens": "Maximálny počet tokenov, ktoré sa majú vrátiť v odpovedi",
-            "store_responses": "Ukladanie požiadaviek a odpovedí v Azure OpenAI"
-          },
-          "data_description": {
-            "store_responses": "Ak je povolené, odpovede ukladá Azure OpenAI a možno ich neskôr načítať"
-          },
-          "title": "Rozšírené nastavenia"
-        },
         "init": {
           "data": {
             "chat_model": "Nasadenie modelu",
+            "max_tokens": "Maximálny počet tokenov, ktoré sa majú vrátiť v odpovedi",
             "name": "Názov",
             "recommended": "Odporúčané nastavenia modelu",
             "reasoning_effort": "Úsilie o uvažovanie",
             "send_sampling_parameters": "Odosielať parametre vzorkovania (temperature/top_p)",
+            "store_responses": "Ukladanie požiadaviek a odpovedí v Azure OpenAI",
             "temperature": "Teplota",
             "top_p": "Top P"
           },
@@ -215,7 +202,8 @@
             "chat_model": "Presný názov nasadenia v Azure. Pri prihlásení cez Microsoft sa v ponuke zobrazujú nasadené modely OpenAI a názvy ich základných modelov.",
             "recommended": "Použiť odporúčané rozšírené nastavenia bez zmeny vybraného nasadenia, vzorkovania alebo úsilia o uvažovanie.",
             "reasoning_effort": "Koľko model uvažuje pred odpoveďou. Dostupné úrovne závisia od základného modelu; platí to aj pri odporúčaných nastaveniach.",
-            "send_sampling_parameters": "Predvolene vypnuté. Teplota a Top P sa zobrazia iba po zapnutí tejto možnosti a ich uložené hodnoty sa pri vypnutí zachovajú. Modely s uvažovaním odosielajú tieto parametre iba vtedy, keď je úsilie o uvažovanie nastavené na Žiadne."
+            "send_sampling_parameters": "Predvolene vypnuté. Teplota a Top P sa zobrazia iba po zapnutí tejto možnosti a ich uložené hodnoty sa pri vypnutí zachovajú. Modely s uvažovaním odosielajú tieto parametre iba vtedy, keď je úsilie o uvažovanie nastavené na Žiadne.",
+            "store_responses": "Ak je povolené, odpovede ukladá Azure OpenAI a možno ich neskôr načítať"
           }
         },
         "model": {
@@ -270,6 +258,30 @@
           "data_description": {
             "image_model": "Presný názov nasadenia obrázkového modelu OpenAI. Táto úloha podporuje generovanie obrázkov, nie generovanie textu ani štruktúrovaných údajov.",
             "image_quality": "Vyššia kvalita vytvára detailnejšie obrázky, ale trvá dlhšie a stojí viac. Dostupné úrovne závisia od základného obrázkového modelu."
+          }
+        }
+      }
+    },
+    "ai_task_evaluate": {
+      "abort": {
+        "entry_not_loaded": "Nie je možné pridávať veci, keď je konfigurácia vypnutá."
+      },
+      "entry_type": "Hodnotenie úlohy AI",
+      "error": {
+        "model_not_supported": "Vyberte nasadenie gpt-6-luna. Rozhranie Decisions API v Azure podporuje iba gpt-6-luna."
+      },
+      "initiate_flow": {
+        "reconfigure": "Rekonfigurácia hodnotenia úlohy AI",
+        "user": "Pridať hodnotenie úlohy AI"
+      },
+      "step": {
+        "init": {
+          "data": {
+            "chat_model": "Nasadenie modelu",
+            "name": "Názov"
+          },
+          "data_description": {
+            "chat_model": "Presný názov nasadenia gpt-6-luna. Hodnotenia používajú rozhranie Decisions API v Azure, ktoré podporuje iba gpt-6-luna a nie je dostupné vo všetkých regiónoch."
           }
         }
       }

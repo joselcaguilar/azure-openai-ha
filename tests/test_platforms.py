@@ -4,18 +4,24 @@ from collections.abc import AsyncGenerator
 import base64
 import json
 from pathlib import Path
+from types import MappingProxyType
 from unittest.mock import MagicMock, patch
 
 import pytest
-from pytest_homeassistant_custom_component.common import MockConfigEntry
+from pytest_homeassistant.common import MockConfigEntry
 from respx import MockRouter
 
 from homeassistant.components import ai_task, conversation, stt, tts
+from homeassistant.config_entries import ConfigSubentry
 from homeassistant.core import Context, HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.chat_session import async_get_chat_session
 
-from custom_components.azure_openai_conversation.ai_task import AzureOpenAITaskEntity
+from custom_components.azure_openai_conversation.ai_task import (
+    AzureOpenAIEvaluationEntity,
+    AzureOpenAITaskEntity,
+)
 from custom_components.azure_openai_conversation.auth import EntraOAuth2Implementation
 from custom_components.azure_openai_conversation.const import (
     CONF_CHAT_MODEL,
@@ -602,6 +608,208 @@ async def test_data_task_edits_images_with_its_image_quality(
     content = route.calls[0].request.content
     assert b'name="model"\r\n\r\nart' in content
     assert b'name="quality"\r\n\r\nmedium' in content
+
+
+async def _evaluation_entity(
+    hass: HomeAssistant, entry: MockConfigEntry
+) -> AzureOpenAIEvaluationEntity:
+    """Add an evaluation for a gpt-6-luna deployment and return its loaded entity."""
+    hass.config_entries.async_add_subentry(
+        entry,
+        ConfigSubentry(
+            data=MappingProxyType(
+                {CONF_CHAT_MODEL: "decide", CONF_MODEL_NAME: "gpt-6-luna"}
+            ),
+            subentry_type="ai_task_evaluate",
+            title="Decisions",
+            unique_id=None,
+        ),
+    )
+    await hass.async_block_till_done()
+    entity_id = _entity_id(hass, entry, "ai_task_evaluate", "decide")
+    entity = hass.data[ai_task.DATA_COMPONENT].get_entity(entity_id)
+    assert isinstance(entity, AzureOpenAIEvaluationEntity)
+    return entity
+
+
+def _decision(*answers: dict) -> dict:
+    """Return a Decisions API response with the given answers."""
+    return {
+        "model": "decide",
+        "answers": list(answers),
+        "usage": {
+            "input_tokens": 1,
+            "input_tokens_details": {"cached_tokens": 0, "cache_write_tokens": 0},
+            "output_tokens": 0,
+            "output_tokens_details": {"reasoning_tokens": 0},
+            "total_tokens": 1,
+        },
+    }
+
+
+async def test_evaluation_task_uses_the_decisions_api(
+    hass: HomeAssistant,
+    loaded_oauth_entry: MockConfigEntry,
+    respx_mock: MockRouter,
+    tmp_path: Path,
+) -> None:
+    """Questions, state and images map to the Decisions API, and answers map back."""
+    entity = await _evaluation_entity(hass, loaded_oauth_entry)
+    route = respx_mock.post(f"{ENDPOINT}openai/v1/decisions").respond(
+        json=_decision(
+            {"type": "predicate", "name": "open", "probability": 0.9},
+            {
+                "type": "choice",
+                "name": "room",
+                "choice": "kitchen",
+                "confidence": 0.7,
+                "probabilities": [
+                    {"value": "kitchen", "probability": 0.85},
+                    {"value": "garage", "probability": 0.15},
+                ],
+            },
+            {
+                "type": "score",
+                "name": "mess",
+                "score": 1.1,
+                "confidence": 0.5,
+                "probabilities": [
+                    {"value": 1, "label": "1", "probability": 0.7},
+                    {"value": 0, "label": "0", "probability": 0.1},
+                    {"value": 2, "label": "2", "probability": 0.2},
+                ],
+            },
+        )
+    )
+    photo = tmp_path / "door.jpg"
+    photo.write_bytes(b"door-photo")
+    result = await entity.internal_async_evaluate(
+        ai_task.EvaluationTask(
+            name="Check the door",
+            questions={
+                "open": {"type": "noul", "instructions": "Is the door open?"},
+                "room": {
+                    "type": "choice",
+                    "instructions": "Which room is it?",
+                    "criteria": {"kitchen": "Has a stove", "garage": "Has a car"},
+                },
+                "mess": {
+                    "type": "score",
+                    "instructions": "How messy is it?",
+                    "criteria": ["Tidy", "Some clutter", "Messy"],
+                },
+            },
+            state={"door": "front"},
+            attachments=[
+                conversation.Attachment(
+                    media_content_id="media-source://media_source/local/door.jpg",
+                    mime_type="image/jpg",
+                    path=photo,
+                )
+            ],
+        )
+    )
+    assert result.answers == {
+        "open": ai_task.NoulAnswer(noul=0.9),
+        "room": ai_task.ChoiceAnswer(
+            choice="kitchen", probabilities={"kitchen": 0.85, "garage": 0.15}
+        ),
+        "mess": ai_task.ScoreAnswer(score=1.1, probabilities=[0.1, 0.7, 0.2]),
+    }
+    request = route.calls[0].request
+    assert request.headers["Authorization"] == "Bearer inference-token"
+    body = json.loads(request.content)
+    assert body["model"] == "decide"
+    assert body["questions"] == [
+        {"type": "predicate", "name": "open", "instructions": "Is the door open?"},
+        {
+            "type": "choice",
+            "name": "room",
+            "instructions": "Which room is it?",
+            "choices": [
+                {"value": "kitchen", "description": "Has a stove"},
+                {"value": "garage", "description": "Has a car"},
+            ],
+        },
+        {
+            "type": "score",
+            "name": "mess",
+            "instructions": "How messy is it?",
+            "levels": [
+                {"label": "0", "description": "Tidy"},
+                {"label": "1", "description": "Some clutter"},
+                {"label": "2", "description": "Messy"},
+            ],
+        },
+    ]
+    assert body["input"] == [
+        {
+            "role": "user",
+            "content": [
+                {"type": "input_text", "text": '{"door":"front"}'},
+                {
+                    "type": "input_image",
+                    "image_url": "data:image/jpeg;base64,"
+                    + base64.b64encode(b"door-photo").decode(),
+                },
+            ],
+        }
+    ]
+
+
+@pytest.mark.parametrize(
+    ("mime_type", "status", "response", "message"),
+    [
+        ("application/pdf", 200, None, "only support JPEG, PNG, WebP, and GIF"),
+        (
+            "image/png",
+            200,
+            _decision({"type": "refusal", "name": "open"}),
+            "refused evaluation question open",
+        ),
+        (
+            "image/png",
+            200,
+            _decision({"type": "predicate", "name": "other", "probability": 0.5}),
+            "unexpected question name",
+        ),
+        (
+            "image/png",
+            404,
+            {"error": {"code": "DeploymentNotFound", "message": "Not found"}},
+            "need a gpt-6-luna deployment",
+        ),
+    ],
+)
+async def test_evaluation_task_rejects_unusable_input_and_answers(
+    hass: HomeAssistant,
+    loaded_oauth_entry: MockConfigEntry,
+    respx_mock: MockRouter,
+    tmp_path: Path,
+    mime_type: str,
+    status: int,
+    response: dict | None,
+    message: str,
+) -> None:
+    """Unsupported files, refusals and missing deployments are reported clearly."""
+    entity = await _evaluation_entity(hass, loaded_oauth_entry)
+    respx_mock.post(f"{ENDPOINT}openai/v1/decisions").respond(status, json=response)
+    attachment = tmp_path / "attachment"
+    attachment.write_bytes(b"content")
+    with pytest.raises(HomeAssistantError, match=message):
+        await entity.internal_async_evaluate(
+            ai_task.EvaluationTask(
+                name="Check the door",
+                questions={"open": {"type": "noul", "instructions": "Is it open?"}},
+                attachments=[
+                    conversation.Attachment(
+                        media_content_id="media-source://media_source/local/file",
+                        mime_type=mime_type,
+                        path=attachment,
+                    )
+                ],
+            )
+        )
 
 
 async def test_stt_uses_its_transcription_deployment(

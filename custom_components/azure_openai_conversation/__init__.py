@@ -33,6 +33,7 @@ from .const import (
     CONF_API_BASE,
     CONF_AUTH_TYPE,
     CONF_CHAT_MODEL,
+    CONF_DEPLOYMENTS,
     CONF_MAX_TOKENS,
     CONF_REASONING_EFFORT,
     CONF_RECOMMENDED,
@@ -44,6 +45,7 @@ from .const import (
     DOMAIN,
     LOGGER,
     RECOMMENDED_AI_TASK_OPTIONS,
+    supports_decisions,
 )
 from .deployments import (
     sync_deployment_subentries,
@@ -132,7 +134,7 @@ async def async_create_entry_client(
     return create_client(hass, api_base, token_provider)
 
 
-async def async_setup_entry(hass: HomeAssistant, entry: OpenAIConfigEntry) -> bool:
+async def async_setup_entry(hass: HomeAssistant, entry: OpenAIConfigEntry) -> None:
     """Set up Azure OpenAI Conversation from a config entry."""
     client = await async_create_entry_client(hass, entry)
 
@@ -172,12 +174,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: OpenAIConfigEntry) -> bo
 
     entry.async_on_unload(entry.add_update_listener(async_update_options))
 
-    return True
 
-
-async def async_unload_entry(hass: HomeAssistant, entry: OpenAIConfigEntry) -> bool:
+async def async_unload_entry(hass: HomeAssistant, entry: OpenAIConfigEntry) -> None:
     """Unload Azure OpenAI."""
-    return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+    await hass.config_entries.async_unload_platforms_or_raise(entry, PLATFORMS)
 
 
 def _entry_settings(entry: OpenAIConfigEntry) -> dict[str, Any]:
@@ -195,13 +195,9 @@ def _entry_settings(entry: OpenAIConfigEntry) -> dict[str, Any]:
     }
 
 
-async def async_migrate_entry(hass: HomeAssistant, entry: OpenAIConfigEntry) -> bool:
+async def async_migrate_entry(hass: HomeAssistant, entry: OpenAIConfigEntry) -> None:
     """Migrate entry."""
     LOGGER.debug("Migrating from version %s:%s", entry.version, entry.minor_version)
-
-    if entry.version > 2:
-        # Downgrade from a future version
-        return False
 
     if entry.version == 1:
         _migrate_options_to_subentries(hass, entry)
@@ -213,11 +209,26 @@ async def async_migrate_entry(hass: HomeAssistant, entry: OpenAIConfigEntry) -> 
             minor_version=2,
         )
 
+    if entry.minor_version < 3:
+        data = dict(entry.data)
+        if CONF_DEPLOYMENTS in data:
+            # Offer AI task evaluations for deployments discovered before 5.1
+            data[CONF_DEPLOYMENTS] = [
+                {
+                    **deployment,
+                    "services": [*deployment["services"], "ai_task_evaluate"],
+                }
+                if deployment["services"]
+                and supports_decisions(deployment["model_name"])
+                and "ai_task_evaluate" not in deployment["services"]
+                else deployment
+                for deployment in data[CONF_DEPLOYMENTS]
+            ]
+        hass.config_entries.async_update_entry(entry, data=data, minor_version=3)
+
     LOGGER.debug(
         "Migration to version %s:%s successful", entry.version, entry.minor_version
     )
-
-    return True
 
 
 def _migrate_options_to_subentries(

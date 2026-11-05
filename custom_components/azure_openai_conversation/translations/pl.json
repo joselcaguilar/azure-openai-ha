@@ -73,6 +73,7 @@
           "conversation": "Modele konwersacji",
           "ai_task_data": "Modele zadań AI generujących dane",
           "ai_task_image": "Modele zadań AI generujących obrazy",
+          "ai_task_evaluate": "Modele ocen zadań AI",
           "stt": "Modele zamiany mowy na tekst",
           "tts": "Modele zamiany tekstu na mowę"
         }
@@ -119,25 +120,17 @@
         "user": "Dodaj agenta konwersacji"
       },
       "step": {
-        "additional": {
-          "data": {
-            "max_tokens": "Maksymalna liczba tokenów zwracanych w odpowiedzi",
-            "store_responses": "Przechowuj żądania i odpowiedzi w Azure OpenAI"
-          },
-          "data_description": {
-            "store_responses": "Jeśli opcja ta jest włączona, odpowiedzi są przechowywane przez Azure OpenAI i można je później pobrać"
-          },
-          "title": "Dodatkowe ustawienia"
-        },
         "init": {
           "data": {
             "chat_model": "Wdrożenie modelu",
-            "llm_hass_api": "Sterowanie Home Assistantem",
+            "llm_hass_api": "Narzędzia AI",
+            "max_tokens": "Maksymalna liczba tokenów zwracanych w odpowiedzi",
             "name": "Nazwa",
             "prompt": "Instrukcje",
             "recommended": "Zalecane ustawienia modelu",
             "reasoning_effort": "Wysiłek rozumowania",
             "send_sampling_parameters": "Wysyłaj parametry próbkowania (temperature/top_p)",
+            "store_responses": "Przechowuj żądania i odpowiedzi w Azure OpenAI",
             "temperature": "Temperatura",
             "top_p": "Top P"
           },
@@ -146,7 +139,9 @@
             "recommended": "Używaj zalecanych ustawień zaawansowanych bez zmiany wybranego wdrożenia, próbkowania ani wysiłku rozumowania.",
             "reasoning_effort": "Jak dużo model rozumuje przed udzieleniem odpowiedzi. Dostępne poziomy zależą od modelu bazowego; wybrany poziom obowiązuje także przy zalecanych ustawieniach.",
             "send_sampling_parameters": "Opcja domyślnie wyłączona. Pola Temperatura i Top P są widoczne tylko po jej włączeniu, a ich zapisane wartości są zachowywane, gdy jest wyłączona. W przypadku modeli rozumowania te parametry są wysyłane tylko wtedy, gdy wysiłek rozumowania jest ustawiony na „brak”.",
-            "prompt": "Poinstruuj, jak model LLM powinien odpowiadać. Może to być szablon."
+            "prompt": "Poinstruuj, jak model LLM powinien odpowiadać. Może to być szablon.",
+            "store_responses": "Jeśli opcja ta jest włączona, odpowiedzi są przechowywane przez Azure OpenAI i można je później pobrać",
+            "llm_hass_api": "**Device control** ma dostęp tylko do encji udostępnionych asystentom głosowym. **Home Assistant** ma dostęp do wszystkiego i działa tylko dla administratorów, a nie dla urządzeń asystenta głosowego."
           }
         },
         "model": {
@@ -191,23 +186,15 @@
         "user": "Dodaj zadanie AI"
       },
       "step": {
-        "additional": {
-          "data": {
-            "max_tokens": "Maksymalna liczba tokenów zwracanych w odpowiedzi",
-            "store_responses": "Przechowuj żądania i odpowiedzi w Azure OpenAI"
-          },
-          "data_description": {
-            "store_responses": "Jeśli opcja ta jest włączona, odpowiedzi są przechowywane przez Azure OpenAI i można je później pobrać"
-          },
-          "title": "Dodatkowe ustawienia"
-        },
         "init": {
           "data": {
             "chat_model": "Wdrożenie modelu",
+            "max_tokens": "Maksymalna liczba tokenów zwracanych w odpowiedzi",
             "name": "Nazwa",
             "recommended": "Zalecane ustawienia modelu",
             "reasoning_effort": "Wysiłek rozumowania",
             "send_sampling_parameters": "Wysyłaj parametry próbkowania (temperature/top_p)",
+            "store_responses": "Przechowuj żądania i odpowiedzi w Azure OpenAI",
             "temperature": "Temperatura",
             "top_p": "Top P"
           },
@@ -215,7 +202,8 @@
             "chat_model": "Dokładna nazwa wdrożenia Azure. Przy logowaniu przez Microsoft opcje wyboru pokazują wdrożone modele OpenAI wraz z nazwami ich modeli bazowych.",
             "recommended": "Używaj zalecanych ustawień zaawansowanych bez zmiany wybranego wdrożenia, próbkowania ani wysiłku rozumowania.",
             "reasoning_effort": "Jak dużo model rozumuje przed udzieleniem odpowiedzi. Dostępne poziomy zależą od modelu bazowego; wybrany poziom obowiązuje także przy zalecanych ustawieniach.",
-            "send_sampling_parameters": "Opcja domyślnie wyłączona. Pola Temperatura i Top P są widoczne tylko po jej włączeniu, a ich zapisane wartości są zachowywane, gdy jest wyłączona. W przypadku modeli rozumowania te parametry są wysyłane tylko wtedy, gdy wysiłek rozumowania jest ustawiony na „brak”."
+            "send_sampling_parameters": "Opcja domyślnie wyłączona. Pola Temperatura i Top P są widoczne tylko po jej włączeniu, a ich zapisane wartości są zachowywane, gdy jest wyłączona. W przypadku modeli rozumowania te parametry są wysyłane tylko wtedy, gdy wysiłek rozumowania jest ustawiony na „brak”.",
+            "store_responses": "Jeśli opcja ta jest włączona, odpowiedzi są przechowywane przez Azure OpenAI i można je później pobrać"
           }
         },
         "model": {
@@ -270,6 +258,30 @@
           "data_description": {
             "image_model": "Dokładna nazwa wdrożenia modelu OpenAI do generowania obrazów. To zadanie obsługuje generowanie obrazów, a nie generowanie tekstu ani danych strukturalnych.",
             "image_quality": "Wyższa jakość daje bardziej szczegółowe obrazy, ale generowanie trwa dłużej i kosztuje więcej. Dostępne poziomy zależą od bazowego modelu generowania obrazów."
+          }
+        }
+      }
+    },
+    "ai_task_evaluate": {
+      "abort": {
+        "entry_not_loaded": "Nie można dodawać elementów, gdy konfiguracja jest wyłączona."
+      },
+      "entry_type": "Ocena zadania AI",
+      "error": {
+        "model_not_supported": "Wybierz wdrożenie gpt-6-luna. Interfejs Decisions API platformy Azure obsługuje tylko gpt-6-luna."
+      },
+      "initiate_flow": {
+        "reconfigure": "Ponownie konfiguruj ocenę zadania AI",
+        "user": "Dodaj ocenę zadania AI"
+      },
+      "step": {
+        "init": {
+          "data": {
+            "chat_model": "Wdrożenie modelu",
+            "name": "Nazwa"
+          },
+          "data_description": {
+            "chat_model": "Dokładna nazwa wdrożenia gpt-6-luna. Oceny korzystają z interfejsu Decisions API platformy Azure, który obsługuje tylko gpt-6-luna i nie jest dostępny we wszystkich regionach."
           }
         }
       }

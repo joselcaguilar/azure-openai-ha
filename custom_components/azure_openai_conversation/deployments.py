@@ -23,6 +23,7 @@ from .const import (
     CONF_MODEL_NAME,
     DEFAULT_AI_TASK_NAME,
     DEFAULT_CONVERSATION_NAME,
+    DEFAULT_EVALUATION_NAME,
     DEFAULT_IMAGE_TASK_NAME,
     DEFAULT_STT_NAME,
     DEFAULT_STT_PROMPT,
@@ -31,11 +32,13 @@ from .const import (
     RECOMMENDED_AI_TASK_OPTIONS,
     RECOMMENDED_CHAT_MODEL,
     RECOMMENDED_CONVERSATION_OPTIONS,
+    RECOMMENDED_DECISION_MODEL,
     RECOMMENDED_IMAGE_MODEL,
     RECOMMENDED_STT_MODEL,
     RECOMMENDED_TTS_MODEL,
     RECOMMENDED_TTS_OPTIONS,
     UNSUPPORTED_MODELS,
+    supports_decisions,
 )
 
 MANAGEMENT_ORIGIN = "https://management.azure.com"
@@ -51,6 +54,7 @@ _DEPLOYMENT_NAME = re.compile(r"[a-zA-Z0-9_.-]{1,64}")
 _SERVICE_NAMES = {
     "conversation": DEFAULT_CONVERSATION_NAME,
     "ai_task_data": DEFAULT_AI_TASK_NAME,
+    "ai_task_evaluate": DEFAULT_EVALUATION_NAME,
     "ai_task_image": DEFAULT_IMAGE_TASK_NAME,
     "stt": DEFAULT_STT_NAME,
     "tts": DEFAULT_TTS_NAME,
@@ -58,6 +62,7 @@ _SERVICE_NAMES = {
 _MODEL_KEYS = {
     "conversation": CONF_CHAT_MODEL,
     "ai_task_data": CONF_CHAT_MODEL,
+    "ai_task_evaluate": CONF_CHAT_MODEL,
     "ai_task_image": CONF_IMAGE_MODEL,
     "stt": CONF_CHAT_MODEL,
     "tts": CONF_CHAT_MODEL,
@@ -65,6 +70,7 @@ _MODEL_KEYS = {
 _LEGACY_MODELS = {
     "conversation": RECOMMENDED_CHAT_MODEL,
     "ai_task_data": RECOMMENDED_CHAT_MODEL,
+    "ai_task_evaluate": RECOMMENDED_DECISION_MODEL,
     "ai_task_image": RECOMMENDED_IMAGE_MODEL,
     "stt": RECOMMENDED_STT_MODEL,
     "tts": RECOMMENDED_TTS_MODEL,
@@ -136,14 +142,18 @@ def supported_services(
         return ("stt",)
     if model == "tts" or model.startswith("tts-") or model.endswith("-tts"):
         return ("tts",)
+    services: tuple[str, ...] = ()
     if "responses" in normalized:
-        return ("conversation", "ai_task_data") if normalized["responses"] else ()
+        if normalized["responses"]:
+            services = ("conversation", "ai_task_data")
     # Chat completions alone do not imply Responses API compatibility.
-    if normalized.get("chatcompletion", True) and model.startswith(
+    elif normalized.get("chatcompletion", True) and model.startswith(
         ("gpt-4o", "gpt-4.1", "gpt-5", "gpt-6", "gpt-chat-latest", "o1", "o3", "o4")
     ):
-        return ("conversation", "ai_task_data")
-    return ()
+        services = ("conversation", "ai_task_data")
+    if supports_decisions(model):
+        services += ("ai_task_evaluate",)
+    return services
 
 
 def validate_inference_endpoint(endpoint: str) -> str:
@@ -331,7 +341,9 @@ async def async_discover_deployments(
             services = ()
             reason = "batch-only deployment"
         elif not services:
-            reason = "no supported conversation, AI-task, image, STT, or TTS API"
+            reason = (
+                "no supported conversation, AI-task, evaluation, image, STT, or TTS API"
+            )
         deployments.append(
             DeploymentData(
                 id=f"{resource_id}/deployments/{name}",
