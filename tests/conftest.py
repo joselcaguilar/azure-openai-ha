@@ -33,6 +33,12 @@ def respx_mock() -> Generator[respx.MockRouter]:
 
 
 @pytest.fixture
+def hass_config_dir(hass_tmp_config_dir: str) -> str:
+    """Use a writable configuration directory, where TTS creates its cache."""
+    return hass_tmp_config_dir
+
+
+@pytest.fixture
 async def native_exposed_entities(hass: HomeAssistant) -> ExposedEntities:
     """Initialize native Assist exposure state normally supplied by core startup."""
     exposed = ExposedEntities(hass)

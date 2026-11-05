@@ -1224,9 +1224,6 @@ async def test_data_task_image_quality_follows_its_image_deployment(
             result["flow_id"], {CONF_CHAT_MODEL: "ha-chat", "recommended": recommended}
         )
         if not recommended:
-            result = await hass.config_entries.subentries.async_configure(
-                result["flow_id"], {}
-            )
             assert result["step_id"] == "model"
         return result
 
@@ -1648,7 +1645,6 @@ async def test_manual_reconfigure_uses_metadata_only_for_unchanged_alias(
     result = await hass.config_entries.subentries.async_configure(
         result["flow_id"], {CONF_CHAT_MODEL: alias, "recommended": False}
     )
-    result = await hass.config_entries.subentries.async_configure(result["flow_id"], {})
     assert result["step_id"] == "model"
     fields = {field.schema for field in result["data_schema"].schema}
     if change_alias:

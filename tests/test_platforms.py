@@ -491,7 +491,7 @@ async def test_image_task_uses_its_image_deployment(
     entity_id = _entity_id(hass, loaded_oauth_entry, "ai_task_image", "art")
     entity = hass.data[ai_task.DATA_COMPONENT].get_entity(entity_id)
     assert isinstance(entity, AzureOpenAITaskEntity)
-    with async_get_chat_session(hass) as session:
+    with async_get_chat_session(hass, context=None) as session:
         result = await entity.internal_async_generate_image(
             session, ai_task.GenImageTask(name="Art", instructions="Draw an example")
         )
@@ -549,7 +549,7 @@ async def test_image_task_sends_only_a_quality_its_model_accepts(
     entity_id = _entity_id(hass, loaded_oauth_entry, "ai_task_image", "art")
     entity = hass.data[ai_task.DATA_COMPONENT].get_entity(entity_id)
     assert isinstance(entity, AzureOpenAITaskEntity)
-    with async_get_chat_session(hass) as session:
+    with async_get_chat_session(hass, context=None) as session:
         result = await entity.internal_async_generate_image(
             session, ai_task.GenImageTask(name="Art", instructions="Draw an example")
         )
@@ -589,7 +589,7 @@ async def test_data_task_edits_images_with_its_image_quality(
     entity_id = _entity_id(hass, loaded_oauth_entry, "ai_task_data", "ha-chat")
     entity = hass.data[ai_task.DATA_COMPONENT].get_entity(entity_id)
     assert isinstance(entity, AzureOpenAITaskEntity)
-    with async_get_chat_session(hass) as session:
+    with async_get_chat_session(hass, context=None) as session:
         result = await entity.internal_async_generate_image(
             session,
             ai_task.GenImageTask(
