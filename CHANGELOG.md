@@ -28,7 +28,7 @@ This release brings the integration in line with Home Assistant 2026.11's OpenAI
 - The Lint and Validate workflows grant `GITHUB_TOKEN` only `contents: read`, which resolves CodeQL's `actions/missing-workflow-permissions` alerts. ([#184])
 - Tests use Home Assistant's `pytest-homeassistant` package instead of `pytest-homeassistant-custom-component`, which stopped at Home Assistant 2026.10. ([#193])
 - The README installs the integration from the Marketplace, which replaces HACS in Home Assistant 2026.11. `hacs.json` drops `render_readme`, which neither of them reads, and `content_in_root`, whose value was the default. ([#193])
-- Updated development requirements: `homeassistant>=2026.11.0`, `pytest-homeassistant==2026.11.0`, `home-assistant-intents==2026.10.27`, `pip>=26.2.2` and `ruff>=0.17.2`. ([#186], [#190], [#191], [#193])
+- Updated development requirements: `homeassistant>=2026.11.0`, `pytest-homeassistant==2026.11.0`, `home-assistant-intents==2026.10.27`, `pip>=26.2.2` and `ruff>=0.17.3`. ([#186], [#190], [#191], [#192], [#193])
 
 ## [5.0.1] — 2026-10-15
 
@@ -120,4 +120,5 @@ Thanks to [@rac146](https://github.com/rac146) and [@SchmidSP](https://github.co
 [#186]: https://github.com/joselcaguilar/azure-openai-ha/pull/186
 [#190]: https://github.com/joselcaguilar/azure-openai-ha/pull/190
 [#191]: https://github.com/joselcaguilar/azure-openai-ha/pull/191
+[#192]: https://github.com/joselcaguilar/azure-openai-ha/pull/192
 [#193]: https://github.com/joselcaguilar/azure-openai-ha/pull/193
