@@ -1,4 +1,5 @@
-[![hacs_badge](https://img.shields.io/badge/My_HACS-Azure_OpenAI_Conversation-41BDF5?logo=homeassistant&logoColor=white)](https://my.home-assistant.io/redirect/hacs_repository/?owner=joselcaguilar&repository=azure-openai-ha&category=integration)
+[![Open your Home Assistant instance and open a repository in the Marketplace.](https://my.home-assistant.io/badges/marketplace_repository.svg)](https://my.home-assistant.io/redirect/marketplace_repository/?owner=joselcaguilar&repository=azure-openai-ha&category=integration)
+
 [![Validate workflow](https://img.shields.io/github/actions/workflow/status/joselcaguilar/azure-openai-ha/validate.yaml?label=Validate&logo=GitHub)](https://github.com/joselcaguilar/azure-openai-ha/actions/workflows/validate.yaml)
 [![Lint workflow](https://img.shields.io/github/actions/workflow/status/joselcaguilar/azure-openai-ha/lint.yaml?label=Lint&logo=GitHub)](https://github.com/joselcaguilar/azure-openai-ha/actions/workflows/lint.yaml)
 ![GitHub all releases](https://img.shields.io/github/downloads/joselcaguilar/azure-openai-ha/total?color=d9810f&label=Downloads&logo=GitHub)
@@ -60,12 +61,11 @@ This is equivalent to the built-in [OpenAI Conversation integration](https://www
 
 ## Setting Up the Integration
 
-4. Download and install the integration from HACS: [Azure OpenAI Conversation](https://my.home-assistant.io/redirect/hacs_repository/?owner=joselcaguilar&repository=azure-openai-ha&category=integration).
-5. Restart your Home Assistant instance.
-6. [Click here](https://my.home-assistant.io/redirect/config_flow_start/?domain=azure_openai_conversation) or go to **Settings → Devices & Services → Add Integration → Azure OpenAI Conversation**.
-7. Choose **Microsoft Entra ID sign-in and model discovery** to discover deployed models, or **API key** for manual configuration.
-8. With Microsoft sign-in, enter the tenant ID and the ARM resource ID of your Foundry or Azure OpenAI **account**, link your Microsoft account, then select models separately for **Conversation**, **Data AI tasks**, **Image AI tasks**, **AI task evaluations**, **Speech-to-text**, and **Text-to-speech**. Nothing is preselected; only your selected deployment/service pairs are added. With an API key, enter the key and endpoint (for example `https://your-resource.services.ai.azure.com/`); the legacy conversation agent and AI task are created, and you select their deployment names manually.
-9. Select the desired conversation, speech-to-text, and text-to-speech entities in your Assist pipeline. Use the **Add** buttons if you want additional customized instances.
+4. Install [Azure OpenAI Conversation](https://my.home-assistant.io/redirect/marketplace_repository/?owner=joselcaguilar&repository=azure-openai-ha&category=integration) from the Marketplace, or search for it under **Settings → Marketplace**.
+5. Setup starts right after the install, without a restart. To start it later, [click here](https://my.home-assistant.io/redirect/config_flow_start/?domain=azure_openai_conversation) or go to **Settings → Devices & Services → Add Integration → Azure OpenAI Conversation**.
+6. Choose **Microsoft Entra ID sign-in and model discovery** to discover deployed models, or **API key** for manual configuration.
+7. With Microsoft sign-in, enter the tenant ID and the ARM resource ID of your Foundry or Azure OpenAI **account**, link your Microsoft account, then select models separately for **Conversation**, **Data AI tasks**, **Image AI tasks**, **AI task evaluations**, **Speech-to-text**, and **Text-to-speech**. Nothing is preselected; only your selected deployment/service pairs are added. With an API key, enter the key and endpoint (for example `https://your-resource.services.ai.azure.com/`); the legacy conversation agent and AI task are created, and you select their deployment names manually.
+8. Select the desired conversation, speech-to-text, and text-to-speech entities in your Assist pipeline. Use the **Add** buttons if you want additional customized instances.
 
 Configurations created with versions before 5.0 are migrated automatically: the existing agent keeps its options and an AI task using the same deployment is added.
 
