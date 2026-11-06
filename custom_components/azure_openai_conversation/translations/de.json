@@ -73,6 +73,7 @@
           "conversation": "Konversationsmodelle",
           "ai_task_data": "Modelle für Daten-KI-Tasks",
           "ai_task_image": "Modelle für Bild-KI-Tasks",
+          "ai_task_evaluate": "Modelle für KI-Task-Auswertungen",
           "stt": "Sprache-zu-Text-Modelle",
           "tts": "Text-zu-Sprache-Modelle"
         }
@@ -119,25 +120,17 @@
         "user": "Konversationsagent hinzufügen"
       },
       "step": {
-        "additional": {
-          "data": {
-            "max_tokens": "Maximalzahl Token in der Antwort",
-            "store_responses": "Anfragen und Antworten in Azure OpenAI speichern"
-          },
-          "data_description": {
-            "store_responses": "Wenn aktiviert, werden Antworten von Azure OpenAI gespeichert und können später abgerufen werden"
-          },
-          "title": "Weitere Einstellungen"
-        },
         "init": {
           "data": {
             "chat_model": "Modellbereitstellung",
-            "llm_hass_api": "Home Assistant steuern",
+            "llm_hass_api": "KI-Tools",
+            "max_tokens": "Maximalzahl Token in der Antwort",
             "name": "Name",
             "prompt": "Anweisungen",
             "recommended": "Empfohlene Modelleinstellungen",
             "reasoning_effort": "Reasoning-Aufwand",
             "send_sampling_parameters": "Sampling-Parameter senden (temperature/top_p)",
+            "store_responses": "Anfragen und Antworten in Azure OpenAI speichern",
             "temperature": "Temperatur",
             "top_p": "Top P"
           },
@@ -146,7 +139,9 @@
             "recommended": "Empfohlene erweiterte Einstellungen verwenden, ohne die ausgewählte Bereitstellung, das Sampling oder den Reasoning-Aufwand zu ändern.",
             "reasoning_effort": "Wie viel Reasoning das Modell vor dem Antworten durchführt. Die verfügbaren Stufen hängen vom zugrunde liegenden Modell ab; der Wert gilt auch bei empfohlenen Einstellungen.",
             "send_sampling_parameters": "Standardmäßig deaktiviert. Temperatur und Top P werden nur bei aktivierter Option angezeigt; ihre gespeicherten Werte bleiben bei deaktivierter Option erhalten. Bei Reasoning-Modellen werden diese Parameter nur gesendet, wenn der Reasoning-Aufwand auf „Kein“ gesetzt ist.",
-            "prompt": "Gib an, wie das LLM antworten soll. Dies kann ein Template sein."
+            "prompt": "Gib an, wie das LLM antworten soll. Dies kann ein Template sein.",
+            "store_responses": "Wenn aktiviert, werden Antworten von Azure OpenAI gespeichert und können später abgerufen werden",
+            "llm_hass_api": "**Device control** greift nur auf die Entitäten zu, die du für Sprachassistenten freigibst. **Home Assistant** greift auf alles zu und funktioniert nur für Administratoren, nicht für Sprachassistenzgeräte."
           }
         },
         "model": {
@@ -191,23 +186,15 @@
         "user": "KI-Task hinzufügen"
       },
       "step": {
-        "additional": {
-          "data": {
-            "max_tokens": "Maximalzahl Token in der Antwort",
-            "store_responses": "Anfragen und Antworten in Azure OpenAI speichern"
-          },
-          "data_description": {
-            "store_responses": "Wenn aktiviert, werden Antworten von Azure OpenAI gespeichert und können später abgerufen werden"
-          },
-          "title": "Weitere Einstellungen"
-        },
         "init": {
           "data": {
             "chat_model": "Modellbereitstellung",
+            "max_tokens": "Maximalzahl Token in der Antwort",
             "name": "Name",
             "recommended": "Empfohlene Modelleinstellungen",
             "reasoning_effort": "Reasoning-Aufwand",
             "send_sampling_parameters": "Sampling-Parameter senden (temperature/top_p)",
+            "store_responses": "Anfragen und Antworten in Azure OpenAI speichern",
             "temperature": "Temperatur",
             "top_p": "Top P"
           },
@@ -215,7 +202,8 @@
             "chat_model": "Der genaue Name der Azure-Bereitstellung. Bei Anmeldung mit Microsoft zeigt die Auswahl bereitgestellte OpenAI-Modelle und die Namen der zugrunde liegenden Modelle.",
             "recommended": "Empfohlene erweiterte Einstellungen verwenden, ohne die ausgewählte Bereitstellung, das Sampling oder den Reasoning-Aufwand zu ändern.",
             "reasoning_effort": "Wie viel Reasoning das Modell vor dem Antworten durchführt. Die verfügbaren Stufen hängen vom zugrunde liegenden Modell ab; der Wert gilt auch bei empfohlenen Einstellungen.",
-            "send_sampling_parameters": "Standardmäßig deaktiviert. Temperatur und Top P werden nur bei aktivierter Option angezeigt; ihre gespeicherten Werte bleiben bei deaktivierter Option erhalten. Bei Reasoning-Modellen werden diese Parameter nur gesendet, wenn der Reasoning-Aufwand auf „Kein“ gesetzt ist."
+            "send_sampling_parameters": "Standardmäßig deaktiviert. Temperatur und Top P werden nur bei aktivierter Option angezeigt; ihre gespeicherten Werte bleiben bei deaktivierter Option erhalten. Bei Reasoning-Modellen werden diese Parameter nur gesendet, wenn der Reasoning-Aufwand auf „Kein“ gesetzt ist.",
+            "store_responses": "Wenn aktiviert, werden Antworten von Azure OpenAI gespeichert und können später abgerufen werden"
           }
         },
         "model": {
@@ -270,6 +258,30 @@
           "data_description": {
             "image_model": "Der genaue Bereitstellungsname eines OpenAI-Bildmodells. Dieser Task unterstützt die Bildgenerierung, nicht die Generierung von Text oder strukturierten Daten.",
             "image_quality": "Eine höhere Qualität erzeugt detailliertere Bilder, dauert aber länger und kostet mehr. Die verfügbaren Stufen hängen vom zugrunde liegenden Bildmodell ab."
+          }
+        }
+      }
+    },
+    "ai_task_evaluate": {
+      "abort": {
+        "entry_not_loaded": "Es können keine Dinge hinzugefügt werden, wenn die Konfiguration deaktiviert ist."
+      },
+      "entry_type": "KI-Task-Auswertung",
+      "error": {
+        "model_not_supported": "Wähle eine gpt-6-luna-Bereitstellung aus. Die Decisions API von Azure unterstützt nur gpt-6-luna."
+      },
+      "initiate_flow": {
+        "reconfigure": "KI-Task-Auswertung neu konfigurieren",
+        "user": "KI-Task-Auswertung hinzufügen"
+      },
+      "step": {
+        "init": {
+          "data": {
+            "chat_model": "Modellbereitstellung",
+            "name": "Name"
+          },
+          "data_description": {
+            "chat_model": "Der genaue Name einer gpt-6-luna-Bereitstellung. Auswertungen nutzen die Decisions API von Azure, die nur gpt-6-luna unterstützt und nicht in jeder Region verfügbar ist."
           }
         }
       }

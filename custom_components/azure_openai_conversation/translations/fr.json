@@ -73,6 +73,7 @@
           "conversation": "Modèles de conversation",
           "ai_task_data": "Modèles de tâche d'IA de données",
           "ai_task_image": "Modèles de tâche d'IA d'image",
+          "ai_task_evaluate": "Modèles d'évaluation de tâche d'IA",
           "stt": "Modèles de reconnaissance vocale",
           "tts": "Modèles de synthèse vocale"
         }
@@ -119,25 +120,17 @@
         "user": "Ajouter un agent de conversation"
       },
       "step": {
-        "additional": {
-          "data": {
-            "max_tokens": "Nombre maximal de jetons à renvoyer en réponse",
-            "store_responses": "Stocker les requêtes et les réponses dans Azure OpenAI"
-          },
-          "data_description": {
-            "store_responses": "Si cette option est activée, les réponses sont stockées par Azure OpenAI et peuvent être récupérées ultérieurement"
-          },
-          "title": "Paramètres supplémentaires"
-        },
         "init": {
           "data": {
             "chat_model": "Déploiement de modèle",
-            "llm_hass_api": "Contrôler Home Assistant",
+            "llm_hass_api": "Outils d'IA",
+            "max_tokens": "Nombre maximal de jetons à renvoyer en réponse",
             "name": "Nom",
             "prompt": "Instructions",
             "recommended": "Paramètres recommandés pour le modèle",
             "reasoning_effort": "Effort de raisonnement",
             "send_sampling_parameters": "Envoyer les paramètres d'échantillonnage (temperature/top_p)",
+            "store_responses": "Stocker les requêtes et les réponses dans Azure OpenAI",
             "temperature": "Température",
             "top_p": "Top P"
           },
@@ -146,7 +139,9 @@
             "recommended": "Utiliser les paramètres avancés recommandés sans modifier le déploiement sélectionné, l'échantillonnage ni l'effort de raisonnement.",
             "reasoning_effort": "Quantité de raisonnement effectuée par le modèle avant de répondre. Les niveaux disponibles dépendent du modèle sous-jacent ; ce réglage s'applique aussi avec les paramètres recommandés.",
             "send_sampling_parameters": "Désactivé par défaut. « Température » et « Top P » n'apparaissent que lorsque l'option est activée, et leurs valeurs enregistrées sont conservées tant qu'elle est désactivée. Pour les modèles de raisonnement, ces paramètres ne sont envoyés que si l'effort de raisonnement est défini sur « Aucun ».",
-            "prompt": "Indiquez comment le LLM doit répondre. Il peut s'agir d'un modèle."
+            "prompt": "Indiquez comment le LLM doit répondre. Il peut s'agir d'un modèle.",
+            "store_responses": "Si cette option est activée, les réponses sont stockées par Azure OpenAI et peuvent être récupérées ultérieurement",
+            "llm_hass_api": "**Device control** accède uniquement aux entités que vous exposez aux assistants vocaux. **Home Assistant** accède à tout et ne fonctionne que pour les administrateurs, pas pour les appareils d'assistant vocal."
           }
         },
         "model": {
@@ -191,23 +186,15 @@
         "user": "Ajouter une tâche d'IA"
       },
       "step": {
-        "additional": {
-          "data": {
-            "max_tokens": "Nombre maximal de jetons à renvoyer en réponse",
-            "store_responses": "Stocker les requêtes et les réponses dans Azure OpenAI"
-          },
-          "data_description": {
-            "store_responses": "Si cette option est activée, les réponses sont stockées par Azure OpenAI et peuvent être récupérées ultérieurement"
-          },
-          "title": "Paramètres supplémentaires"
-        },
         "init": {
           "data": {
             "chat_model": "Déploiement de modèle",
+            "max_tokens": "Nombre maximal de jetons à renvoyer en réponse",
             "name": "Nom",
             "recommended": "Paramètres recommandés pour le modèle",
             "reasoning_effort": "Effort de raisonnement",
             "send_sampling_parameters": "Envoyer les paramètres d'échantillonnage (temperature/top_p)",
+            "store_responses": "Stocker les requêtes et les réponses dans Azure OpenAI",
             "temperature": "Température",
             "top_p": "Top P"
           },
@@ -215,7 +202,8 @@
             "chat_model": "Le nom exact du déploiement Azure. Avec la connexion Microsoft, la liste propose les modèles OpenAI déployés et le nom de leur modèle sous-jacent.",
             "recommended": "Utiliser les paramètres avancés recommandés sans modifier le déploiement sélectionné, l'échantillonnage ni l'effort de raisonnement.",
             "reasoning_effort": "Quantité de raisonnement effectuée par le modèle avant de répondre. Les niveaux disponibles dépendent du modèle sous-jacent ; ce réglage s'applique aussi avec les paramètres recommandés.",
-            "send_sampling_parameters": "Désactivé par défaut. « Température » et « Top P » n'apparaissent que lorsque l'option est activée, et leurs valeurs enregistrées sont conservées tant qu'elle est désactivée. Pour les modèles de raisonnement, ces paramètres ne sont envoyés que si l'effort de raisonnement est défini sur « Aucun »."
+            "send_sampling_parameters": "Désactivé par défaut. « Température » et « Top P » n'apparaissent que lorsque l'option est activée, et leurs valeurs enregistrées sont conservées tant qu'elle est désactivée. Pour les modèles de raisonnement, ces paramètres ne sont envoyés que si l'effort de raisonnement est défini sur « Aucun ».",
+            "store_responses": "Si cette option est activée, les réponses sont stockées par Azure OpenAI et peuvent être récupérées ultérieurement"
           }
         },
         "model": {
@@ -270,6 +258,30 @@
           "data_description": {
             "image_model": "Le nom exact du déploiement d'un modèle d'image OpenAI. Cette tâche prend en charge la génération d'images, et non la génération de texte ou de données structurées.",
             "image_quality": "Une qualité supérieure produit des images plus détaillées, mais prend plus de temps et coûte plus cher. Les niveaux disponibles dépendent du modèle d'image sous-jacent."
+          }
+        }
+      }
+    },
+    "ai_task_evaluate": {
+      "abort": {
+        "entry_not_loaded": "Impossible d'ajouter des éléments lorsque la configuration est désactivée."
+      },
+      "entry_type": "Évaluation de tâche d'IA",
+      "error": {
+        "model_not_supported": "Sélectionnez un déploiement gpt-6-luna. L'API Decisions d'Azure ne prend en charge que gpt-6-luna."
+      },
+      "initiate_flow": {
+        "reconfigure": "Reconfigurer l'évaluation de tâche d'IA",
+        "user": "Ajouter une évaluation de tâche d'IA"
+      },
+      "step": {
+        "init": {
+          "data": {
+            "chat_model": "Déploiement de modèle",
+            "name": "Nom"
+          },
+          "data_description": {
+            "chat_model": "Le nom exact d'un déploiement gpt-6-luna. Les évaluations utilisent l'API Decisions d'Azure, qui ne prend en charge que gpt-6-luna et n'est pas disponible dans toutes les régions."
           }
         }
       }

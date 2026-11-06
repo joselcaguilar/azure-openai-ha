@@ -73,6 +73,7 @@
           "conversation": "Gespreksmodellen",
           "ai_task_data": "Modellen voor AI-gegevenstaken",
           "ai_task_image": "Modellen voor AI-afbeeldingstaken",
+          "ai_task_evaluate": "Modellen voor AI-taakevaluaties",
           "stt": "Spraak-naar-tekst-modellen",
           "tts": "Tekst-naar-spraak-modellen"
         }
@@ -119,25 +120,17 @@
         "user": "Gespreksagent toevoegen"
       },
       "step": {
-        "additional": {
-          "data": {
-            "max_tokens": "Maximaal aantal tokens in het antwoord",
-            "store_responses": "Verzoeken en antwoorden opslaan in Azure OpenAI"
-          },
-          "data_description": {
-            "store_responses": "Indien ingeschakeld, worden antwoorden door Azure OpenAI opgeslagen en kunnen ze later worden opgehaald"
-          },
-          "title": "Aanvullende instellingen"
-        },
         "init": {
           "data": {
             "chat_model": "Modelimplementatie",
-            "llm_hass_api": "Beheer Home Assistant",
+            "llm_hass_api": "AI-tools",
+            "max_tokens": "Maximaal aantal tokens in het antwoord",
             "name": "Naam",
             "prompt": "Instructies",
             "recommended": "Aanbevolen modelinstellingen",
             "reasoning_effort": "Redeneerinspanning",
             "send_sampling_parameters": "Samplingparameters verzenden (temperature/top_p)",
+            "store_responses": "Verzoeken en antwoorden opslaan in Azure OpenAI",
             "temperature": "Temperatuur",
             "top_p": "Top P"
           },
@@ -146,7 +139,9 @@
             "recommended": "Gebruik de aanbevolen geavanceerde instellingen zonder de geselecteerde implementatie, sampling of redeneerinspanning te wijzigen.",
             "reasoning_effort": "Hoeveel redeneerwerk het model uitvoert voordat het antwoordt. De beschikbare niveaus hangen af van het onderliggende model; dit geldt ook bij aanbevolen instellingen.",
             "send_sampling_parameters": "Standaard uitgeschakeld. “Temperatuur” en “Top P” worden alleen weergegeven wanneer deze optie is ingeschakeld, en hun opgeslagen waarden blijven behouden zolang ze is uitgeschakeld. Redeneermodellen verzenden deze parameters alleen als de redeneerinspanning is ingesteld op “Geen”.",
-            "prompt": "Geef aan hoe de LLM moet reageren. Dit kan een template zijn."
+            "prompt": "Geef aan hoe de LLM moet reageren. Dit kan een template zijn.",
+            "store_responses": "Indien ingeschakeld, worden antwoorden door Azure OpenAI opgeslagen en kunnen ze later worden opgehaald",
+            "llm_hass_api": "**Device control** heeft alleen toegang tot de entiteiten die je beschikbaar maakt voor spraakassistenten. **Home Assistant** heeft overal toegang toe en werkt alleen voor beheerders, niet voor spraakassistentapparaten."
           }
         },
         "model": {
@@ -191,23 +186,15 @@
         "user": "AI-taak toevoegen"
       },
       "step": {
-        "additional": {
-          "data": {
-            "max_tokens": "Maximaal aantal tokens in het antwoord",
-            "store_responses": "Verzoeken en antwoorden opslaan in Azure OpenAI"
-          },
-          "data_description": {
-            "store_responses": "Indien ingeschakeld, worden antwoorden door Azure OpenAI opgeslagen en kunnen ze later worden opgehaald"
-          },
-          "title": "Aanvullende instellingen"
-        },
         "init": {
           "data": {
             "chat_model": "Modelimplementatie",
+            "max_tokens": "Maximaal aantal tokens in het antwoord",
             "name": "Naam",
             "recommended": "Aanbevolen modelinstellingen",
             "reasoning_effort": "Redeneerinspanning",
             "send_sampling_parameters": "Samplingparameters verzenden (temperature/top_p)",
+            "store_responses": "Verzoeken en antwoorden opslaan in Azure OpenAI",
             "temperature": "Temperatuur",
             "top_p": "Top P"
           },
@@ -215,7 +202,8 @@
             "chat_model": "De exacte naam van de Azure-implementatie. Met Microsoft-aanmelding tonen de keuzes geïmplementeerde OpenAI-modellen en de namen van hun onderliggende modellen.",
             "recommended": "Gebruik de aanbevolen geavanceerde instellingen zonder de geselecteerde implementatie, sampling of redeneerinspanning te wijzigen.",
             "reasoning_effort": "Hoeveel redeneerwerk het model uitvoert voordat het antwoordt. De beschikbare niveaus hangen af van het onderliggende model; dit geldt ook bij aanbevolen instellingen.",
-            "send_sampling_parameters": "Standaard uitgeschakeld. “Temperatuur” en “Top P” worden alleen weergegeven wanneer deze optie is ingeschakeld, en hun opgeslagen waarden blijven behouden zolang ze is uitgeschakeld. Redeneermodellen verzenden deze parameters alleen als de redeneerinspanning is ingesteld op “Geen”."
+            "send_sampling_parameters": "Standaard uitgeschakeld. “Temperatuur” en “Top P” worden alleen weergegeven wanneer deze optie is ingeschakeld, en hun opgeslagen waarden blijven behouden zolang ze is uitgeschakeld. Redeneermodellen verzenden deze parameters alleen als de redeneerinspanning is ingesteld op “Geen”.",
+            "store_responses": "Indien ingeschakeld, worden antwoorden door Azure OpenAI opgeslagen en kunnen ze later worden opgehaald"
           }
         },
         "model": {
@@ -270,6 +258,30 @@
           "data_description": {
             "image_model": "De exacte implementatienaam van een OpenAI-afbeeldingsmodel. Deze taak ondersteunt het genereren van afbeeldingen, niet van tekst of gestructureerde gegevens.",
             "image_quality": "Een hogere kwaliteit levert gedetailleerdere afbeeldingen op, maar duurt langer en kost meer. De beschikbare niveaus hangen af van het onderliggende afbeeldingsmodel."
+          }
+        }
+      }
+    },
+    "ai_task_evaluate": {
+      "abort": {
+        "entry_not_loaded": "Kan geen dingen toevoegen wanneer de configuratie is uitgeschakeld."
+      },
+      "entry_type": "AI-taakevaluatie",
+      "error": {
+        "model_not_supported": "Selecteer een gpt-6-luna-implementatie. De Decisions API van Azure ondersteunt alleen gpt-6-luna."
+      },
+      "initiate_flow": {
+        "reconfigure": "AI-taakevaluatie opnieuw configureren",
+        "user": "AI-taakevaluatie toevoegen"
+      },
+      "step": {
+        "init": {
+          "data": {
+            "chat_model": "Modelimplementatie",
+            "name": "Naam"
+          },
+          "data_description": {
+            "chat_model": "De exacte naam van een gpt-6-luna-implementatie. Evaluaties gebruiken de Decisions API van Azure, die alleen gpt-6-luna ondersteunt en niet in elke regio beschikbaar is."
           }
         }
       }

@@ -4,7 +4,7 @@ from typing import Any
 
 import httpx
 import pytest
-from pytest_homeassistant_custom_component.common import MockConfigEntry
+from pytest_homeassistant.common import MockConfigEntry
 from respx import MockRouter
 
 from homeassistant.core import HomeAssistant
@@ -36,6 +36,12 @@ ACCOUNT_URL = f"{MANAGEMENT_ORIGIN}{RESOURCE_ID}"
     ("model", "capabilities", "expected"),
     [
         ("gpt-6.1-sol", {"chatCompletion": "true"}, ("conversation", "ai_task_data")),
+        (
+            "gpt-6-luna",
+            {"responses": True},
+            ("conversation", "ai_task_data", "ai_task_evaluate"),
+        ),
+        ("gpt-6.1-terra", {"responses": True}, ("conversation", "ai_task_data")),
         ("gpt-4.1-mini", {}, ("conversation", "ai_task_data")),
         ("gpt-chat-latest", {}, ("conversation", "ai_task_data")),
         ("gpt-6.1-sol", {"responses": False}, ()),

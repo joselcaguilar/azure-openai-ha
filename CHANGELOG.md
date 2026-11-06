@@ -6,10 +6,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [5.1.0] — TBD
 
+This release brings the integration in line with Home Assistant 2026.11's OpenAI integration, and adds AI task evaluations with Azure's Decisions API.
+
+### Breaking changes
+
+- **Home Assistant 2026.11.0 or later is required.** Home Assistant 2026.11 pins `openai==3.26.0`, the first version with the Decisions API, so the integration now requires `openai>=3.26.0,<4.0.0` (was `>=3.10.0,<4.0.0`). On Home Assistant 2026.10, stay on 5.0.x. ([#193])
+
+### Added
+
+- AI task evaluations: the `ai_task.evaluate` action answers yes/no, choice and score questions about a state and image attachments, using Azure's Decisions API. They need a `gpt-6-luna` deployment in a region that offers the Decisions API, which excludes East US 2, and a gateway must forward `/openai/v1/decisions`. They aren't added automatically: use **Add AI task evaluation**, or select a `gpt-6-luna` deployment in Microsoft Entra ID discovery or rediscovery. ([#193])
+- Diagnostics. They leave out API keys, tokens, the endpoint, Azure resource and tenant IDs, instructions and the home location. ([#193])
+- Reasoning effort `none` to `max` for `gpt-6.1-terra`. ([#193])
+
+### Changed
+
+- **Maximum tokens** and **Store requests and responses** moved from the separate additional settings step to the first settings form of conversation agents and data AI tasks, where they show only while **Recommended model settings** is off. ([#193])
+- **Control Home Assistant** is renamed **AI tools** and shows as a checkbox list, as in Home Assistant 2026.11. ([#193])
+
 ### Development
 
 - The Lint and Validate workflows grant `GITHUB_TOKEN` only `contents: read`, which resolves CodeQL's `actions/missing-workflow-permissions` alerts. ([#184])
-- Updated development requirements: `pytest-homeassistant-custom-component>=0.13.373` and `ruff>=0.17.1`. ([#185], [#186], [#187])
+- Tests use Home Assistant's `pytest-homeassistant` package instead of `pytest-homeassistant-custom-component`, which stopped at Home Assistant 2026.10. ([#193])
+- The README installs the integration from the Marketplace, which replaces HACS in Home Assistant 2026.11. `hacs.json` drops `render_readme`, which neither of them reads, and `content_in_root`, whose value was the default. ([#193])
+- Updated development requirements: `homeassistant>=2026.11.0`, `pytest-homeassistant==2026.11.0`, `home-assistant-intents==2026.10.27`, `pip>=26.2.2` and `ruff>=0.17.3`. ([#186], [#190], [#191], [#192], [#193])
 
 ## [5.0.1] — 2026-10-15
 
@@ -98,6 +117,8 @@ Thanks to [@rac146](https://github.com/rac146) and [@SchmidSP](https://github.co
 [#182]: https://github.com/joselcaguilar/azure-openai-ha/pull/182
 [#183]: https://github.com/joselcaguilar/azure-openai-ha/pull/183
 [#184]: https://github.com/joselcaguilar/azure-openai-ha/pull/184
-[#185]: https://github.com/joselcaguilar/azure-openai-ha/pull/185
 [#186]: https://github.com/joselcaguilar/azure-openai-ha/pull/186
-[#187]: https://github.com/joselcaguilar/azure-openai-ha/pull/187
+[#190]: https://github.com/joselcaguilar/azure-openai-ha/pull/190
+[#191]: https://github.com/joselcaguilar/azure-openai-ha/pull/191
+[#192]: https://github.com/joselcaguilar/azure-openai-ha/pull/192
+[#193]: https://github.com/joselcaguilar/azure-openai-ha/pull/193

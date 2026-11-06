@@ -1,19 +1,17 @@
-[![hacs_badge](https://img.shields.io/badge/My_HACS-Azure_OpenAI_Conversation-41BDF5?logo=homeassistant&logoColor=white)](https://my.home-assistant.io/redirect/hacs_repository/?owner=joselcaguilar&repository=azure-openai-ha&category=integration)
-[![Validate workflow](https://img.shields.io/github/actions/workflow/status/joselcaguilar/azure-openai-ha/validate.yaml?label=Validate&logo=GitHub)](https://github.com/joselcaguilar/azure-openai-ha/actions/workflows/validate.yaml)
-[![Lint workflow](https://img.shields.io/github/actions/workflow/status/joselcaguilar/azure-openai-ha/lint.yaml?label=Lint&logo=GitHub)](https://github.com/joselcaguilar/azure-openai-ha/actions/workflows/lint.yaml)
-![GitHub all releases](https://img.shields.io/github/downloads/joselcaguilar/azure-openai-ha/total?color=d9810f&label=Downloads&logo=GitHub)
-[![GitHub Sponsor](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86)](https://github.com/sponsors/joselcaguilar)
-[![BuyMeACoffee](https://img.shields.io/badge/-Buy_me_a%C2%A0coffee-gray?logo=buy-me-a-coffee)](https://www.buymeacoffee.com/joselcaguilar)
-
 <p align="center">
 <img src="https://raw.githubusercontent.com/joselcaguilar/azure-openai-ha/main/.attachments/icon.png#gh-light-mode-only">
 <img src="https://raw.githubusercontent.com/joselcaguilar/azure-openai-ha/main/.attachments/dark_icon.png#gh-dark-mode-only">
 </p>
 
-<h3 align="center">
+<p align="center">
+<a href="https://my.home-assistant.io/redirect/marketplace_repository/?owner=joselcaguilar&amp;repository=azure-openai-ha&amp;category=integration"><img src="https://my.home-assistant.io/badges/marketplace_repository.svg" alt="Open your Home Assistant instance and open a repository in the Marketplace."></a>
+</p>
 
-[Azure OpenAI Conversation Custom Integration](https://github.com/joselcaguilar/azure-openai-ha) for Home Assistant
-</h3>
+[![Validate workflow](https://img.shields.io/github/actions/workflow/status/joselcaguilar/azure-openai-ha/validate.yaml?label=Validate&logo=GitHub)](https://github.com/joselcaguilar/azure-openai-ha/actions/workflows/validate.yaml)
+[![Lint workflow](https://img.shields.io/github/actions/workflow/status/joselcaguilar/azure-openai-ha/lint.yaml?label=Lint&logo=GitHub)](https://github.com/joselcaguilar/azure-openai-ha/actions/workflows/lint.yaml)
+![GitHub all releases](https://img.shields.io/github/downloads/joselcaguilar/azure-openai-ha/total?color=d9810f&label=Downloads&logo=GitHub)
+[![GitHub Sponsor](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86)](https://github.com/sponsors/joselcaguilar)
+[![BuyMeACoffee](https://img.shields.io/badge/-Buy_me_a%C2%A0coffee-gray?logo=buy-me-a-coffee)](https://www.buymeacoffee.com/joselcaguilar)
 
 # What This Is
 
@@ -40,6 +38,7 @@ This is equivalent to the built-in [OpenAI Conversation integration](https://www
 | 4.4.y                             | 2026.6.0+              | - no need to specify - |
 | 4.5.y                             | 2026.9.0+              | - no need to specify - |
 | 5.0.y                             | 2026.10.0+             | - no need to specify - |
+| 5.1.y                             | 2026.11.0+             | - no need to specify - |
 
 </center>
 
@@ -53,17 +52,17 @@ This is equivalent to the built-in [OpenAI Conversation integration](https://www
    *Deployment names can be different from model names. Microsoft sign-in discovers both automatically; API-key users enter the exact deployment name in the service's first configuration screen. **Recommended model settings** never changes the selected deployment.*
 3. Optionally deploy more models:
    - An image model such as `gpt-image-2.5-flare`, `gpt-image-2` or `gpt-image-1` to generate images with AI tasks.
+   - `gpt-6-luna` for [AI task evaluations](#ai-task-evaluations), in a region that offers the [Decisions API](https://learn.microsoft.com/azure/foundry/openai/how-to/decisions).
    - `gpt-transcribe`, `gpt-4o-mini-transcribe`, `gpt-4o-transcribe` or `whisper` for speech-to-text.
    - `gpt-4o-mini-tts`, `tts` or `tts-hd` for text-to-speech. Legacy `tts-1` and `tts-1-hd` model names remain supported.
 
 ## Setting Up the Integration
 
-4. Download and install the integration from HACS: [Azure OpenAI Conversation](https://my.home-assistant.io/redirect/hacs_repository/?owner=joselcaguilar&repository=azure-openai-ha&category=integration).
-5. Restart your Home Assistant instance.
-6. [Click here](https://my.home-assistant.io/redirect/config_flow_start/?domain=azure_openai_conversation) or go to **Settings → Devices & Services → Add Integration → Azure OpenAI Conversation**.
-7. Choose **Microsoft Entra ID sign-in and model discovery** to discover deployed models, or **API key** for manual configuration.
-8. With Microsoft sign-in, enter the tenant ID and the ARM resource ID of your Foundry or Azure OpenAI **account**, link your Microsoft account, then select models separately for **Conversation**, **Data AI tasks**, **Image AI tasks**, **Speech-to-text**, and **Text-to-speech**. Nothing is preselected; only your selected deployment/service pairs are added. With an API key, enter the key and endpoint (for example `https://your-resource.services.ai.azure.com/`); the legacy conversation agent and AI task are created, and you select their deployment names manually.
-9. Select the desired conversation, speech-to-text, and text-to-speech entities in your Assist pipeline. Use the **Add** buttons if you want additional customized instances.
+4. Install [Azure OpenAI Conversation](https://my.home-assistant.io/redirect/marketplace_repository/?owner=joselcaguilar&repository=azure-openai-ha&category=integration) from the Marketplace, or search for it under **Settings → Marketplace**.
+5. Setup starts right after the install, without a restart. To start it later, [click here](https://my.home-assistant.io/redirect/config_flow_start/?domain=azure_openai_conversation) or go to **Settings → Devices & Services → Add Integration → Azure OpenAI Conversation**.
+6. Choose **Microsoft Entra ID sign-in and model discovery** to discover deployed models, or **API key** for manual configuration.
+7. With Microsoft sign-in, enter the tenant ID and the ARM resource ID of your Foundry or Azure OpenAI **account**, link your Microsoft account, then select models separately for **Conversation**, **Data AI tasks**, **Image AI tasks**, **AI task evaluations**, **Speech-to-text**, and **Text-to-speech**. Nothing is preselected; only your selected deployment/service pairs are added. With an API key, enter the key and endpoint (for example `https://your-resource.services.ai.azure.com/`); the legacy conversation agent and AI task are created, and you select their deployment names manually.
+8. Select the desired conversation, speech-to-text, and text-to-speech entities in your Assist pipeline. Use the **Add** buttons if you want additional customized instances.
 
 Configurations created with versions before 5.0 are migrated automatically: the existing agent keeps its options and an AI task using the same deployment is added.
 
@@ -93,6 +92,7 @@ Discovery reads the selected resource's actual ARM **deployments**, including al
 | --- | --- |
 | Responses-compatible chat/reasoning, including `gpt-6.1-sol` | Conversation agents and/or data/structured-data AI tasks |
 | OpenAI image generation | One dedicated image AI task per deployment |
+| Decisions (`gpt-6-luna`) | AI task evaluations, in addition to its conversation agents and data AI tasks |
 | File transcription (`whisper`, `gpt-transcribe`, `gpt-4o-transcribe`, `gpt-4o-mini-transcribe`) | One speech-to-text service per deployment |
 | Speech generation (`tts`, `tts-hd`, legacy `tts-1*`, `gpt-4o-mini-tts`) | One text-to-speech service per deployment |
 | Embeddings, realtime/audio chat, diarization, video, completion-only or other incompatible APIs | Reported in the discovery summary; no incompatible service is created |
@@ -128,17 +128,19 @@ The starting text for the AI language model to generate new text from. This text
 - **Model deployment:** The name of the model deployment used for text generation (i.e.- `my-gpt35-model`). You can find more details on the available models in the [Azure OpenAI Documentation](https://learn.microsoft.com/azure/cognitive-services/openai/concepts/models#finding-what-models-are-available). If you are having issues using an assistant that uses this integration please check this model is the model you actually deployed.
 
 - **Maximum Tokens to Return in Response**
-The maximum number of words or "tokens" that the AI model should generate in its completion of the prompt. For more information, see the [Azure OpenAI Completion Documentation](https://learn.microsoft.com/azure/cognitive-services/openai/overview#tokens).
+The maximum number of words or "tokens" that the AI model should generate in its completion of the prompt. For more information, see the [Azure OpenAI Completion Documentation](https://learn.microsoft.com/azure/cognitive-services/openai/overview#tokens). It shows in the first settings dialog once **Recommended model settings** is off.
 
 - **Send sampling parameters (temperature/top_p):** **Off by default** for conversation agents and data AI tasks, and available directly in their initial settings dialog even with **Recommended model settings** enabled. Existing explicit on/off choices are preserved. **Temperature and Top P appear only while this checkbox is enabled.** When disabled, both parameters are omitted from the first request, regardless of the deployment name or reasoning effort. Saved numeric values are retained for re-enabling. Reasoning models still omit sampling parameters unless their reasoning effort is `none`.
 
-- **Reasoning effort:** Available directly in the initial settings dialog for supported reasoning models, even with **Recommended model settings** enabled. The selector offers only levels supported by the underlying model; fixed-effort and non-reasoning models do not show it. Discovery metadata resolves deployment aliases to model families. The recommended effort is `medium`, which services also use until a level is saved in their settings; fixed-effort models such as `gpt-5-pro` use their only supported level. If changing deployment makes the selected effort invalid, the form asks you to choose a supported level instead of saving it. Image AI tasks and speech-to-text services do not show it because the Images and audio transcription APIs have no reasoning parameter; image tasks offer **Image quality** instead.
+- **Reasoning effort:** Available directly in the initial settings dialog for supported reasoning models, even with **Recommended model settings** enabled. The selector offers only levels supported by the underlying model, for example `none` to `max` for `gpt-6-luna` and `gpt-6.1-terra`; fixed-effort and non-reasoning models do not show it. Discovery metadata resolves deployment aliases to model families. The recommended effort is `medium`, which services also use until a level is saved in their settings; fixed-effort models such as `gpt-5-pro` use their only supported level. If changing deployment makes the selected effort invalid, the form asks you to choose a supported level instead of saving it. Image AI tasks and speech-to-text services do not show it because the Images and audio transcription APIs have no reasoning parameter; image tasks offer **Image quality** instead.
 
 - **Temperature:** A value that determines the level of creativity and risk-taking the model should use when generating text. A higher temperature means the model is more likely to generate unexpected results, while a lower temperature results in more deterministic results. See the [Azure OpenAI Completion Documentation](https://learn.microsoft.com/azure/cognitive-services/openai/how-to/completions) for more information.
 
 - **Top P:** An alternative to temperature, top_p determines the proportion of the most likely word choices the model should consider when generating text. A higher top_p means the model will only consider the most likely words, while a lower top_p means a wider range of words, including less likely ones, will be considered. For more information, see the [Azure OpenAI Completion Documentation](https://learn.microsoft.com/azure/cognitive-services/openai/how-to/completions).
 
-- **Store requests and responses:** Keep responses in Azure OpenAI so they can be retrieved later.
+- **Store requests and responses:** Keep responses in Azure OpenAI so they can be retrieved later. It shows in the first settings dialog once **Recommended model settings** is off.
+
+- **AI tools:** The tools the conversation agent can use, as a checkbox list. **Device control** only accesses the entities you expose to voice assistants. **Home Assistant** accesses everything and only works for administrators, not voice assistant devices.
 
 Depending on the underlying discovered model, including metadata retained after switching to API-key authentication, more options are shown. If the model is unknown, manual API-key configurations use the deployment name:
 - **Reasoning summary**, **Verbosity** and **Pro mode** for reasoning models such as o-series, GPT-5 and GPT-6, after disabling **Recommended model settings**.
@@ -158,6 +160,22 @@ Use the [`ai_task.generate_data`](https://www.home-assistant.io/integrations/ai_
 Dedicated image tasks expose image generation only, not text or structured-data generation. DALL-E 3 does not support image editing; DALL-E 2 accepts at most one image attachment.
 
 The **Send sampling parameters (temperature/top_p)** option applies to `ai_task.generate_data`, including requests with image/PDF attachments and enabled tools. `ai_task.generate_image` uses the [Azure OpenAI Images API](https://learn.microsoft.com/azure/foundry/openai/how-to/dall-e#specify-api-options), which does not accept `temperature` or `top_p`; image generation and editing always omit both parameters, regardless of this setting.
+
+### AI task evaluations
+
+AI task evaluations answer typed questions with the `ai_task.evaluate` action: the probability that a statement is true, the most likely of several choices, or a score on a scale. Questions can refer to a state and to image attachments.
+
+Evaluations use Azure's [Decisions API](https://learn.microsoft.com/azure/foundry/openai/how-to/decisions) at `/openai/v1/decisions`:
+
+- It supports only `gpt-6-luna` deployments, in regions where the Decisions API is available. East US 2 is excluded.
+- Attachments must be PNG, JPEG, WebP or GIF images, with at most 128 images and 32 MB per request.
+- If you use a gateway, it must forward `/openai/v1/decisions`.
+
+Evaluations aren't added automatically. Use **Add AI task evaluation** on the integration entry, or select a `gpt-6-luna` deployment for **AI task evaluations** during Microsoft sign-in discovery or rediscovery.
+
+## Diagnostics
+
+To report a problem, download diagnostics from the integration entry's menu. They include the `openai` library version, the configuration version and state, the authentication method, discovered deployments with their models and services, and each service's settings. API keys, tokens, the endpoint, Azure resource and tenant IDs, instructions and your home location are left out.
 
 ## Authentication, endpoint, and model inventory
 

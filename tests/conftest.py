@@ -9,6 +9,7 @@ from homeassistant.components.homeassistant.const import DATA_EXPOSED_ENTITIES
 from homeassistant.components.homeassistant.exposed_entities import ExposedEntities
 from homeassistant.helpers import config_entry_oauth2_flow
 import pytest
+import respx
 
 from custom_components.azure_openai_conversation.auth import EntraOAuth2Implementation
 from custom_components.azure_openai_conversation.const import (
@@ -24,9 +25,17 @@ from custom_components.azure_openai_conversation.deployments import DeploymentDa
 from .const import ENDPOINT, RESOURCE_ID, TENANT_ID
 
 
-@pytest.fixture(autouse=True)
-def custom_integrations(enable_custom_integrations: None) -> None:
-    """Enable the repository's custom integration."""
+@pytest.fixture
+def respx_mock() -> Generator[respx.MockRouter]:
+    """Mock HTTP requests like respx's pytest plugin, which pytest.ini disables."""
+    with respx.mock as mock:
+        yield mock
+
+
+@pytest.fixture
+def hass_config_dir(hass_tmp_config_dir: str) -> str:
+    """Use a writable configuration directory, where TTS creates its cache."""
+    return hass_tmp_config_dir
 
 
 @pytest.fixture
@@ -71,7 +80,7 @@ def mock_setup_entry() -> Generator[AsyncMock]:
     """Keep config-flow tests independent of platform initialization."""
     with patch(
         "custom_components.azure_openai_conversation.async_setup_entry",
-        return_value=True,
+        return_value=None,
     ) as mock:
         yield mock
 

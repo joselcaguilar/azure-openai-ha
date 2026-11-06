@@ -73,6 +73,7 @@
           "conversation": "對話模型",
           "ai_task_data": "資料 AI 任務模型",
           "ai_task_image": "影像 AI 任務模型",
+          "ai_task_evaluate": "AI 任務評估模型",
           "stt": "語音轉文字模型",
           "tts": "文字轉語音模型"
         }
@@ -119,25 +120,17 @@
         "user": "新增對話助理"
       },
       "step": {
-        "additional": {
-          "data": {
-            "max_tokens": "回應返回最高權杖數",
-            "store_responses": "在 Azure OpenAI 中儲存請求和回應"
-          },
-          "data_description": {
-            "store_responses": "若啟用，回應會由 Azure OpenAI 儲存，之後可再擷取"
-          },
-          "title": "其他設定"
-        },
         "init": {
           "data": {
             "chat_model": "模型部署",
-            "llm_hass_api": "控制 Home Assistant",
+            "llm_hass_api": "AI 工具",
+            "max_tokens": "回應返回最高權杖數",
             "name": "名稱",
             "prompt": "指示",
             "recommended": "建議模型設定",
             "reasoning_effort": "推理等級",
             "send_sampling_parameters": "傳送取樣參數（temperature/top_p）",
+            "store_responses": "在 Azure OpenAI 中儲存請求和回應",
             "temperature": "溫度",
             "top_p": "Top P"
           },
@@ -146,7 +139,9 @@
             "recommended": "使用建議的進階設定，但不變更所選部署、取樣或推理等級。",
             "reasoning_effort": "模型在回應前進行推理的程度。可用等級取決於底層模型；此設定在使用建議設定時同樣有效。",
             "send_sampling_parameters": "預設為關閉。僅在啟用時才會顯示「溫度」和「Top P」；停用期間仍會保留其已儲存的值。推理模型僅在推理等級設為「無」時才會傳送這些參數。",
-            "prompt": "指示 LLM 如何回應。可以為模板。"
+            "prompt": "指示 LLM 如何回應。可以為模板。",
+            "store_responses": "若啟用，回應會由 Azure OpenAI 儲存，之後可再擷取",
+            "llm_hass_api": "**Device control** 只能存取您公開給語音助理的實體。**Home Assistant** 可存取所有項目，且僅適用於管理員，不適用於語音助理裝置。"
           }
         },
         "model": {
@@ -191,23 +186,15 @@
         "user": "新增 AI 任務"
       },
       "step": {
-        "additional": {
-          "data": {
-            "max_tokens": "回應返回最高權杖數",
-            "store_responses": "在 Azure OpenAI 中儲存請求和回應"
-          },
-          "data_description": {
-            "store_responses": "若啟用，回應會由 Azure OpenAI 儲存，之後可再擷取"
-          },
-          "title": "其他設定"
-        },
         "init": {
           "data": {
             "chat_model": "模型部署",
+            "max_tokens": "回應返回最高權杖數",
             "name": "名稱",
             "recommended": "建議模型設定",
             "reasoning_effort": "推理等級",
             "send_sampling_parameters": "傳送取樣參數（temperature/top_p）",
+            "store_responses": "在 Azure OpenAI 中儲存請求和回應",
             "temperature": "溫度",
             "top_p": "Top P"
           },
@@ -215,7 +202,8 @@
             "chat_model": "Azure 部署的確切名稱。使用 Microsoft 登入時，選項會顯示已部署的 OpenAI 模型及其底層模型名稱。",
             "recommended": "使用建議的進階設定，但不變更所選部署、取樣或推理等級。",
             "reasoning_effort": "模型在回應前進行推理的程度。可用等級取決於底層模型；此設定在使用建議設定時同樣有效。",
-            "send_sampling_parameters": "預設為關閉。僅在啟用時才會顯示「溫度」和「Top P」；停用期間仍會保留其已儲存的值。推理模型僅在推理等級設為「無」時才會傳送這些參數。"
+            "send_sampling_parameters": "預設為關閉。僅在啟用時才會顯示「溫度」和「Top P」；停用期間仍會保留其已儲存的值。推理模型僅在推理等級設為「無」時才會傳送這些參數。",
+            "store_responses": "若啟用，回應會由 Azure OpenAI 儲存，之後可再擷取"
           }
         },
         "model": {
@@ -270,6 +258,30 @@
           "data_description": {
             "image_model": "OpenAI 影像模型的確切部署名稱。此任務支援影像生成，不支援文字或結構化資料生成。",
             "image_quality": "較高品質會產生更精細的影像，但需要更長時間且費用更高。可用等級取決於底層影像模型。"
+          }
+        }
+      }
+    },
+    "ai_task_evaluate": {
+      "abort": {
+        "entry_not_loaded": "當設定被停用時，無法新增項目。"
+      },
+      "entry_type": "AI 任務評估",
+      "error": {
+        "model_not_supported": "請選擇 gpt-6-luna 部署。Azure 的 Decisions API 僅支援 gpt-6-luna。"
+      },
+      "initiate_flow": {
+        "reconfigure": "重新設定 AI 任務評估",
+        "user": "新增 AI 任務評估"
+      },
+      "step": {
+        "init": {
+          "data": {
+            "chat_model": "模型部署",
+            "name": "名稱"
+          },
+          "data_description": {
+            "chat_model": "gpt-6-luna 部署的確切名稱。評估使用 Azure 的 Decisions API，該 API 僅支援 gpt-6-luna，且並非所有區域皆可使用。"
           }
         }
       }

@@ -73,6 +73,7 @@
           "conversation": "Modelos de conversación",
           "ai_task_data": "Modelos de tareas de IA de datos",
           "ai_task_image": "Modelos de tareas de IA de imágenes",
+          "ai_task_evaluate": "Modelos de evaluaciones de tareas de IA",
           "stt": "Modelos de voz a texto",
           "tts": "Modelos de texto a voz"
         }
@@ -119,25 +120,17 @@
         "user": "Añadir agente de conversación"
       },
       "step": {
-        "additional": {
-          "data": {
-            "max_tokens": "Máximo de tokens para devolver en respuesta",
-            "store_responses": "Almacenar solicitudes y respuestas en Azure OpenAI"
-          },
-          "data_description": {
-            "store_responses": "Si está habilitado, Azure OpenAI almacena las respuestas y se pueden recuperar más tarde"
-          },
-          "title": "Configuración adicional"
-        },
         "init": {
           "data": {
             "chat_model": "Implementación del modelo",
-            "llm_hass_api": "Controla Home Assistant",
+            "llm_hass_api": "Herramientas de IA",
+            "max_tokens": "Máximo de tokens para devolver en respuesta",
             "name": "Nombre",
             "prompt": "Instrucciones",
             "recommended": "Ajustes recomendados del modelo",
             "reasoning_effort": "Esfuerzo de razonamiento",
             "send_sampling_parameters": "Enviar parámetros de muestreo (temperature/top_p)",
+            "store_responses": "Almacenar solicitudes y respuestas en Azure OpenAI",
             "temperature": "Temperatura",
             "top_p": "Top P"
           },
@@ -146,7 +139,9 @@
             "recommended": "Usa los ajustes avanzados recomendados sin cambiar la implementación seleccionada, el muestreo ni el esfuerzo de razonamiento.",
             "reasoning_effort": "Cuánto razona el modelo antes de responder. Los niveles disponibles dependen del modelo subyacente; esto también se aplica con los ajustes recomendados.",
             "send_sampling_parameters": "Desactivado de forma predeterminada. «Temperatura» y «Top P» solo aparecen cuando está activado, y sus valores guardados se conservan mientras está desactivado. Los modelos de razonamiento solo envían estos parámetros con el esfuerzo de razonamiento establecido en «Ninguno».",
-            "prompt": "Indica cómo debe responder el LLM. Puede ser una plantilla."
+            "prompt": "Indica cómo debe responder el LLM. Puede ser una plantilla.",
+            "store_responses": "Si está habilitado, Azure OpenAI almacena las respuestas y se pueden recuperar más tarde",
+            "llm_hass_api": "**Device control** solo accede a las entidades que expones a los asistentes de voz. **Home Assistant** accede a todo y solo funciona para administradores, no para dispositivos de asistente de voz."
           }
         },
         "model": {
@@ -191,23 +186,15 @@
         "user": "Añadir tarea de IA"
       },
       "step": {
-        "additional": {
-          "data": {
-            "max_tokens": "Máximo de tokens para devolver en respuesta",
-            "store_responses": "Almacenar solicitudes y respuestas en Azure OpenAI"
-          },
-          "data_description": {
-            "store_responses": "Si está habilitado, Azure OpenAI almacena las respuestas y se pueden recuperar más tarde"
-          },
-          "title": "Configuración adicional"
-        },
         "init": {
           "data": {
             "chat_model": "Implementación del modelo",
+            "max_tokens": "Máximo de tokens para devolver en respuesta",
             "name": "Nombre",
             "recommended": "Ajustes recomendados del modelo",
             "reasoning_effort": "Esfuerzo de razonamiento",
             "send_sampling_parameters": "Enviar parámetros de muestreo (temperature/top_p)",
+            "store_responses": "Almacenar solicitudes y respuestas en Azure OpenAI",
             "temperature": "Temperatura",
             "top_p": "Top P"
           },
@@ -215,7 +202,8 @@
             "chat_model": "El nombre exacto de la implementación de Azure. Con el inicio de sesión con Microsoft, las opciones muestran los modelos de OpenAI implementados y los nombres de sus modelos subyacentes.",
             "recommended": "Usa los ajustes avanzados recomendados sin cambiar la implementación seleccionada, el muestreo ni el esfuerzo de razonamiento.",
             "reasoning_effort": "Cuánto razona el modelo antes de responder. Los niveles disponibles dependen del modelo subyacente; esto también se aplica con los ajustes recomendados.",
-            "send_sampling_parameters": "Desactivado de forma predeterminada. «Temperatura» y «Top P» solo aparecen cuando está activado, y sus valores guardados se conservan mientras está desactivado. Los modelos de razonamiento solo envían estos parámetros con el esfuerzo de razonamiento establecido en «Ninguno»."
+            "send_sampling_parameters": "Desactivado de forma predeterminada. «Temperatura» y «Top P» solo aparecen cuando está activado, y sus valores guardados se conservan mientras está desactivado. Los modelos de razonamiento solo envían estos parámetros con el esfuerzo de razonamiento establecido en «Ninguno».",
+            "store_responses": "Si está habilitado, Azure OpenAI almacena las respuestas y se pueden recuperar más tarde"
           }
         },
         "model": {
@@ -270,6 +258,30 @@
           "data_description": {
             "image_model": "El nombre exacto de la implementación de un modelo de imágenes de OpenAI. Esta tarea admite la generación de imágenes, no la generación de texto ni de datos estructurados.",
             "image_quality": "Una calidad más alta genera imágenes más detalladas, pero tarda más y cuesta más. Los niveles disponibles dependen del modelo de imágenes subyacente."
+          }
+        }
+      }
+    },
+    "ai_task_evaluate": {
+      "abort": {
+        "entry_not_loaded": "No se pueden añadir cosas mientras la configuración está desactivada."
+      },
+      "entry_type": "Evaluación de tareas de IA",
+      "error": {
+        "model_not_supported": "Selecciona una implementación de gpt-6-luna. La API Decisions de Azure solo admite gpt-6-luna."
+      },
+      "initiate_flow": {
+        "reconfigure": "Volver a configurar la evaluación de tareas de IA",
+        "user": "Añadir evaluación de tareas de IA"
+      },
+      "step": {
+        "init": {
+          "data": {
+            "chat_model": "Implementación del modelo",
+            "name": "Nombre"
+          },
+          "data_description": {
+            "chat_model": "El nombre exacto de una implementación de gpt-6-luna. Las evaluaciones usan la API Decisions de Azure, que solo admite gpt-6-luna y no está disponible en todas las regiones."
           }
         }
       }
