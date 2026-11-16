@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Releases before 5.0.0 are documented in the [GitHub release history](https://github.com/joselcaguilar/azure-openai-ha/releases).
 
+## [5.2.0] — TBD
+
+### Development
+
+- Updated the Ruff development requirement to `ruff>=0.17.4`.
+
 ## [5.1.0] — 2026-11-06
 
 This release brings the integration in line with Home Assistant 2026.11's OpenAI integration, and adds AI task evaluations with Azure's Decisions API.
