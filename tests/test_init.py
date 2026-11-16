@@ -1,5 +1,9 @@
 """Verify runtime setup, reload behavior, and preservation of legacy configuration."""
 
+from pathlib import Path
+import subprocess
+import sys
+
 import pytest
 from pytest_homeassistant.common import MockConfigEntry
 from respx import MockRouter
@@ -165,3 +169,51 @@ async def test_discovered_decision_models_offer_evaluations_without_adding_them(
     assert services["failed-luna"] == []
     assert services["ha-chat"] == ["conversation", "ai_task_data"]
     assert not entry.subentries
+
+
+CHECK_CLIENT_RESOURCE_IMPORTS = """
+import importlib
+
+import homeassistant
+from custom_components.azure_openai_conversation import create_deployment_client
+import openai
+
+imports = []
+import_module = importlib.import_module
+
+
+def record_import(name, package=None):
+    imports.append(name)
+    return import_module(name, package)
+
+
+importlib.import_module = record_import
+client = openai.AsyncOpenAI(api_key="test", base_url="https://test.openai.azure.com/")
+client.models
+client.responses
+client.images
+client.decisions
+client.audio.speech
+create_deployment_client(client, "stt").audio.transcriptions
+print(imports)
+"""
+
+
+def test_client_resources_are_imported_with_the_integration() -> None:
+    """Accessing the client's resources must not import anything in the event loop.
+
+    The client imports some resources on first use through
+    importlib.import_module, which Home Assistant reports as a blocking call in
+    the event loop. Only a clean interpreter shows this: anything the test
+    suite imported first would hide it.
+    """
+    result = subprocess.run(
+        [sys.executable, "-c", CHECK_CLIENT_RESOURCE_IMPORTS],
+        capture_output=True,
+        check=True,
+        cwd=Path(__file__).parents[1],
+        text=True,
+        timeout=60,
+    )
+
+    assert result.stdout.strip() == "[]"

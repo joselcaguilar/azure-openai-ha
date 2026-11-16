@@ -63,7 +63,7 @@ RECOMMENDED_REASONING_EFFORT = "medium"
 RECOMMENDED_REASONING_SUMMARY = "auto"
 RECOMMENDED_SEND_SAMPLING_PARAMETERS = False
 RECOMMENDED_STORE_RESPONSES = False
-RECOMMENDED_STT_MODEL = "gpt-4o-mini-transcribe"
+RECOMMENDED_STT_MODEL = "gpt-transcribe"
 RECOMMENDED_TEMPERATURE = 1.0
 RECOMMENDED_TOP_P = 1.0
 RECOMMENDED_TTS_MODEL = "gpt-4o-mini-tts"
@@ -83,7 +83,6 @@ IMAGE_MODELS: list[str] = [
     "gpt-image-2.5-flare",
     "gpt-image-2",
     "gpt-image-1.5",
-    "gpt-image-1",
     "gpt-image-1-mini",
 ]
 STT_MODELS: list[str] = [

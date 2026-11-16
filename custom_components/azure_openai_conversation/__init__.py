@@ -10,6 +10,11 @@ from urllib.parse import quote
 
 import openai
 
+# The client imports its responses and audio resources lazily on first use,
+# which would happen inside the event loop. Import them with the integration.
+from openai.resources.audio import AsyncAudio  # noqa: F401
+from openai.resources.responses import AsyncResponses  # noqa: F401
+
 from homeassistant.config_entries import ConfigEntry, ConfigSubentry
 from homeassistant.const import CONF_API_KEY, Platform
 from homeassistant.core import HomeAssistant

@@ -51,7 +51,7 @@ This is equivalent to the built-in [OpenAI Conversation integration](https://www
 2. To enable conversations and AI tasks, [deploy a Responses-compatible model](https://learn.microsoft.com/en-us/azure/ai-foundry/openai/how-to/responses#supported-models), such as `gpt-4.1-mini`, `gpt-5-mini`, or `gpt-6.1-sol`.
    *Deployment names can be different from model names. Microsoft sign-in discovers both automatically; API-key users enter the exact deployment name in the service's first configuration screen. **Recommended model settings** never changes the selected deployment.*
 3. Optionally deploy more models:
-   - An image model such as `gpt-image-2.5-flare`, `gpt-image-2` or `gpt-image-1` to generate images with AI tasks.
+   - An image model such as `gpt-image-2.5-flare`, `gpt-image-2.5-sunburst` or `gpt-image-2` to generate images with AI tasks.
    - `gpt-6-luna` for [AI task evaluations](#ai-task-evaluations), in a region that offers the [Decisions API](https://learn.microsoft.com/azure/foundry/openai/how-to/decisions).
    - `gpt-transcribe`, `gpt-4o-mini-transcribe`, `gpt-4o-transcribe` or `whisper` for speech-to-text.
    - `gpt-4o-mini-tts`, `tts` or `tts-hd` for text-to-speech. Legacy `tts-1` and `tts-1-hd` model names remain supported.
