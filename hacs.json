@@ -1,6 +1,6 @@
 {
   "name": "Azure OpenAI Conversation",
   "filename": "azure_openai_conversation.zip",
-  "homeassistant": "2026.11.0",
+  "homeassistant": "2026.12.0",
   "zip_release": true
 }

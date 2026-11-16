@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [5.2.0] — Unreleased
 
+### Breaking changes
+
+- **Home Assistant 2026.12.0 or later is required.** Text-to-speech uses the common text-to-speech options that Home Assistant 2026.12 adds. On Home Assistant 2026.11, stay on 5.1.x. ([#197])
+
 ### Changed
 
 - New speech-to-text services suggest a `gpt-transcribe` deployment, which Azure recommends for file transcription (was `gpt-4o-mini-transcribe`). Existing services keep their deployment. ([#197])
