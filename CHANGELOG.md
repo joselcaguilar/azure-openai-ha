@@ -8,12 +8,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
-- New speech-to-text services suggest a `gpt-transcribe` deployment, which Azure recommends for file transcription (was `gpt-4o-mini-transcribe`). Existing services keep their deployment. ([#PR])
-- Image deployment suggestions no longer include `gpt-image-1`, which Azure retired on October 23, 2026. ([#PR])
+- New speech-to-text services suggest a `gpt-transcribe` deployment, which Azure recommends for file transcription (was `gpt-4o-mini-transcribe`). Existing services keep their deployment. ([#197])
+- Image deployment suggestions no longer include `gpt-image-1`, which Azure retired on October 23, 2026. ([#197])
 
 ### Fixed
 
-- After every restart, Home Assistant logged blocking calls in the event loop on the first conversation, AI task, speech-to-text or text-to-speech request. The `openai` library imports its Responses and audio modules on first use, so the integration now imports them when it loads. ([#PR])
+- After every restart, Home Assistant logged blocking calls in the event loop on the first conversation, AI task, speech-to-text or text-to-speech request. The `openai` library imports its Responses and audio modules on first use, so the integration now imports them when it loads. ([#197])
 
 ### Development
 
@@ -139,4 +139,4 @@ Thanks to [@rac146](https://github.com/rac146) and [@SchmidSP](https://github.co
 [#191]: https://github.com/joselcaguilar/azure-openai-ha/pull/191
 [#192]: https://github.com/joselcaguilar/azure-openai-ha/pull/192
 [#193]: https://github.com/joselcaguilar/azure-openai-ha/pull/193
-[#PR]: https://github.com/joselcaguilar/azure-openai-ha/pull/PR
+[#197]: https://github.com/joselcaguilar/azure-openai-ha/pull/197
