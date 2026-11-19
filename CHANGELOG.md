@@ -9,7 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Development
 
 - Updated the GitHub release workflow to use `softprops/action-gh-release` v3.0.4 (was v3.0.3).
-- Updated the Ruff development requirement to `ruff>=0.17.4`.
+- Updated the Ruff development requirement to `ruff>=0.17.5`.
 
 ## [5.1.0] — 2026-11-06
 
