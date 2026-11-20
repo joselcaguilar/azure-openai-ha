@@ -54,7 +54,7 @@ from homeassistant.helpers.selector import (
 )
 from homeassistant.helpers.typing import VolDictType
 
-from . import create_client
+from . import OpenAIConfigEntry, create_client
 from .auth import EntraOAuth2Implementation, async_get_oauth_implementation
 from .const import (
     AUTH_API_KEY,
@@ -748,7 +748,7 @@ class AzureOpenAIConfigFlow(
     @callback
     @override
     def async_get_supported_subentry_types(
-        cls, config_entry: ConfigEntry
+        cls, config_entry: OpenAIConfigEntry
     ) -> dict[str, type[ConfigSubentryFlow]]:
         """Return subentries supported by this integration."""
         return {

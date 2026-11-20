@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [5.2.0] — Unreleased
 
+### Breaking changes
+
+- **Home Assistant 2026.12.0 or later is required.** Text-to-speech uses the common text-to-speech options that Home Assistant 2026.12 adds. On Home Assistant 2026.11, stay on 5.1.x. ([#197])
+
+### Changed
+
+- New speech-to-text services suggest a `gpt-transcribe` deployment, which Azure recommends for file transcription (was `gpt-4o-mini-transcribe`). Existing services keep their deployment. ([#197])
+- Image deployment suggestions no longer include `gpt-image-1`, which Azure retired on October 23, 2026. ([#197])
+
+### Fixed
+
+- After every restart, Home Assistant logged blocking calls in the event loop on the first conversation, AI task, speech-to-text or text-to-speech request. The `openai` library imports its Responses and audio modules on first use, so the integration now imports them when it loads. ([#197])
+
 ### Development
 
 - Updated the `pytest-homeassistant` requirement to `2026.11.1` (was `2026.11.0`).
@@ -107,7 +120,8 @@ Thanks to [@rac146](https://github.com/rac146) and [@SchmidSP](https://github.co
 - Updated GitHub Actions: `actions/checkout` v7, `actions/setup-python` v7, `dependabot/fetch-metadata` v3 and `softprops/action-gh-release` v3.0.3. ([#164], [#178])
 - Updated development requirements: `homeassistant>=2026.10.0`, `colorlog>=6.12.0`, `pip>=26.2.1` and `ruff>=0.17.0`. ([#164], [#178], [#180])
 
-[5.1.0]: https://github.com/joselcaguilar/azure-openai-ha/compare/v5.0.1...HEAD
+[5.2.0]: https://github.com/joselcaguilar/azure-openai-ha/compare/v5.1.0...HEAD
+[5.1.0]: https://github.com/joselcaguilar/azure-openai-ha/compare/v5.0.1...v5.1.0
 [5.0.1]: https://github.com/joselcaguilar/azure-openai-ha/compare/v5.0.0...v5.0.1
 [5.0.0]: https://github.com/joselcaguilar/azure-openai-ha/compare/v4.5.0...v5.0.0
 [#160]: https://github.com/joselcaguilar/azure-openai-ha/pull/160
@@ -130,3 +144,4 @@ Thanks to [@rac146](https://github.com/rac146) and [@SchmidSP](https://github.co
 [#191]: https://github.com/joselcaguilar/azure-openai-ha/pull/191
 [#192]: https://github.com/joselcaguilar/azure-openai-ha/pull/192
 [#193]: https://github.com/joselcaguilar/azure-openai-ha/pull/193
+[#197]: https://github.com/joselcaguilar/azure-openai-ha/pull/197
