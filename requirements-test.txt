@@ -1,5 +1,5 @@
 -r requirements.txt
-pytest-homeassistant==2026.11.1
+pytest-homeassistant==2026.11.2
 gazetteer-matcher==1.1.0
 hassil==3.12.1
 home-assistant-intents==2026.10.27
